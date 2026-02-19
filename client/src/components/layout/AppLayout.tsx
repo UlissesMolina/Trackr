@@ -5,6 +5,7 @@ import { useAuthToken } from "../../hooks/useAuthToken";
 const NAV_ITEMS = [
   { label: "Dashboard", path: "/" },
   { label: "Board", path: "/board" },
+  { label: "Resume", path: "/resume" },
   { label: "Cover Letter", path: "/cover-letter" },
 ];
 

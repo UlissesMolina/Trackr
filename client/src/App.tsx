@@ -9,6 +9,7 @@ import BoardPage from "./pages/BoardPage";
 import ApplicationDetailPage from "./pages/ApplicationDetailPage";
 import DashboardPage from "./pages/DashboardPage";
 import CoverLetterPage from "./pages/CoverLetterPage";
+import ResumePage from "./pages/ResumePage";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ function ClerkWithRoutes() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/board" element={<BoardPage />} />
             <Route path="/applications/:id" element={<ApplicationDetailPage />} />
+            <Route path="/resume" element={<ResumePage />} />
             <Route path="/cover-letter" element={<CoverLetterPage />} />
           </Route>
         </Routes>

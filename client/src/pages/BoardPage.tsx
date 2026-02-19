@@ -15,12 +15,14 @@ import ApplicationForm, {
   type ApplicationFormData,
 } from "../components/applications/ApplicationForm";
 import Modal from "../components/ui/Modal";
+import ImportModal from "../components/applications/ImportModal";
 
 export default function BoardPage() {
   const { data: applications = [], isLoading } = useApplications();
   const createMutation = useCreateApplication();
   const statusMutation = useUpdateApplicationStatus();
   const [showForm, setShowForm] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [draggedId, setDraggedId] = useState<string | null>(null);
 
   function handleCreate(form: ApplicationFormData) {
@@ -60,12 +62,20 @@ export default function BoardPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-text-primary">Application Board</h1>
-        <button
-          onClick={() => setShowForm(true)}
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
-        >
-          + Add Application
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowImport(true)}
+            className="rounded-lg border border-border-default px-4 py-2 text-sm font-medium text-text-secondary hover:bg-surface-elevated"
+          >
+            Import CSV
+          </button>
+          <button
+            onClick={() => setShowForm(true)}
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+          >
+            + Add Application
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-4 overflow-x-auto pb-4">
@@ -124,6 +134,8 @@ export default function BoardPage() {
           loading={createMutation.isPending}
         />
       </Modal>
+
+      <ImportModal open={showImport} onClose={() => setShowImport(false)} />
     </div>
   );
 }

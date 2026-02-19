@@ -39,3 +39,12 @@ export interface DashboardStats {
   rejectionRate: number;
   interviewConversion: number;
 }
+
+export interface Resume {
+  id: string;
+  clerkUserId: string;
+  content: string;
+  fileName: string | null;
+  updatedAt: string;
+  createdAt: string;
+}

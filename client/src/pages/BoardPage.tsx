@@ -7,7 +7,7 @@ import {
 import {
   APPLICATION_STATUSES,
   STATUS_LABELS,
-  STATUS_COLORS,
+  STATUS_DOT_COLORS,
   type ApplicationStatus,
 } from "../lib/constants";
 import ApplicationCard from "../components/applications/ApplicationCard";
@@ -51,7 +51,7 @@ export default function BoardPage() {
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <p className="text-gray-500">Loading applications...</p>
+        <p className="text-text-secondary">Loading applications...</p>
       </div>
     );
   }
@@ -59,10 +59,10 @@ export default function BoardPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Application Board</h1>
+        <h1 className="text-2xl font-bold text-text-primary">Application Board</h1>
         <button
           onClick={() => setShowForm(true)}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
         >
           + Add Application
         </button>
@@ -77,18 +77,16 @@ export default function BoardPage() {
               key={status}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => handleDrop(status)}
-              className="flex w-72 min-w-[18rem] flex-shrink-0 flex-col rounded-xl bg-gray-100 p-3"
+              className="flex w-72 min-w-[18rem] flex-shrink-0 flex-col rounded-xl bg-surface-secondary p-3"
             >
               <div className="mb-3 flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
-                  <span
-                    className={`inline-block h-2.5 w-2.5 rounded-full ${STATUS_COLORS[status].split(" ")[0]}`}
-                  />
-                  <h2 className="text-sm font-semibold text-gray-700">
+                  <span className={`inline-block h-2.5 w-2.5 rounded-full ${STATUS_DOT_COLORS[status]}`} />
+                  <h2 className="text-sm font-semibold text-text-secondary">
                     {STATUS_LABELS[status]}
                   </h2>
                 </div>
-                <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
+                <span className="rounded-full bg-surface-elevated px-2 py-0.5 text-xs font-medium text-text-tertiary">
                   {cards.length}
                 </span>
               </div>
@@ -107,8 +105,8 @@ export default function BoardPage() {
                 ))}
 
                 {cards.length === 0 && (
-                  <div className="flex flex-1 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-6">
-                    <p className="text-center text-xs text-gray-400">
+                  <div className="flex flex-1 items-center justify-center rounded-lg border-2 border-dashed border-border-default p-6">
+                    <p className="text-center text-xs text-text-tertiary">
                       Drag cards here or add a new application
                     </p>
                   </div>

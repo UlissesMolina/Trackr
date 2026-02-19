@@ -13,15 +13,15 @@ export default function AppLayout() {
   const { pathname } = useLocation();
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <aside className="fixed inset-y-0 left-0 z-10 flex w-64 flex-col border-r border-gray-200 bg-white">
-        <div className="flex h-16 items-center gap-2 border-b border-gray-200 px-6">
-          <span className="text-xl font-bold tracking-tight text-gray-900">
+    <div className="flex min-h-screen bg-surface-primary">
+      <aside className="fixed inset-y-0 left-0 z-10 flex w-60 flex-col border-r border-border-default bg-surface-secondary">
+        <div className="flex h-14 items-center gap-2 border-b border-border-default px-5">
+          <span className="text-lg font-bold tracking-tight text-text-primary">
             Trackr
           </span>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-4">
+        <nav className="flex-1 space-y-0.5 px-2 py-3">
           {NAV_ITEMS.map((item) => {
             const isActive =
               item.path === "/"
@@ -32,10 +32,10 @@ export default function AppLayout() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                className={`flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-gray-100 text-gray-900"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    ? "bg-surface-elevated text-text-primary"
+                    : "text-text-secondary hover:bg-surface-tertiary hover:text-text-primary"
                 }`}
               >
                 {item.label}
@@ -44,19 +44,19 @@ export default function AppLayout() {
           })}
         </nav>
 
-        <div className="border-t border-gray-200 p-4">
+        <div className="border-t border-border-default p-4">
           <UserButton
             afterSignOutUrl="/sign-in"
             appearance={{
               elements: {
-                avatarBox: "h-8 w-8",
+                avatarBox: "h-7 w-7",
               },
             }}
           />
         </div>
       </aside>
 
-      <main className="ml-64 flex-1 p-8">
+      <main className="ml-60 flex-1 p-8">
         <Outlet />
       </main>
     </div>

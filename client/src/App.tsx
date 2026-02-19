@@ -4,7 +4,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import AppLayout from "./components/layout/AppLayout";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
+import LandingPage from "./pages/LandingPage";
 import BoardPage from "./pages/BoardPage";
+import ApplicationDetailPage from "./pages/ApplicationDetailPage";
+import DashboardPage from "./pages/DashboardPage";
+import CoverLetterPage from "./pages/CoverLetterPage";
 
 const queryClient = new QueryClient();
 
@@ -12,18 +16,6 @@ const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!CLERK_PUBLISHABLE_KEY) {
   throw new Error("Missing VITE_CLERK_PUBLISHABLE_KEY in .env");
-}
-
-function DashboardPage() {
-  return <div>Dashboard</div>;
-}
-
-function ApplicationDetailPage() {
-  return <div>Application Detail</div>;
-}
-
-function CoverLetterPage() {
-  return <div>Cover Letter Generator</div>;
 }
 
 function ProtectedRoute() {
@@ -50,6 +42,7 @@ function ClerkWithRoutes() {
     >
       <QueryClientProvider client={queryClient}>
         <Routes>
+          <Route path="/landing" element={<LandingPage />} />
           <Route path="/sign-in/*" element={<SignInPage />} />
           <Route path="/sign-up/*" element={<SignUpPage />} />
           <Route element={<ProtectedRoute />}>

@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ApplicationStatus {
+  SAVED
+  APPLIED
+  UNDER_REVIEW
+  INTERVIEW
+  OFFER
+  REJECTED
+}
+
+model Application {
+  id            String              @id @default(cuid())
+  clerkUserId   String
+  title         String
+  company       String
+  location      String?
+  salaryMin     Int?
+  salaryMax     Int?
+  url           String?
+  status        ApplicationStatus   @default(SAVED)
+  dateApplied   DateTime?
+  coverLetter   String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  notes         Note[]
+  statusChanges StatusChange[]
+
+  @@index([clerkUserId])
+}
+
+model Note {
+  id            String       @id @default(cuid())
+  applicationId String
+  content       String
+  createdAt     DateTime     @default(now())
+
+  application   Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+model StatusChange {
+  id            String              @id @default(cuid())
+  applicationId String
+  fromStatus    ApplicationStatus
+  toStatus      ApplicationStatus
+  changedAt     DateTime            @default(now())
+
+  application   Application         @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}

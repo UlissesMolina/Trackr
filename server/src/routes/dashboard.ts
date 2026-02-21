@@ -18,4 +18,10 @@ router.get("/chart", async (req: Request, res: Response) => {
   res.json(data);
 });
 
+router.get("/sankey", async (req: Request, res: Response) => {
+  const userId = getUserId(req);
+  const data = await dashboardService.getSankeyData(userId);
+  res.json(data);
+});
+
 export default router;

@@ -43,10 +43,17 @@ router.post("/upload", upload.single("file"), async (req: Request, res: Response
     const pdfParse = require("pdf-parse");
     const parsed = await pdfParse(file.buffer);
     text = parsed.text;
+  } else if (
+    mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    mime === "application/msword"
+  ) {
+    const mammoth = require("mammoth");
+    const result = await mammoth.extractRawText({ buffer: file.buffer });
+    text = result.value;
   } else if (mime === "text/plain") {
     text = file.buffer.toString("utf-8");
   } else {
-    res.status(400).json({ error: "Only PDF and TXT files are supported" });
+    res.status(400).json({ error: "Only PDF, DOCX, DOC, and TXT files are supported" });
     return;
   }
 

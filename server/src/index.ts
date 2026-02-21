@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { clerkMiddleware } from "./middleware/auth";
 import { errorHandler } from "./middleware/errorHandler";
+import { generalLimiter, aiLimiter } from "./middleware/rateLimit";
 import applicationsRouter from "./routes/applications";
 import notesRouter from "./routes/notes";
 import interviewsRouter from "./routes/interviews";
@@ -16,6 +17,7 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
 app.use(express.json());
+app.use(generalLimiter);
 app.use(clerkMiddleware());
 
 app.get("/health", (_req, res) => {
@@ -27,7 +29,7 @@ app.use("/api/applications", notesRouter);
 app.use("/api/applications", interviewsRouter);
 app.use("/api/tags", tagsRouter);
 app.use("/api/dashboard", dashboardRouter);
-app.use("/api/ai", aiRouter);
+app.use("/api/ai", aiLimiter, aiRouter);
 app.use("/api/resume", resumeRouter);
 
 app.use(errorHandler);

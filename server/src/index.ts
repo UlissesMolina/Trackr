@@ -29,10 +29,9 @@ console.log("ENV check:", {
   port: PORT,
 });
 
-app.get("/health", (_req, res) => {
-  console.log("Health check hit");
-  res.json({ status: "ok" });
-});
+app.get("/health", (_req, res) => res.json({ status: "ok" }));
+app.get("/", (_req, res) => res.json({ status: "ok", message: "Trackr API" }));
+app.get("/favicon.ico", (_req, res) => res.status(204).end());
 
 app.use(cors({
   origin: [

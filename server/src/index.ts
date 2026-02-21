@@ -15,7 +15,13 @@ import resumeRouter from "./routes/resume";
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
+app.use(cors({
+  origin: [
+    process.env.CLIENT_URL || "http://localhost:5173",
+    "https://usetrackr.netlify.app",
+  ],
+  credentials: true,
+}));
 app.use(express.json());
 app.use(generalLimiter);
 app.use(clerkMiddleware());

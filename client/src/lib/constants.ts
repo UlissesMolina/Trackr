@@ -35,3 +35,34 @@ export const STATUS_LABELS: Record<ApplicationStatus, string> = {
   OFFER: "Offer",
   REJECTED: "Rejected",
 };
+
+export const INTERVIEW_TYPES = [
+  "PHONE_SCREEN",
+  "TECHNICAL",
+  "BEHAVIORAL",
+  "ONSITE",
+  "PANEL",
+  "OTHER",
+] as const;
+
+export type InterviewType = (typeof INTERVIEW_TYPES)[number];
+
+export const INTERVIEW_TYPE_LABELS: Record<InterviewType, string> = {
+  PHONE_SCREEN: "Phone Screen",
+  TECHNICAL: "Technical",
+  BEHAVIORAL: "Behavioral",
+  ONSITE: "Onsite",
+  PANEL: "Panel",
+  OTHER: "Other",
+};
+
+export const TAG_COLORS = [
+  { name: "Indigo", value: "#6366f1" },
+  { name: "Emerald", value: "#10b981" },
+  { name: "Amber", value: "#f59e0b" },
+  { name: "Rose", value: "#f43f5e" },
+  { name: "Violet", value: "#8b5cf6" },
+  { name: "Cyan", value: "#06b6d4" },
+  { name: "Orange", value: "#f97316" },
+  { name: "Pink", value: "#ec4899" },
+];

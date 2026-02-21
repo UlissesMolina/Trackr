@@ -33,6 +33,17 @@ router.post("/", async (req: Request, res: Response) => {
   res.status(201).json(app);
 });
 
+router.post("/import", async (req: Request, res: Response) => {
+  const userId = getUserId(req);
+  const { applications } = req.body;
+  if (!Array.isArray(applications) || applications.length === 0) {
+    res.status(400).json({ error: "applications array is required" });
+    return;
+  }
+  const result = await appService.bulkCreateApplications(userId, applications);
+  res.status(201).json({ imported: result.count });
+});
+
 router.patch("/:id", async (req: Request, res: Response) => {
   const userId = getUserId(req);
   const id = paramId(req);

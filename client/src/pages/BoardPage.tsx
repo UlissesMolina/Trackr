@@ -36,6 +36,7 @@ export default function BoardPage() {
         url: form.url || undefined,
         status: form.status,
         dateApplied: form.dateApplied || undefined,
+        followUpDate: form.followUpDate || undefined,
       },
       { onSuccess: () => setShowForm(false) }
     );

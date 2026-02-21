@@ -37,6 +37,7 @@ export function useCreateApplication() {
       url?: string;
       status?: ApplicationStatus;
       dateApplied?: string;
+      followUpDate?: string;
     }) => {
       const { data } = await api.post("/applications", body);
       return data as Application;
@@ -63,6 +64,7 @@ export function useUpdateApplication() {
       salaryMax?: number | null;
       url?: string | null;
       dateApplied?: string | null;
+      followUpDate?: string | null;
       coverLetter?: string | null;
     }) => {
       const { data } = await api.patch(`/applications/${id}`, body);

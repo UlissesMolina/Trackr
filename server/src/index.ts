@@ -5,8 +5,11 @@ import { clerkMiddleware } from "./middleware/auth";
 import { errorHandler } from "./middleware/errorHandler";
 import applicationsRouter from "./routes/applications";
 import notesRouter from "./routes/notes";
+import interviewsRouter from "./routes/interviews";
+import tagsRouter from "./routes/tags";
 import dashboardRouter from "./routes/dashboard";
 import aiRouter from "./routes/ai";
+import resumeRouter from "./routes/resume";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -21,8 +24,11 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/applications", applicationsRouter);
 app.use("/api/applications", notesRouter);
+app.use("/api/applications", interviewsRouter);
+app.use("/api/tags", tagsRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/ai", aiRouter);
+app.use("/api/resume", resumeRouter);
 
 app.use(errorHandler);
 

@@ -1,4 +1,4 @@
-import type { ApplicationStatus } from "../lib/constants";
+import type { ApplicationStatus, InterviewType } from "../lib/constants";
 
 export interface Application {
   id: string;
@@ -11,11 +11,14 @@ export interface Application {
   url: string | null;
   status: ApplicationStatus;
   dateApplied: string | null;
+  followUpDate: string | null;
   coverLetter: string | null;
   createdAt: string;
   updatedAt: string;
   notes?: Note[];
   statusChanges?: StatusChange[];
+  interviews?: Interview[];
+  tags?: ApplicationTag[];
 }
 
 export interface Note {
@@ -31,6 +34,31 @@ export interface StatusChange {
   fromStatus: ApplicationStatus;
   toStatus: ApplicationStatus;
   changedAt: string;
+}
+
+export interface Interview {
+  id: string;
+  applicationId: string;
+  type: InterviewType;
+  scheduledAt: string;
+  location: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Tag {
+  id: string;
+  clerkUserId: string;
+  name: string;
+  color: string;
+  createdAt: string;
+}
+
+export interface ApplicationTag {
+  applicationId: string;
+  tagId: string;
+  tag: Tag;
 }
 
 export interface DashboardStats {

@@ -1,0 +1,25 @@
+<svg width="520" height="140" viewBox="0 0 520 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Pipeline Line -->
+  <line x1="40" y1="50" x2="200" y2="50" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Dots - slate -->
+  <circle cx="40" cy="50" r="6" fill="#64748b"/>
+  <circle cx="93" cy="50" r="6" fill="#64748b"/>
+  <circle cx="146" cy="50" r="6" fill="#94a3b8"/>
+  
+  <!-- Final dot - white accent (the goal) -->
+  <circle cx="200" cy="50" r="6" fill="#f8fafc"/>
+  
+  <!-- Vertical Stem -->
+  <line x1="146" y1="50" x2="146" y2="108" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Wordmark - crisp white -->
+  <text x="230" y="88"
+        font-family="Inter, Geist, system-ui, -apple-system, sans-serif"
+        font-size="52"
+        font-weight="700"
+        letter-spacing="-2"
+        fill="#f8fafc">
+    trackr
+  </text>
+</svg>

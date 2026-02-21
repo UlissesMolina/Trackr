@@ -9,6 +9,8 @@ import StatusBadge from "../components/applications/StatusBadge";
 import StatusSelect from "../components/applications/StatusSelect";
 import StatusTimeline from "../components/applications/StatusTimeline";
 import NotesList from "../components/applications/NotesList";
+import InterviewList from "../components/applications/InterviewList";
+import TagSelect from "../components/applications/TagSelect";
 import ApplicationForm, {
   type ApplicationFormData,
 } from "../components/applications/ApplicationForm";
@@ -34,6 +36,7 @@ export default function ApplicationDetailPage() {
         salaryMax: form.salaryMax ? Number(form.salaryMax) : null,
         url: form.url || null,
         dateApplied: form.dateApplied || null,
+        followUpDate: form.followUpDate || null,
       },
       { onSuccess: () => setShowEdit(false) }
     );
@@ -70,7 +73,22 @@ export default function ApplicationDetailPage() {
     url: app.url ?? "",
     status: app.status,
     dateApplied: app.dateApplied ? app.dateApplied.slice(0, 10) : "",
+    followUpDate: app.followUpDate ? app.followUpDate.slice(0, 10) : "",
   };
+
+  const followUpStatus = (() => {
+    if (!app.followUpDate) return null;
+    const followUp = new Date(app.followUpDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    followUp.setHours(0, 0, 0, 0);
+    const diff = followUp.getTime() - today.getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    if (days < 0) return { label: "Overdue", color: "text-red-400 bg-red-500/10 border-red-500/30" };
+    if (days === 0) return { label: "Today", color: "text-amber-400 bg-amber-500/10 border-amber-500/30" };
+    if (days === 1) return { label: "Tomorrow", color: "text-amber-400 bg-amber-500/10 border-amber-500/30" };
+    return { label: `In ${days} days`, color: "text-text-secondary bg-surface-tertiary border-border-default" };
+  })();
 
   return (
     <div>
@@ -89,6 +107,9 @@ export default function ApplicationDetailPage() {
           <div>
             <h1 className="text-2xl font-bold text-text-primary">{app.title}</h1>
             <p className="mt-1 text-lg text-text-secondary">{app.company}</p>
+            <div className="mt-2">
+              <TagSelect applicationId={app.id} currentTags={app.tags ?? []} />
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <StatusSelect applicationId={app.id} currentStatus={app.status} />
@@ -108,6 +129,17 @@ export default function ApplicationDetailPage() {
           </div>
         </div>
       </div>
+
+      {followUpStatus && (
+        <div className={`mb-6 flex items-center gap-3 rounded-xl border px-5 py-3 ${followUpStatus.color}`}>
+          <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="text-sm font-medium">
+            Follow up {followUpStatus.label.toLowerCase() === "overdue" ? "was due" : "due"}: {formatDate(app.followUpDate!)} ({followUpStatus.label})
+          </span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
@@ -147,6 +179,11 @@ export default function ApplicationDetailPage() {
                 </div>
               )}
             </dl>
+          </div>
+
+          <div className="rounded-xl border border-border-default bg-surface-secondary p-6">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-text-secondary">Interviews</h2>
+            <InterviewList applicationId={app.id} />
           </div>
 
           <div className="rounded-xl border border-border-default bg-surface-secondary p-6">

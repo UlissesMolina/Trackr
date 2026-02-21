@@ -10,6 +10,7 @@ export interface ApplicationFormData {
   url: string;
   status: ApplicationStatus;
   dateApplied: string;
+  followUpDate: string;
 }
 
 interface ApplicationFormProps {
@@ -28,6 +29,7 @@ const EMPTY: ApplicationFormData = {
   url: "",
   status: "SAVED",
   dateApplied: "",
+  followUpDate: "",
 };
 
 const INPUT =
@@ -85,9 +87,13 @@ export default function ApplicationForm({
           <label className="mb-1 block text-sm font-medium text-text-secondary">Job URL</label>
           <input type="url" value={form.url} onChange={(e) => update("url", e.target.value)} placeholder="https://company.com/jobs/123" className={INPUT} />
         </div>
-        <div className="col-span-2">
+        <div className="col-span-2 sm:col-span-1">
           <label className="mb-1 block text-sm font-medium text-text-secondary">Date Applied</label>
           <input type="date" value={form.dateApplied} onChange={(e) => update("dateApplied", e.target.value)} className={INPUT} />
+        </div>
+        <div className="col-span-2 sm:col-span-1">
+          <label className="mb-1 block text-sm font-medium text-text-secondary">Follow Up By</label>
+          <input type="date" value={form.followUpDate} onChange={(e) => update("followUpDate", e.target.value)} className={INPUT} />
         </div>
       </div>
 

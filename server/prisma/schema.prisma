@@ -16,6 +16,15 @@ enum ApplicationStatus {
   REJECTED
 }
 
+enum InterviewType {
+  PHONE_SCREEN
+  TECHNICAL
+  BEHAVIORAL
+  ONSITE
+  PANEL
+  OTHER
+}
+
 model Application {
   id            String              @id @default(cuid())
   clerkUserId   String
@@ -27,14 +36,53 @@ model Application {
   url           String?
   status        ApplicationStatus   @default(SAVED)
   dateApplied   DateTime?
+  followUpDate  DateTime?
   coverLetter   String?
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
 
   notes         Note[]
   statusChanges StatusChange[]
+  interviews    Interview[]
+  tags          ApplicationTag[]
 
   @@index([clerkUserId])
+}
+
+model Interview {
+  id            String        @id @default(cuid())
+  applicationId String
+  type          InterviewType
+  scheduledAt   DateTime
+  location      String?
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  application   Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+model Tag {
+  id          String           @id @default(cuid())
+  clerkUserId String
+  name        String
+  color       String           @default("#6366f1")
+  createdAt   DateTime         @default(now())
+
+  applications ApplicationTag[]
+
+  @@unique([clerkUserId, name])
+  @@index([clerkUserId])
+}
+
+model ApplicationTag {
+  applicationId String
+  tagId         String
+
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  tag           Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([applicationId, tagId])
 }
 
 model Note {
@@ -54,4 +102,15 @@ model StatusChange {
   changedAt     DateTime            @default(now())
 
   application   Application         @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+model Resume {
+  id          String   @id @default(cuid())
+  clerkUserId String   @unique
+  content     String
+  fileName    String?
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@index([clerkUserId])
 }

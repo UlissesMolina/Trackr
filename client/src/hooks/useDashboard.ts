@@ -26,3 +26,29 @@ export function useDashboardChart() {
     },
   });
 }
+
+export interface SankeyNode {
+  id: string;
+  nodeColor: string;
+}
+
+export interface SankeyLink {
+  source: string;
+  target: string;
+  value: number;
+}
+
+export interface SankeyData {
+  nodes: SankeyNode[];
+  links: SankeyLink[];
+}
+
+export function useSankeyData() {
+  return useQuery<SankeyData>({
+    queryKey: ["dashboard", "sankey"],
+    queryFn: async () => {
+      const { data } = await api.get("/dashboard/sankey");
+      return data;
+    },
+  });
+}

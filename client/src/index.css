@@ -71,6 +71,15 @@ body {
   animation: slide-down 0.5s ease-out both;
 }
 
+@keyframes reveal-ltr {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0% 0 0); }
+}
+
+.sankey-reveal {
+  animation: reveal-ltr 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) 0.15s both;
+}
+
 .scroll-fade-up {
   opacity: 0;
   transform: translateY(24px);

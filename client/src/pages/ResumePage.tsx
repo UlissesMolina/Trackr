@@ -33,9 +33,14 @@ export default function ResumePage() {
   }
 
   function handleFileUpload(file: File) {
-    const validTypes = ["application/pdf", "text/plain"];
+    const validTypes = [
+      "application/pdf",
+      "text/plain",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/msword",
+    ];
     if (!validTypes.includes(file.type)) {
-      alert("Only PDF and TXT files are supported.");
+      alert("Only PDF, DOCX, DOC, and TXT files are supported.");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -117,11 +122,11 @@ export default function ResumePage() {
             <p className="text-sm font-medium text-text-secondary">
               {uploadMutation.isPending ? "Uploading..." : "Drop a file here or click to browse"}
             </p>
-            <p className="mt-1 text-xs text-text-tertiary">PDF or TXT, up to 5 MB</p>
+            <p className="mt-1 text-xs text-text-tertiary">PDF, DOCX, DOC, or TXT — up to 5 MB</p>
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,.txt,application/pdf,text/plain"
+              accept=".pdf,.txt,.doc,.docx,application/pdf,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -132,7 +137,7 @@ export default function ResumePage() {
           </div>
 
           {uploadMutation.isError && (
-            <p className="mt-2 text-sm text-red-400">Upload failed. Make sure it's a valid PDF or TXT file.</p>
+            <p className="mt-2 text-sm text-red-400">Upload failed. Make sure it's a valid PDF, DOCX, DOC, or TXT file.</p>
           )}
 
           {resume?.fileName && (

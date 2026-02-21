@@ -103,15 +103,15 @@ export default function ApplicationDetailPage() {
           Back to Board
         </Link>
 
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-text-primary">{app.title}</h1>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold text-text-primary sm:text-2xl">{app.title}</h1>
             <p className="mt-1 text-lg text-text-secondary">{app.company}</p>
             <div className="mt-2">
               <TagSelect applicationId={app.id} currentTags={app.tags ?? []} />
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <StatusSelect applicationId={app.id} currentStatus={app.status} />
             <button
               onClick={() => setShowEdit(true)}

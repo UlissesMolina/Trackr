@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { APPLICATION_STATUSES, STATUS_LABELS, type ApplicationStatus } from "../../lib/constants";
+import { BOARD_STATUSES, STATUS_LABELS, type BoardStatus } from "../../lib/constants";
 
 export interface ApplicationFormData {
   title: string;
@@ -8,7 +8,7 @@ export interface ApplicationFormData {
   salaryMin: string;
   salaryMax: string;
   url: string;
-  status: ApplicationStatus;
+  status: BoardStatus;
   dateApplied: string;
   followUpDate: string;
 }
@@ -70,7 +70,7 @@ export default function ApplicationForm({
         <div className="col-span-2 sm:col-span-1">
           <label className="mb-1 block text-sm font-medium text-text-secondary">Status</label>
           <select value={form.status} onChange={(e) => update("status", e.target.value)} className={INPUT}>
-            {APPLICATION_STATUSES.map((s) => (
+            {BOARD_STATUSES.map((s) => (
               <option key={s} value={s}>{STATUS_LABELS[s]}</option>
             ))}
           </select>

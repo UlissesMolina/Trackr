@@ -15,11 +15,11 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-text-primary">Dashboard</h1>
         <Link
           to="/board"
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+          className="rounded-lg bg-accent px-4 py-2 text-center text-sm font-medium text-white hover:bg-accent-hover sm:w-auto"
         >
           Go to Board
         </Link>
@@ -61,13 +61,13 @@ export default function DashboardPage() {
               <Link
                 key={app.id}
                 to={`/applications/${app.id}`}
-                className="flex items-center justify-between py-3 transition-colors hover:bg-surface-tertiary"
+                className="flex flex-col gap-1 py-3 transition-colors hover:bg-surface-tertiary sm:flex-row sm:items-center sm:justify-between sm:gap-0"
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-text-primary">{app.title}</p>
                   <p className="truncate text-sm text-text-secondary">{app.company}</p>
                 </div>
-                <div className="ml-4 flex items-center gap-3">
+                <div className="flex items-center gap-3 sm:ml-4">
                   <StatusBadge status={app.status} />
                   {app.dateApplied && (
                     <span className="text-xs text-text-tertiary">{formatDate(app.dateApplied)}</span>

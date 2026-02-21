@@ -9,31 +9,54 @@ export const APPLICATION_STATUSES = [
 
 export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];
 
+export const BOARD_STATUSES = [
+  "SAVED",
+  "APPLIED",
+  "INTERVIEW",
+  "OFFER",
+  "REJECTED",
+] as const;
+
+export type BoardStatus = (typeof BOARD_STATUSES)[number];
+
+export function boardStatus(status: ApplicationStatus): BoardStatus {
+  return status === "UNDER_REVIEW" ? "APPLIED" : (status as BoardStatus);
+}
+
 export const STATUS_COLORS: Record<ApplicationStatus, string> = {
   SAVED: "bg-zinc-700/50 text-zinc-300",
   APPLIED: "bg-indigo-500/20 text-indigo-400",
-  UNDER_REVIEW: "bg-amber-500/20 text-amber-400",
+  UNDER_REVIEW: "bg-indigo-500/20 text-indigo-400",
   INTERVIEW: "bg-violet-500/20 text-violet-400",
   OFFER: "bg-emerald-500/20 text-emerald-400",
   REJECTED: "bg-red-500/20 text-red-400",
 };
 
-export const STATUS_DOT_COLORS: Record<ApplicationStatus, string> = {
+export const STATUS_DOT_COLORS: Record<string, string> = {
   SAVED: "bg-zinc-500",
   APPLIED: "bg-indigo-500",
-  UNDER_REVIEW: "bg-amber-500",
+  UNDER_REVIEW: "bg-indigo-500",
   INTERVIEW: "bg-violet-500",
   OFFER: "bg-emerald-500",
   REJECTED: "bg-red-500",
 };
 
-export const STATUS_LABELS: Record<ApplicationStatus, string> = {
+export const STATUS_LABELS: Record<string, string> = {
   SAVED: "Saved",
   APPLIED: "Applied",
-  UNDER_REVIEW: "Under Review",
+  UNDER_REVIEW: "Applied",
   INTERVIEW: "Interview",
   OFFER: "Offer",
   REJECTED: "Rejected",
+};
+
+export const STATUS_BORDER_COLORS: Record<string, string> = {
+  SAVED: "border-l-zinc-500",
+  APPLIED: "border-l-indigo-500",
+  UNDER_REVIEW: "border-l-indigo-500",
+  INTERVIEW: "border-l-violet-500",
+  OFFER: "border-l-emerald-500",
+  REJECTED: "border-l-red-500",
 };
 
 export const INTERVIEW_TYPES = [

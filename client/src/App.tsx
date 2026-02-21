@@ -10,6 +10,7 @@ import ApplicationDetailPage from "./pages/ApplicationDetailPage";
 import DashboardPage from "./pages/DashboardPage";
 import CoverLetterPage from "./pages/CoverLetterPage";
 import ResumePage from "./pages/ResumePage";
+import SankeyPage from "./pages/SankeyPage";
 
 const queryClient = new QueryClient();
 
@@ -43,15 +44,16 @@ function ClerkWithRoutes() {
     >
       <QueryClientProvider client={queryClient}>
         <Routes>
-          <Route path="/landing" element={<LandingPage />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/sign-in/*" element={<SignInPage />} />
           <Route path="/sign-up/*" element={<SignUpPage />} />
           <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<DashboardPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/board" element={<BoardPage />} />
             <Route path="/applications/:id" element={<ApplicationDetailPage />} />
             <Route path="/resume" element={<ResumePage />} />
             <Route path="/cover-letter" element={<CoverLetterPage />} />
+            <Route path="/flow" element={<SankeyPage />} />
           </Route>
         </Routes>
       </QueryClientProvider>

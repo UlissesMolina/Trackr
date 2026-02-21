@@ -133,13 +133,13 @@ export default function LandingPage() {
       {/* Nav */}
       <header className="animate-slide-down fixed inset-x-0 top-0 z-50 border-b border-[#1e293b]/60 bg-[#0a0a0b]/80 backdrop-blur-lg">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link to="/landing" className="py-2">
+          <Link to="/" className="py-2">
             <img src={logo} alt="Trackr" className="h-9" />
           </Link>
           <div className="flex items-center gap-3">
             {isSignedIn ? (
               <Link
-                to="/"
+                to="/dashboard"
                 className="rounded-lg bg-[#f8fafc] px-5 py-2 text-sm font-semibold text-[#0f172a] shadow-sm shadow-white/10 hover:bg-[#e2e8f0]"
               >
                 Open App
@@ -177,21 +177,21 @@ export default function LandingPage() {
             <span className="text-xs font-medium text-[#94a3b8]">Open Source Job Tracker</span>
           </div>
 
-          <h1 className="animate-fade-up text-5xl font-bold leading-tight tracking-tight text-[#f8fafc] sm:text-6xl" style={{ animationDelay: "0.2s" }}>
+          <h1 className="animate-fade-up text-4xl font-bold leading-tight tracking-tight text-[#f8fafc] sm:text-5xl md:text-6xl" style={{ animationDelay: "0.2s" }}>
             Track every application.
             <br />
             <span className="text-[#f8fafc]">Land the job.</span>
           </h1>
 
-          <p className="animate-fade-up mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#94a3b8]" style={{ animationDelay: "0.35s" }}>
-            A minimal, Linear-inspired job tracker with a kanban board, analytics dashboard, and AI-powered cover letter generation.
+          <p className="animate-fade-up mx-auto mt-6 max-w-xl text-base leading-relaxed text-[#94a3b8] sm:text-lg" style={{ animationDelay: "0.35s" }}>
+            A modern job tracker with a kanban board, analytics dashboard, and AI-powered cover letter generation.
           </p>
 
           <div className="mx-auto mt-12 max-w-sm">
             <PipelineDots />
           </div>
 
-          <div className="animate-fade-up mt-10 flex items-center justify-center gap-4" style={{ animationDelay: "0.55s" }}>
+          <div className="animate-fade-up mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4" style={{ animationDelay: "0.55s" }}>
             <Link
               to={isSignedIn ? "/" : "/sign-up"}
               className="rounded-lg bg-[#f8fafc] px-6 py-2.5 text-sm font-semibold text-[#0f172a] shadow-lg shadow-white/5 hover:bg-[#e2e8f0]"
@@ -237,11 +237,9 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-[#1e293b] py-24">
+      <section className="py-24">
         <div className="relative mx-auto max-w-2xl px-6 text-center">
-          <div className="pointer-events-none absolute inset-0 -top-12 overflow-hidden">
-            <div className="absolute left-1/2 top-0 h-[200px] w-[500px] -translate-x-1/2 rounded-full bg-[#1e293b]/30 blur-[80px]" />
-          </div>
+          <div className="pointer-events-none absolute left-1/2 -top-24 h-[400px] w-[800px] -translate-x-1/2 rounded-full bg-[#1e293b]/15 blur-[160px]" />
           <ScrollReveal>
             <div className="relative">
               <h2 className="text-3xl font-bold tracking-tight text-[#f8fafc]">Ready to get organized?</h2>
@@ -262,8 +260,8 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-[#1e293b] py-8">
         <ScrollReveal>
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-6">
-            <img src={logo} alt="Trackr" className="h-12 opacity-40" />
+          <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-6 sm:flex-row sm:justify-between">
+            <img src={logo} alt="Trackr" className="h-10 opacity-40 sm:h-12" />
             <p className="text-xs text-[#475569]">
               Built with React, Express, Prisma &amp; OpenAI.
             </p>

@@ -12,8 +12,22 @@ import dashboardRouter from "./routes/dashboard";
 import aiRouter from "./routes/ai";
 import resumeRouter from "./routes/resume";
 
+process.on("uncaughtException", (err) => {
+  console.error("UNCAUGHT EXCEPTION:", err);
+});
+process.on("unhandledRejection", (err) => {
+  console.error("UNHANDLED REJECTION:", err);
+});
+
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+console.log("ENV check:", {
+  hasDbUrl: !!process.env.DATABASE_URL,
+  hasClerkSecret: !!process.env.CLERK_SECRET_KEY,
+  clientUrl: process.env.CLIENT_URL,
+  port: PORT,
+});
 
 app.use(cors({
   origin: [
@@ -26,8 +40,15 @@ app.use(express.json());
 app.use(generalLimiter);
 app.use(clerkMiddleware());
 
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok" });
+app.get("/health", async (_req, res) => {
+  try {
+    const prisma = (await import("./lib/prisma")).default;
+    await prisma.$queryRawUnsafe("SELECT 1");
+    res.json({ status: "ok", db: "connected" });
+  } catch (err) {
+    console.error("Health check DB error:", err);
+    res.status(500).json({ status: "error", message: String(err) });
+  }
 });
 
 app.use("/api/applications", applicationsRouter);

@@ -193,7 +193,7 @@ export default function LandingPage() {
 
           <div className="animate-fade-up mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4" style={{ animationDelay: "0.55s" }}>
             <Link
-              to={isSignedIn ? "/" : "/sign-up"}
+              to={isSignedIn ? "/dashboard" : "/sign-up"}
               className="rounded-lg bg-[#f8fafc] px-6 py-2.5 text-sm font-semibold text-[#0f172a] shadow-lg shadow-white/5 hover:bg-[#e2e8f0]"
             >
               {isSignedIn ? "Open Dashboard" : "Start Tracking — Free"}
@@ -247,7 +247,7 @@ export default function LandingPage() {
                 <span className="font-semibold text-[#cbd5e1]">Stop losing track of applications in spreadsheets.</span> Start using Trackr today.
               </p>
               <Link
-                to={isSignedIn ? "/" : "/sign-up"}
+                to={isSignedIn ? "/dashboard" : "/sign-up"}
                 className="mt-8 inline-flex rounded-lg bg-[#f8fafc] px-8 py-3 text-sm font-semibold text-[#0f172a] shadow-lg shadow-white/5 hover:bg-[#e2e8f0]"
               >
                 {isSignedIn ? "Go to Dashboard" : "Get Started for Free"}

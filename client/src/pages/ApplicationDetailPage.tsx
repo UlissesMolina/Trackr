@@ -7,6 +7,7 @@ import {
 } from "../hooks/useApplications";
 import StatusBadge from "../components/applications/StatusBadge";
 import StatusSelect from "../components/applications/StatusSelect";
+import { boardStatus } from "../lib/constants";
 import StatusTimeline from "../components/applications/StatusTimeline";
 import NotesList from "../components/applications/NotesList";
 import InterviewList from "../components/applications/InterviewList";
@@ -71,7 +72,7 @@ export default function ApplicationDetailPage() {
     salaryMin: app.salaryMin?.toString() ?? "",
     salaryMax: app.salaryMax?.toString() ?? "",
     url: app.url ?? "",
-    status: app.status,
+    status: boardStatus(app.status),
     dateApplied: app.dateApplied ? app.dateApplied.slice(0, 10) : "",
     followUpDate: app.followUpDate ? app.followUpDate.slice(0, 10) : "",
   };

@@ -82,7 +82,7 @@ export default function ImportModal({ open, onClose }: ImportModalProps) {
       const { data } = await api.post<{ imported: number }>("/applications/import", { applications });
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       reset();

@@ -41,8 +41,7 @@ function ClerkWithRoutes() {
       publishableKey={CLERK_PUBLISHABLE_KEY}
       routerPush={(to) => navigate(to)}
       routerReplace={(to) => navigate(to, { replace: true })}
-      afterSignInUrl="/dashboard"
-      afterSignUpUrl="/dashboard"
+      fallbackRedirectUrl="/dashboard"
     >
       <QueryClientProvider client={queryClient}>
         <Routes>

@@ -1,2 +1,2 @@
-/api/*  https://YOUR-BACKEND-URL.up.railway.app/api/:splat  200
+/api/*  https://trackr-production-4189.up.railway.app/api/:splat  200
 /*      /index.html  200

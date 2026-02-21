@@ -29,6 +29,10 @@ console.log("ENV check:", {
   port: PORT,
 });
 
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok" });
+});
+
 app.use(cors({
   origin: [
     process.env.CLIENT_URL || "http://localhost:5173",
@@ -39,17 +43,6 @@ app.use(cors({
 app.use(express.json());
 app.use(generalLimiter);
 app.use(clerkMiddleware());
-
-app.get("/health", async (_req, res) => {
-  try {
-    const prisma = (await import("./lib/prisma")).default;
-    await prisma.$queryRawUnsafe("SELECT 1");
-    res.json({ status: "ok", db: "connected" });
-  } catch (err) {
-    console.error("Health check DB error:", err);
-    res.status(500).json({ status: "error", message: String(err) });
-  }
-});
 
 app.use("/api/applications", applicationsRouter);
 app.use("/api/applications", notesRouter);

@@ -1,1 +1,2 @@
-/*    /index.html   200
+/api/*  https://YOUR-BACKEND-URL.up.railway.app/api/:splat  200
+/*      /index.html  200

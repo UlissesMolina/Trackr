@@ -30,6 +30,7 @@ console.log("ENV check:", {
 });
 
 app.get("/health", (_req, res) => {
+  console.log("Health check hit");
   res.json({ status: "ok" });
 });
 

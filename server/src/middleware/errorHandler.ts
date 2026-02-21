@@ -6,7 +6,7 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ) {
-  console.error(err.stack);
+  console.error("ERROR:", err.message, err.stack);
 
   if (err.message === "Unauthorized") {
     res.status(401).json({ error: "Unauthorized" });

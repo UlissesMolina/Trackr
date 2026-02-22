@@ -66,7 +66,7 @@ model Tag {
   id          String           @id @default(cuid())
   clerkUserId String
   name        String
-  color       String           @default("#6366f1")
+  color       String           @default("#10b981")
   createdAt   DateTime         @default(now())
 
   applications ApplicationTag[]

@@ -22,9 +22,12 @@ process.on("unhandledRejection", (err) => {
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+app.set("trust proxy", 1);
+
 console.log("ENV check:", {
   hasDbUrl: !!process.env.DATABASE_URL,
   hasClerkSecret: !!process.env.CLERK_SECRET_KEY,
+  hasClerkPublishable: !!process.env.CLERK_PUBLISHABLE_KEY,
   clientUrl: process.env.CLIENT_URL,
   port: PORT,
 });
@@ -42,7 +45,13 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(generalLimiter);
-app.use(clerkMiddleware());
+app.use(clerkMiddleware({
+  authorizedParties: [
+    "https://usetrackr.netlify.app",
+    process.env.CLIENT_URL,
+    "http://localhost:5173",
+  ].filter(Boolean) as string[],
+}));
 
 app.use("/api/applications", applicationsRouter);
 app.use("/api/applications", notesRouter);

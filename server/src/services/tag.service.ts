@@ -15,7 +15,7 @@ export function createTag(
     data: {
       clerkUserId,
       name: data.name.trim(),
-      color: data.color || "#6366f1",
+      color: data.color || "#10b981",
     },
   });
 }

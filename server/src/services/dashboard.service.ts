@@ -35,18 +35,19 @@ export async function getStats(clerkUserId: string) {
 export async function getChartData(clerkUserId: string) {
   const apps = await prisma.application.findMany({
     where: { clerkUserId },
-    select: { createdAt: true },
-    orderBy: { createdAt: "asc" },
+    select: { createdAt: true, dateApplied: true },
   });
 
   const buckets: Record<string, number> = {};
 
   for (const app of apps) {
-    const date = app.createdAt.toISOString().slice(0, 10);
+    const date = (app.dateApplied ?? app.createdAt).toISOString().slice(0, 10);
     buckets[date] = (buckets[date] || 0) + 1;
   }
 
-  return Object.entries(buckets).map(([date, count]) => ({ date, count }));
+  return Object.entries(buckets)
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => a.date.localeCompare(b.date));
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -59,8 +60,8 @@ const STATUS_LABEL: Record<string, string> = {
 
 const STATUS_NODE_COLOR: Record<string, string> = {
   SAVED: "#71717a",
-  APPLIED: "#6366f1",
-  INTERVIEW: "#8b5cf6",
+  APPLIED: "#10b981",
+  INTERVIEW: "#14b8a6",
   OFFER: "#10b981",
   REJECTED: "#ef4444",
 };

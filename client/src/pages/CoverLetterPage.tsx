@@ -141,7 +141,7 @@ export default function CoverLetterPage() {
           </button>
 
           {mutation.isError && (
-            <p className="text-sm text-red-400">Failed to generate. Make sure your OpenAI API key is set in the server .env.</p>
+            <p className="text-sm text-red-400">Failed to generate. Please try again later.</p>
           )}
         </form>
 

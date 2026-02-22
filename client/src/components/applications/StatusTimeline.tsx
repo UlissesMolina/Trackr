@@ -18,15 +18,16 @@ function timeAgo(date: string): string {
 }
 
 export default function StatusTimeline({ statusChanges }: StatusTimelineProps) {
-  if (statusChanges.length === 0) {
+  const safe = Array.isArray(statusChanges) ? statusChanges : [];
+  if (safe.length === 0) {
     return <p className="text-sm text-text-tertiary">No status changes yet.</p>;
   }
 
   return (
     <div className="space-y-0">
-      {statusChanges.map((change, i) => (
+      {safe.map((change, i) => (
         <div key={change.id} className="relative flex gap-3 pb-6 last:pb-0">
-          {i < statusChanges.length - 1 && (
+            {i < safe.length - 1 && (
             <div className="absolute left-[7px] top-4 h-full w-px bg-border-default" />
           )}
           <div className="relative mt-1.5 flex-shrink-0">

@@ -25,6 +25,9 @@ export default function TagSelect({ applicationId, currentTags }: TagSelectProps
   const [showCreate, setShowCreate] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const safeCurrentTags = Array.isArray(currentTags) ? currentTags : [];
+  const safeAllTags = Array.isArray(allTags) ? allTags : [];
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -36,7 +39,7 @@ export default function TagSelect({ applicationId, currentTags }: TagSelectProps
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const appliedTagIds = new Set(currentTags.map((t) => t.tagId));
+  const appliedTagIds = new Set(safeCurrentTags.map((t) => t.tagId));
 
   function handleToggleTag(tagId: string) {
     if (appliedTagIds.has(tagId)) {
@@ -64,7 +67,7 @@ export default function TagSelect({ applicationId, currentTags }: TagSelectProps
   return (
     <div className="relative" ref={dropdownRef}>
       <div className="flex flex-wrap items-center gap-1.5">
-        {currentTags.map(({ tag, tagId }) => (
+        {safeCurrentTags.map(({ tag, tagId }) => (
           <span
             key={tagId}
             className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium text-white"
@@ -92,9 +95,9 @@ export default function TagSelect({ applicationId, currentTags }: TagSelectProps
 
       {open && (
         <div className="absolute left-0 top-full z-20 mt-2 w-56 rounded-lg border border-border-default bg-surface-secondary p-2 shadow-lg">
-          {allTags.length > 0 && (
+          {safeAllTags.length > 0 && (
             <div className="mb-2 max-h-40 space-y-0.5 overflow-y-auto">
-              {allTags.map((tag) => (
+              {safeAllTags.map((tag) => (
                 <button
                   key={tag.id}
                   onClick={() => handleToggleTag(tag.id)}

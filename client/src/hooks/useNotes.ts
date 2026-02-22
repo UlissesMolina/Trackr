@@ -7,7 +7,7 @@ export function useNotes(applicationId: string) {
     queryKey: ["notes", applicationId],
     queryFn: async () => {
       const { data } = await api.get(`/applications/${applicationId}/notes`);
-      return data;
+      return Array.isArray(data) ? data : [];
     },
     enabled: !!applicationId,
   });

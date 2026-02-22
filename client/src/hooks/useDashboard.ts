@@ -22,7 +22,7 @@ export function useDashboardChart() {
     queryKey: ["dashboard", "chart"],
     queryFn: async () => {
       const { data } = await api.get("/dashboard/chart");
-      return data;
+      return Array.isArray(data) ? data : [];
     },
   });
 }
@@ -48,7 +48,9 @@ export function useSankeyData() {
     queryKey: ["dashboard", "sankey"],
     queryFn: async () => {
       const { data } = await api.get("/dashboard/sankey");
-      return data;
+      const nodes = Array.isArray(data?.nodes) ? data.nodes : [];
+      const links = Array.isArray(data?.links) ? data.links : [];
+      return { nodes, links };
     },
   });
 }

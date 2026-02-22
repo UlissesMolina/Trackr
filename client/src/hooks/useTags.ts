@@ -7,7 +7,7 @@ export function useTags() {
     queryKey: ["tags"],
     queryFn: async () => {
       const { data } = await api.get("/tags");
-      return data;
+      return Array.isArray(data) ? data : [];
     },
   });
 }

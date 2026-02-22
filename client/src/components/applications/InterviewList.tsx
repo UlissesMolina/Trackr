@@ -88,7 +88,7 @@ export default function InterviewList({ applicationId }: InterviewListProps) {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="rounded-md bg-violet-500/20 px-2 py-0.5 text-xs font-medium text-violet-400">
+                      <span className="rounded-md bg-teal-500/20 px-2 py-0.5 text-xs font-medium text-teal-400">
                         {INTERVIEW_TYPE_LABELS[interview.type as InterviewType]}
                       </span>
                       {isPast && (

@@ -13,6 +13,15 @@ export function formatShortDate(date: string | Date): string {
   }).format(new Date(date));
 }
 
+export function formatDateTime(date: string | Date): string {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(date));
+}
+
 export function formatSalary(amount: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",

@@ -8,7 +8,7 @@ export function useInterviews(applicationId: string) {
     queryKey: ["interviews", applicationId],
     queryFn: async () => {
       const { data } = await api.get(`/applications/${applicationId}/interviews`);
-      return data;
+      return Array.isArray(data) ? data : [];
     },
     enabled: !!applicationId,
   });

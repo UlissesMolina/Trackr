@@ -14,7 +14,8 @@ interface ApplicationsChartProps {
 }
 
 export default function ApplicationsChart({ data }: ApplicationsChartProps) {
-  if (data.length === 0) {
+  const safeData = Array.isArray(data) ? data : [];
+  if (safeData.length === 0) {
     return (
       <div className="flex h-64 items-center justify-center rounded-xl border border-border-default bg-surface-secondary">
         <p className="text-sm text-text-tertiary">No application data to chart yet.</p>
@@ -22,7 +23,7 @@ export default function ApplicationsChart({ data }: ApplicationsChartProps) {
     );
   }
 
-  const formatted = data.map((d) => ({
+  const formatted = safeData.map((d) => ({
     ...d,
     label: new Date(d.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
   }));
@@ -36,8 +37,8 @@ export default function ApplicationsChart({ data }: ApplicationsChartProps) {
         <AreaChart data={formatted}>
           <defs>
             <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#2e2e35" />
@@ -47,7 +48,7 @@ export default function ApplicationsChart({ data }: ApplicationsChartProps) {
             contentStyle={{ backgroundColor: "#1a1a1f", border: "1px solid #2e2e35", borderRadius: "8px", color: "#ededef" }}
             labelStyle={{ color: "#8a8a96" }}
           />
-          <Area type="monotone" dataKey="count" stroke="#6366f1" strokeWidth={2} fill="url(#colorCount)" name="Applications" />
+          <Area type="monotone" dataKey="count" stroke="#10b981" strokeWidth={2} fill="url(#colorCount)" name="Applications" />
         </AreaChart>
       </ResponsiveContainer>
     </div>

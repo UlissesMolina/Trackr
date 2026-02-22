@@ -23,7 +23,7 @@ function getFollowUpIndicator(followUpDate: string | null) {
 
 export default function ApplicationCard({ application }: ApplicationCardProps) {
   const followUp = getFollowUpIndicator(application.followUpDate);
-  const tags = application.tags ?? [];
+  const tags = Array.isArray(application.tags) ? application.tags : [];
   const borderColor = STATUS_BORDER_COLORS[application.status] ?? "border-l-zinc-500";
 
   return (

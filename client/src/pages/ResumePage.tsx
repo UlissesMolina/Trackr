@@ -35,11 +35,13 @@ export default function ResumePage() {
   function handleFileUpload(file: File) {
     const validTypes = [
       "application/pdf",
+      "application/x-pdf",
       "text/plain",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "application/msword",
     ];
-    if (!validTypes.includes(file.type)) {
+    const validExt = /\.(pdf|docx?|doc|txt)$/i.test(file.name);
+    if (!validTypes.includes(file.type) && !validExt) {
       alert("Only PDF, DOCX, DOC, and TXT files are supported.");
       return;
     }
@@ -137,7 +139,11 @@ export default function ResumePage() {
           </div>
 
           {uploadMutation.isError && (
-            <p className="mt-2 text-sm text-red-400">Upload failed. Make sure it's a valid PDF, DOCX, DOC, or TXT file.</p>
+            <p className="mt-2 text-sm text-red-400">
+              {uploadMutation.error && typeof uploadMutation.error === "object" && "response" in uploadMutation.error
+                ? (uploadMutation.error as { response?: { data?: { error?: string } } }).response?.data?.error ?? "Upload failed."
+                : "Upload failed. Make sure it's a valid PDF, DOCX, DOC, or TXT file."}
+            </p>
           )}
 
           {resume?.fileName && (

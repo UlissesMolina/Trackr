@@ -16,6 +16,7 @@ import ApplicationForm, {
   type ApplicationFormData,
 } from "../components/applications/ApplicationForm";
 import Modal from "../components/ui/Modal";
+import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { formatDate, formatSalary } from "../lib/utils";
 
 export default function ApplicationDetailPage() {
@@ -25,6 +26,7 @@ export default function ApplicationDetailPage() {
   const updateMutation = useUpdateApplication();
   const deleteMutation = useDeleteApplication();
   const [showEdit, setShowEdit] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   function handleUpdate(form: ApplicationFormData) {
     updateMutation.mutate(
@@ -44,8 +46,14 @@ export default function ApplicationDetailPage() {
   }
 
   function handleDelete() {
-    if (!confirm("Are you sure you want to delete this application?")) return;
-    deleteMutation.mutate(id!, { onSuccess: () => navigate("/board") });
+    setShowDeleteConfirm(true);
+  }
+
+  function confirmDelete() {
+    deleteMutation.mutate(id!, {
+      onSuccess: () => navigate("/board"),
+      onSettled: () => setShowDeleteConfirm(false),
+    });
   }
 
   if (isLoading) {
@@ -125,7 +133,7 @@ export default function ApplicationDetailPage() {
               disabled={deleteMutation.isPending}
               className="rounded-lg border border-red-500/30 px-3 py-1.5 text-sm font-medium text-red-400 hover:bg-red-500/10 disabled:opacity-50"
             >
-              Delete
+              {deleteMutation.isPending ? "Deleting…" : "Delete"}
             </button>
           </div>
         </div>
@@ -231,6 +239,18 @@ export default function ApplicationDetailPage() {
           loading={updateMutation.isPending}
         />
       </Modal>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDelete}
+        title="Delete application?"
+        message="Are you sure you want to delete this application? This cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+        loading={deleteMutation.isPending}
+      />
     </div>
   );
 }

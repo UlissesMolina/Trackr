@@ -11,6 +11,7 @@ import tagsRouter from "./routes/tags";
 import dashboardRouter from "./routes/dashboard";
 import aiRouter from "./routes/ai";
 import resumeRouter from "./routes/resume";
+import jobsRouter from "./routes/jobs";
 
 process.on("uncaughtException", (err) => {
   console.error("UNCAUGHT EXCEPTION:", err);
@@ -60,6 +61,7 @@ app.use("/api/tags", tagsRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/ai", aiLimiter, aiRouter);
 app.use("/api/resume", resumeRouter);
+app.use("/api/jobs", jobsRouter);
 
 app.use(errorHandler);
 

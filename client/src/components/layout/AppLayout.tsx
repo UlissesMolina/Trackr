@@ -8,6 +8,7 @@ import api from "../../lib/api";
 const NAV_ITEMS = [
   { label: "Dashboard", path: "/dashboard" },
   { label: "Board", path: "/board" },
+  { label: "Jobs", path: "/jobs" },
   { label: "Flow", path: "/flow" },
   { label: "Resume", path: "/resume" },
   { label: "Cover Letter", path: "/cover-letter" },

@@ -311,24 +311,34 @@ export default function SankeyPage() {
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-border-default border-t-accent" />
             </div>
           ) : !hasData ? (
-            <div className="flex h-[500px] flex-col items-center justify-center gap-3">
-              <svg className="h-12 w-12 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
-              </svg>
-              <p className="text-sm text-text-tertiary">
-                {hiddenNodes.size > 0
-                  ? "All visible stages have been hidden. Toggle some stages back on."
-                  : "No flow data yet. Start moving applications between stages to see your Sankey diagram."}
-              </p>
+            <div className="flex h-[500px] flex-col items-center justify-center gap-4 px-6">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-tertiary text-text-tertiary">
+                <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                </svg>
+              </div>
+              <div className="text-center">
+                <p className="text-base font-semibold text-text-primary">
+                  {hiddenNodes.size > 0 ? "All stages hidden" : "No flow data yet"}
+                </p>
+                <p className="mt-1 text-sm text-text-secondary">
+                  {hiddenNodes.size > 0
+                    ? "Toggle some stages back on to see your diagram."
+                    : "Move applications between stages on the board to build your flow."}
+                </p>
+              </div>
               {hiddenNodes.size > 0 ? (
                 <button
                   onClick={() => setHiddenNodes(new Set())}
-                  className="mt-1 text-sm text-accent hover:underline"
+                  className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
                 >
                   Show all stages
                 </button>
               ) : (
-                <Link to="/board" className="mt-1 text-sm text-accent hover:underline">
+                <Link
+                  to="/board"
+                  className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+                >
                   Go to Board
                 </Link>
               )}

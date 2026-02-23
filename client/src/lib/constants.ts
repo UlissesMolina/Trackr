@@ -27,7 +27,7 @@ export const STATUS_COLORS: Record<ApplicationStatus, string> = {
   SAVED: "bg-zinc-700/50 text-zinc-300",
   APPLIED: "bg-emerald-500/20 text-emerald-400",
   UNDER_REVIEW: "bg-emerald-500/20 text-emerald-400",
-  INTERVIEW: "bg-teal-500/20 text-teal-400",
+  INTERVIEW: "bg-amber-500/20 text-amber-400",
   OFFER: "bg-emerald-500/20 text-emerald-400",
   REJECTED: "bg-red-500/20 text-red-400",
 };
@@ -36,7 +36,7 @@ export const STATUS_DOT_COLORS: Record<string, string> = {
   SAVED: "bg-zinc-500",
   APPLIED: "bg-emerald-500",
   UNDER_REVIEW: "bg-emerald-500",
-  INTERVIEW: "bg-teal-500",
+  INTERVIEW: "bg-amber-500",
   OFFER: "bg-emerald-500",
   REJECTED: "bg-red-500",
 };
@@ -54,7 +54,7 @@ export const STATUS_BORDER_COLORS: Record<string, string> = {
   SAVED: "border-l-zinc-500",
   APPLIED: "border-l-emerald-500",
   UNDER_REVIEW: "border-l-emerald-500",
-  INTERVIEW: "border-l-teal-500",
+  INTERVIEW: "border-l-amber-500",
   OFFER: "border-l-emerald-500",
   REJECTED: "border-l-red-500",
 };

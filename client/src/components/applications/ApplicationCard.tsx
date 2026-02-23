@@ -15,9 +15,9 @@ function getFollowUpIndicator(followUpDate: string | null) {
   followUp.setHours(0, 0, 0, 0);
   const diff = followUp.getTime() - today.getTime();
   const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-  if (days < 0) return { label: "Overdue", color: "text-red-400" };
-  if (days === 0) return { label: "Today", color: "text-amber-400" };
-  if (days <= 2) return { label: `${days}d`, color: "text-amber-400" };
+  if (days < 0) return { label: "Overdue", color: "text-red-400", bg: "bg-red-500/15" };
+  if (days === 0) return { label: "Today", color: "text-amber-400", bg: "" };
+  if (days <= 2) return { label: `${days}d`, color: "text-amber-400", bg: "" };
   return null;
 }
 
@@ -50,7 +50,7 @@ export default function ApplicationCard({ application }: ApplicationCardProps) {
           {application.title}
         </h3>
         {followUp && (
-          <span className={`flex shrink-0 items-center gap-0.5 text-[10px] font-medium ${followUp.color}`}>
+          <span className={`flex shrink-0 items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-medium ${followUp.color} ${followUp.bg ?? ""}`}>
             <svg className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -59,10 +59,20 @@ export default function ApplicationCard({ application }: ApplicationCardProps) {
         )}
       </div>
 
-      <p className="mt-0.5 truncate text-xs text-text-secondary">
-        {application.company}
+      <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-text-secondary">
+        <span className="truncate">{application.company}</span>
         {application.dateApplied && (
-          <span className="text-text-tertiary"> · {formatShortDate(application.dateApplied)}</span>
+          <span className="shrink-0 text-text-tertiary">
+            · {(() => {
+              const applied = new Date(application.dateApplied!);
+              const now = new Date();
+              const days = Math.floor((now.getTime() - applied.getTime()) / (1000 * 60 * 60 * 24));
+              if (days === 0) return "Today";
+              if (days === 1) return "1d ago";
+              if (days < 30) return `${days}d ago`;
+              return formatShortDate(application.dateApplied);
+            })()}
+          </span>
         )}
       </p>
     </Link>

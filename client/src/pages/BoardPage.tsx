@@ -263,13 +263,13 @@ export default function BoardPage() {
                 ))}
 
                 {cards.length === 0 && (
-                  <div className={`flex flex-1 items-center justify-center rounded-lg border-2 border-dashed p-6 ${
-                    isDropTarget ? "border-accent/40" : "border-border-default"
+                  <div className={`flex flex-1 flex-col items-center justify-center rounded-lg p-6 ${
+                    isDropTarget ? "border-2 border-accent/40 bg-accent/5" : "border border-border-default bg-surface-tertiary/30"
                   }`}>
-                    <p className="text-center text-xs text-text-tertiary">
+                    <p className="text-center text-sm text-text-secondary">
                       {search || dateFilter !== "all"
                         ? "No matches"
-                        : "Drag cards here or add a new application"}
+                        : "Drop cards here or add a new application"}
                     </p>
                   </div>
                 )}

@@ -6,6 +6,7 @@ import { useApplications } from "../hooks/useApplications";
 import StatsCards from "../components/dashboard/StatsCards";
 import ApplicationsChart from "../components/dashboard/ApplicationsChart";
 import StatusBadge from "../components/applications/StatusBadge";
+import EmptyState from "../components/ui/EmptyState";
 import { formatDate, formatShortDate, formatDateTime } from "../lib/utils";
 import { INTERVIEW_TYPE_LABELS } from "../lib/constants";
 import type { Application, Interview } from "../types";
@@ -41,7 +42,7 @@ function getContextualSubtitle(
     return `You have ${followUpsDueThisWeek} follow-up${followUpsDueThisWeek === 1 ? "" : "s"} due this week`;
   }
   if (inFlight > 0) {
-    return `${inFlight} application${inFlight === 1 ? "" : "s"} Keep going`;
+    return `${inFlight} application${inFlight === 1 ? "" : "s"} · Keep going`;
   }
   if (stats && stats.totalApplications > 0) {
     return "Track your job search progress";
@@ -124,19 +125,11 @@ export default function DashboardPage() {
   return (
     <div>
       {/* Header with greeting */}
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">
-            {greeting}, {firstName}
-          </h1>
-          <p className="mt-1 text-sm text-text-secondary">{subtitle}</p>
-        </div>
-        <Link
-          to="/board"
-          className="shrink-0 rounded-lg bg-accent px-4 py-2 text-center text-sm font-medium text-white transition-colors hover:bg-accent-hover sm:self-center"
-        >
-          Go to Board
-        </Link>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-text-primary">
+          {greeting}, {firstName}
+        </h1>
+        <p className="mt-1 text-sm text-text-secondary">{subtitle}</p>
       </div>
 
       {/* Recent Applications — Hero (first content) */}
@@ -152,12 +145,23 @@ export default function DashboardPage() {
             ))}
           </div>
         ) : recentApps.length === 0 ? (
-          <p className="text-sm text-text-tertiary">
-            No applications yet.{" "}
-            <Link to="/board" className="text-accent hover:underline">
-              Add your first one
-            </Link>
-          </p>
+          <EmptyState
+            icon={
+              <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            }
+            headline="No applications yet"
+            description="Add your first job application to start tracking your search."
+            action={
+              <Link
+                to="/board"
+                className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+              >
+                Add application
+              </Link>
+            }
+          />
         ) : (
           <div className="divide-y divide-border-default">
             {recentApps.map((app) => (

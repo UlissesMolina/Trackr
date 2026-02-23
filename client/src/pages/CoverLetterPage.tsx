@@ -1,6 +1,6 @@
 import { useState, useEffect, type FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import api from "../lib/api";
 import { useApplications } from "../hooks/useApplications";
 import { useResume } from "../hooks/useResume";
@@ -13,13 +13,19 @@ const INPUT =
   "w-full rounded-lg border border-border-default bg-surface-tertiary px-3 py-2 text-sm text-text-primary placeholder-text-tertiary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
 
 export default function CoverLetterPage() {
+  const [searchParams] = useSearchParams();
+  const preselectedId = searchParams.get("applicationId") ?? "";
   const { data: applications = [] } = useApplications();
   const { data: resume } = useResume();
   const [jobDescription, setJobDescription] = useState("");
   const [resumeText, setResumeText] = useState("");
-  const [applicationId, setApplicationId] = useState("");
+  const [applicationId, setApplicationId] = useState(preselectedId);
   const [result, setResult] = useState("");
   const [useSavedResume, setUseSavedResume] = useState(true);
+
+  useEffect(() => {
+    if (preselectedId) setApplicationId(preselectedId);
+  }, [preselectedId]);
 
   useEffect(() => {
     if (resume?.content && useSavedResume) {

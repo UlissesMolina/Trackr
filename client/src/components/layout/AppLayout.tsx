@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UserButton } from "@clerk/clerk-react";
+import { UserButton, useClerk } from "@clerk/clerk-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthToken } from "../../hooks/useAuthToken";
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
 
 function SettingsPanel({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
+  const { openUserProfile, signOut } = useClerk();
   const [exporting, setExporting] = useState(false);
 
   async function handleExportCsv() {
@@ -55,7 +56,31 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
   return (
     <>
       <div className="fixed inset-0 z-20" onClick={onClose} />
-      <div className="absolute bottom-12 left-2 right-2 z-30 rounded-lg border border-border-default bg-surface-elevated p-1 shadow-xl">
+      <div className="absolute bottom-12 left-2 right-2 z-30 animate-settings-pop rounded-lg border border-border-default bg-surface-elevated p-1 shadow-xl">
+        <div className="border-b border-border-default px-3 py-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">Account</p>
+        </div>
+        <button
+          onClick={() => { openUserProfile(); onClose(); }}
+          className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm text-text-secondary hover:bg-surface-tertiary hover:text-text-primary"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.79 17.79 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+          </svg>
+          Manage account
+        </button>
+        <button
+          onClick={() => signOut({ redirectUrl: "/" })}
+          className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm text-text-secondary hover:bg-surface-tertiary hover:text-text-primary"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v3.75M9 12L3 9m0 0l6-3M3 9v12a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 21V9" />
+          </svg>
+          Sign out
+        </button>
+        <div className="border-b border-border-default px-3 py-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">Data</p>
+        </div>
         <button
           onClick={handleExportCsv}
           disabled={exporting}
@@ -75,6 +100,9 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
           </svg>
           Refresh data
         </button>
+        <div className="border-b border-border-default px-3 py-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">Links</p>
+        </div>
         <a
           href="https://github.com/UlissesMolina/Trackr"
           target="_blank"

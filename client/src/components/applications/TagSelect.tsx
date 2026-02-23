@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import {
   useTags,
   useCreateTag,
+  useDeleteTag,
   useAddTagToApplication,
   useRemoveTagFromApplication,
 } from "../../hooks/useTags";
@@ -16,6 +17,7 @@ interface TagSelectProps {
 export default function TagSelect({ applicationId, currentTags }: TagSelectProps) {
   const { data: allTags = [] } = useTags();
   const createTagMutation = useCreateTag();
+  const deleteTagMutation = useDeleteTag();
   const addMutation = useAddTagToApplication();
   const removeMutation = useRemoveTagFromApplication();
 
@@ -47,6 +49,12 @@ export default function TagSelect({ applicationId, currentTags }: TagSelectProps
     } else {
       addMutation.mutate({ applicationId, tagId });
     }
+  }
+
+  function handleDeleteTag(e: React.MouseEvent, tagId: string, tagName: string) {
+    e.stopPropagation();
+    if (!confirm(`Delete tag "${tagName}"? This will remove it from all applications.`)) return;
+    deleteTagMutation.mutate(tagId);
   }
 
   function handleCreateTag() {
@@ -98,22 +106,36 @@ export default function TagSelect({ applicationId, currentTags }: TagSelectProps
           {safeAllTags.length > 0 && (
             <div className="mb-2 max-h-40 space-y-0.5 overflow-y-auto">
               {safeAllTags.map((tag) => (
-                <button
+                <div
                   key={tag.id}
-                  onClick={() => handleToggleTag(tag.id)}
-                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-surface-tertiary"
+                  className="group flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-surface-tertiary"
                 >
-                  <span
-                    className="h-3 w-3 shrink-0 rounded-full"
-                    style={{ backgroundColor: tag.color }}
-                  />
-                  <span className="truncate text-text-primary">{tag.name}</span>
-                  {appliedTagIds.has(tag.id) && (
-                    <svg className="ml-auto h-4 w-4 shrink-0 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  <button
+                    onClick={() => handleToggleTag(tag.id)}
+                    className="flex min-w-0 flex-1 items-center gap-2 text-left text-sm"
+                  >
+                    <span
+                      className="h-3 w-3 shrink-0 rounded-full"
+                      style={{ backgroundColor: tag.color }}
+                    />
+                    <span className="truncate text-text-primary">{tag.name}</span>
+                    {appliedTagIds.has(tag.id) && (
+                      <svg className="ml-auto h-4 w-4 shrink-0 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                  <button
+                    onClick={(e) => handleDeleteTag(e, tag.id, tag.name)}
+                    disabled={deleteTagMutation.isPending}
+                    className="shrink-0 rounded p-0.5 text-text-tertiary opacity-0 transition-opacity hover:bg-red-500/20 hover:text-red-400 group-hover:opacity-100 disabled:opacity-50"
+                    title="Delete tag"
+                  >
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                     </svg>
-                  )}
-                </button>
+                  </button>
+                </div>
               ))}
             </div>
           )}

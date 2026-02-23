@@ -48,6 +48,21 @@ body {
   }
 }
 
+@keyframes settings-pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-settings-pop {
+  animation: settings-pop 0.2s ease-out both;
+}
+
 @keyframes draw-line {
   from { stroke-dashoffset: 400; }
   to { stroke-dashoffset: 0; }

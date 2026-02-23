@@ -192,7 +192,15 @@ export default function ApplicationDetailPage() {
             {app.coverLetter ? (
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-primary">{app.coverLetter}</p>
             ) : (
-              <p className="text-sm text-text-tertiary">No cover letter yet. Use the AI Cover Letter Generator to create one.</p>
+              <Link
+                to={`/cover-letter?applicationId=${app.id}`}
+                className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                Generate with AI
+              </Link>
             )}
           </div>
 

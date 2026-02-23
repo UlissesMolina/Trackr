@@ -61,7 +61,7 @@ const STATUS_LABEL: Record<string, string> = {
 const STATUS_NODE_COLOR: Record<string, string> = {
   SAVED: "#71717a",
   APPLIED: "#10b981",
-  INTERVIEW: "#14b8a6",
+  INTERVIEW: "#f59e0b",
   OFFER: "#10b981",
   REJECTED: "#ef4444",
 };

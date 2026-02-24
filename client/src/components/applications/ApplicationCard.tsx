@@ -61,16 +61,17 @@ export default function ApplicationCard({ application }: ApplicationCardProps) {
 
       <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-text-secondary">
         <span className="truncate">{application.company}</span>
-        {application.dateApplied && (
+        {(application.dateApplied ?? application.createdAt) && (
           <span className="shrink-0 text-text-tertiary">
             · {(() => {
-              const applied = new Date(application.dateApplied!);
+              const date = application.dateApplied ?? application.createdAt!;
+              const applied = new Date(date);
               const now = new Date();
               const days = Math.floor((now.getTime() - applied.getTime()) / (1000 * 60 * 60 * 24));
               if (days === 0) return "Today";
               if (days === 1) return "1d ago";
               if (days < 30) return `${days}d ago`;
-              return formatShortDate(application.dateApplied);
+              return formatShortDate(date);
             })()}
           </span>
         )}

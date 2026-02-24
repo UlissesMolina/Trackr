@@ -282,7 +282,7 @@ export default function JobFinderPage() {
             </svg>
           }
           headline="No matches"
-          subline="Try a different search or category."
+          description="Try a different search or category."
         />
       )}
 

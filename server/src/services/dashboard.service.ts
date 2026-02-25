@@ -54,20 +54,39 @@ const FLOW_LABELS: Record<string, string> = {
   APPLIED: "Applied",
   REJECTED: "Rejected",
   GHOSTED_WAITING: "Ghosted / Waiting",
+  INTERVIEW: "Interview",
+  OFFER: "Offer",
 };
 
 const FLOW_NODE_COLORS: Record<string, string> = {
   APPLIED: "#10b981",
   REJECTED: "#ef4444",
   GHOSTED_WAITING: "#94a3b8",
+  INTERVIEW: "#f59e0b",
+  OFFER: "#10b981",
 };
 
-const FLOW_ORDER = ["APPLIED", "REJECTED", "GHOSTED_WAITING"];
+const FLOW_ORDER = ["APPLIED", "GHOSTED_WAITING", "INTERVIEW", "OFFER", "REJECTED"];
+
+function reachedInterview(
+  status: string,
+  statusChanges: Array<{ fromStatus: string; toStatus: string }>
+): boolean {
+  if (status === "INTERVIEW" || status === "OFFER") return true;
+  return statusChanges.some(
+    (sc) => sc.fromStatus === "INTERVIEW" || sc.toStatus === "INTERVIEW"
+  );
+}
 
 export async function getSankeyData(clerkUserId: string) {
   const applications = await prisma.application.findMany({
     where: { clerkUserId },
-    select: { status: true },
+    select: {
+      status: true,
+      statusChanges: {
+        select: { fromStatus: true, toStatus: true },
+      },
+    },
   });
 
   // Only include applications that have been applied (exclude SAVED)
@@ -84,28 +103,61 @@ export async function getSankeyData(clerkUserId: string) {
     return { nodes: [], links: [] };
   }
 
-  const rejectedCount = applied.filter((a) => a.status === "REJECTED").length;
   const ghostedWaitingCount = applied.filter(
+    (a) => a.status === "APPLIED" || a.status === "UNDER_REVIEW"
+  ).length;
+
+  const rejectedBeforeInterview = applied.filter(
     (a) =>
-      a.status === "APPLIED" ||
-      a.status === "UNDER_REVIEW" ||
-      a.status === "INTERVIEW" ||
-      a.status === "OFFER"
+      a.status === "REJECTED" &&
+      !reachedInterview(a.status, a.statusChanges)
+  ).length;
+
+  const reachedInterviewCount = applied.filter((a) =>
+    reachedInterview(a.status, a.statusChanges)
+  ).length;
+
+  const offerCount = applied.filter((a) => a.status === "OFFER").length;
+  const rejectedAfterInterview = applied.filter(
+    (a) =>
+      a.status === "REJECTED" &&
+      reachedInterview(a.status, a.statusChanges)
   ).length;
 
   const links: Array<{ source: string; target: string; value: number }> = [];
-  if (rejectedCount > 0) {
-    links.push({
-      source: FLOW_LABELS.APPLIED,
-      target: FLOW_LABELS.REJECTED,
-      value: rejectedCount,
-    });
-  }
   if (ghostedWaitingCount > 0) {
     links.push({
       source: FLOW_LABELS.APPLIED,
       target: FLOW_LABELS.GHOSTED_WAITING,
       value: ghostedWaitingCount,
+    });
+  }
+  if (rejectedBeforeInterview > 0) {
+    links.push({
+      source: FLOW_LABELS.APPLIED,
+      target: FLOW_LABELS.REJECTED,
+      value: rejectedBeforeInterview,
+    });
+  }
+  if (reachedInterviewCount > 0) {
+    links.push({
+      source: FLOW_LABELS.APPLIED,
+      target: FLOW_LABELS.INTERVIEW,
+      value: reachedInterviewCount,
+    });
+  }
+  if (offerCount > 0) {
+    links.push({
+      source: FLOW_LABELS.INTERVIEW,
+      target: FLOW_LABELS.OFFER,
+      value: offerCount,
+    });
+  }
+  if (rejectedAfterInterview > 0) {
+    links.push({
+      source: FLOW_LABELS.INTERVIEW,
+      target: FLOW_LABELS.REJECTED,
+      value: rejectedAfterInterview,
     });
   }
 

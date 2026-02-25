@@ -88,6 +88,7 @@ export function useUpdateApplicationStatus() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
       queryClient.invalidateQueries({ queryKey: ["applications", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }

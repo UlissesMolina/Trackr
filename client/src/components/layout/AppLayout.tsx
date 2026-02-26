@@ -26,11 +26,24 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
       const apps = data as Record<string, unknown>[];
       if (apps.length === 0) return;
 
-      const cols = ["title", "company", "location", "status", "dateApplied", "url", "salaryMin", "salaryMax"];
-      const header = cols.join(",");
+      const cols: { key: string; label: string }[] = [
+        { key: "title", label: "Title" },
+        { key: "company", label: "Company" },
+        { key: "location", label: "Location" },
+        { key: "status", label: "Status" },
+        { key: "dateApplied", label: "Date Applied" },
+        { key: "url", label: "URL" },
+        { key: "salaryMin", label: "Salary Min" },
+        { key: "salaryMax", label: "Salary Max" },
+      ];
+      const header = cols.map((c) => c.label).join(",");
       const rows = apps.map((a) =>
-        cols.map((c) => {
-          const v = a[c] ?? "";
+        cols.map(({ key }) => {
+          let v = a[key] ?? "";
+          if (key === "dateApplied" && v) {
+            const str = String(v);
+            v = str.slice(0, 10);
+          }
           return `"${String(v).replace(/"/g, '""')}"`;
         }).join(",")
       );

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../lib/api";
 import type { Application } from "../types";
-import type { ApplicationStatus } from "../lib/constants";
+import type { ApplicationStatus, ApplicationPriority } from "../lib/constants";
 
 export function useApplications() {
   return useQuery<Application[]>({
@@ -36,6 +36,7 @@ export function useCreateApplication() {
       salaryMax?: number;
       url?: string;
       status?: ApplicationStatus;
+      priority?: ApplicationPriority | null;
       dateApplied?: string;
       followUpDate?: string;
     }) => {
@@ -63,6 +64,7 @@ export function useUpdateApplication() {
       salaryMin?: number | null;
       salaryMax?: number | null;
       url?: string | null;
+      priority?: ApplicationPriority | null;
       dateApplied?: string | null;
       followUpDate?: string | null;
       coverLetter?: string | null;

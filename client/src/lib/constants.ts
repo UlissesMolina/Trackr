@@ -79,6 +79,21 @@ export const INTERVIEW_TYPE_LABELS: Record<InterviewType, string> = {
   OTHER: "Other",
 };
 
+export const PRIORITY_LEVELS = ["HIGH", "MEDIUM", "LOW"] as const;
+export type ApplicationPriority = (typeof PRIORITY_LEVELS)[number];
+
+export const PRIORITY_LABELS: Record<ApplicationPriority, string> = {
+  HIGH: "High",
+  MEDIUM: "Medium",
+  LOW: "Low",
+};
+
+export const PRIORITY_DOT_COLORS: Record<ApplicationPriority, string> = {
+  HIGH: "bg-red-500",
+  MEDIUM: "bg-amber-500",
+  LOW: "bg-emerald-500",
+};
+
 export const TAG_COLORS = [
   { name: "Emerald", value: "#10b981" },
   { name: "Teal", value: "#14b8a6" },

@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import api from "../lib/api";
 
+export type JobSource = "simplify" | "hiringcafe";
+
 export interface JobListing {
   id: string;
   company_name: string;
@@ -13,6 +15,7 @@ export interface JobListing {
 }
 
 export function useJobs(options: {
+  source?: JobSource;
   category?: string;
   roleType?: string;
   search?: string;
@@ -25,6 +28,7 @@ export function useJobs(options: {
     queryKey: ["jobs", options],
     queryFn: async () => {
       const params = new URLSearchParams();
+      if (options.source) params.set("source", options.source);
       if (options.category) params.set("category", options.category);
       if (options.roleType) params.set("roleType", options.roleType);
       if (options.search) params.set("search", options.search);

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import type { Application } from "../../types";
 import { formatShortDate } from "../../lib/utils";
-import { STATUS_BORDER_COLORS } from "../../lib/constants";
+import { STATUS_BORDER_COLORS, PRIORITY_DOT_COLORS } from "../../lib/constants";
 
 interface ApplicationCardProps {
   application: Application;
@@ -60,6 +60,12 @@ export default function ApplicationCard({ application }: ApplicationCardProps) {
       </div>
 
       <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-text-secondary">
+        {application.priority && (
+          <span
+            className={`shrink-0 inline-block h-1.5 w-1.5 rounded-full ${PRIORITY_DOT_COLORS[application.priority]}`}
+            title={application.priority}
+          />
+        )}
         <span className="truncate">{application.company}</span>
         {(application.dateApplied ?? application.createdAt) && (
           <span className="shrink-0 text-text-tertiary">

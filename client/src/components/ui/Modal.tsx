@@ -24,7 +24,7 @@ export default function Modal({ open, onClose, title, children }: ModalProps) {
     <div
       ref={overlayRef}
       onClick={(e) => e.target === overlayRef.current && onClose()}
-      className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-black/60 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-black/60 p-0 sm:items-start sm:justify-center sm:pt-8 sm:pb-8 sm:px-4"
     >
       <div className="w-full max-h-[90vh] overflow-y-auto rounded-t-xl border border-border-default bg-surface-secondary shadow-2xl sm:max-w-lg sm:rounded-xl">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border-default bg-surface-secondary px-5 py-4 sm:px-6">

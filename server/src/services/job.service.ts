@@ -1,6 +1,10 @@
 const LISTINGS_URL =
   "https://raw.githubusercontent.com/SimplifyJobs/Summer2026-Internships/dev/.github/scripts/listings.json";
 
+const HIRING_CAFE_API = "https://hiring.cafe/api/search-jobs";
+
+export type JobSource = "simplify" | "hiringcafe";
+
 export interface JobListing {
   id: string;
   company_name: string;
@@ -178,7 +182,142 @@ function matchesRoleType(listing: JobListing, roleType: string): boolean {
   return true;
 }
 
+// --- Hiring.Cafe API ---
+
+interface HiringCafeJobInfo {
+  title?: string;
+  description?: string;
+}
+
+interface HiringCafeProcessedData {
+  company_name?: string;
+  formatted_workplace_location?: string;
+  estimated_publish_date_millis?: number;
+  job_category?: string;
+  workplace_type?: string;
+}
+
+interface HiringCafeJob {
+  id?: string;
+  apply_url?: string;
+  job_information?: HiringCafeJobInfo;
+  v5_processed_job_data?: HiringCafeProcessedData;
+}
+
+interface HiringCafeResponse {
+  jobs?: HiringCafeJob[];
+  total?: number;
+  totalElements?: number;
+  total_count?: number;
+}
+
+async function searchHiringCafeAPI(options: {
+  search?: string;
+  category?: string;
+  roleType?: string;
+  limit: number;
+  offset: number;
+}): Promise<HiringCafeResponse> {
+  const { search, category, roleType, limit, offset } = options;
+  const searchState: Record<string, unknown> = {
+    roleTypes: ["Individual Contributor"],
+  };
+  let query = search?.trim() ?? "";
+  if (category) {
+    const c = category.toLowerCase();
+    if (c === "software") query = (query ? `${query} ` : "") + "software engineer";
+    else if (c === "product") query = (query ? `${query} ` : "") + "product manager";
+    else if (c === "ai") query = (query ? `${query} ` : "") + "machine learning engineer";
+  }
+  if (roleType) {
+    const q = roleType.toLowerCase();
+    if (q === "frontend") query = (query ? `${query} ` : "") + "frontend engineer";
+    else if (q === "backend") query = (query ? `${query} ` : "") + "backend engineer";
+    else if (q === "fullstack") query = (query ? `${query} ` : "") + "full stack engineer";
+    else if (q === "data") query = (query ? `${query} ` : "") + "data engineer";
+  }
+  if (query) searchState.jobTitleQuery = query;
+  const page = limit > 0 ? Math.floor(offset / limit) : 0;
+  const body = {
+    size: Math.min(limit, 50),
+    page,
+    searchState,
+  };
+  const res = await fetch(HIRING_CAFE_API, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "User-Agent": "Trackr/1.0 (Job Search App)",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(`Hiring.Cafe API error: ${res.status} ${res.statusText}`);
+  }
+  return res.json() as Promise<HiringCafeResponse>;
+}
+
+function mapHiringCafeToGroupedJob(j: HiringCafeJob, index: number): GroupedJob {
+  const info = j.job_information;
+  const data = j.v5_processed_job_data;
+  const title = info?.title ?? "Software Engineer";
+  const company = data?.company_name ?? "Unknown";
+  const url = j.apply_url ?? "";
+  const locations = data?.formatted_workplace_location
+    ? [data.formatted_workplace_location]
+    : data?.workplace_type
+      ? [data.workplace_type]
+      : [];
+  const datePosted = data?.estimated_publish_date_millis
+    ? Math.floor(data.estimated_publish_date_millis / 1000)
+    : Math.floor(Date.now() / 1000);
+  const id = j.id ?? `hc-${index}-${Date.now()}`;
+  return {
+    id,
+    company_name: company,
+    company_url: "",
+    title,
+    url,
+    locations,
+    date_posted: datePosted,
+    category: data?.job_category,
+  };
+}
+
+async function searchHiringCafeJobs(options: {
+  search?: string;
+  category?: string;
+  roleType?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{ jobs: GroupedJob[]; total: number }> {
+  const { search, category, roleType, limit = 50, offset = 0 } = options;
+  const page = Math.floor(offset / limit);
+
+  const res = await searchHiringCafeAPI({
+    search,
+    category,
+    roleType,
+    limit,
+    offset: page * limit,
+  });
+
+  const rawJobs = res.jobs ?? (Array.isArray(res) ? res : []);
+  const jobs = rawJobs.map((j, i) => mapHiringCafeToGroupedJob(j as HiringCafeJob, i));
+
+  const total = res.total ?? res.totalElements ?? res.total_count ?? jobs.length;
+
+  return {
+    jobs,
+    total,
+  };
+}
+
+// --- Simplify Jobs (existing) ---
+
 export async function searchJobs(options: {
+  source?: JobSource;
   category?: string;
   roleType?: string;
   search?: string;
@@ -187,7 +326,19 @@ export async function searchJobs(options: {
   limit?: number;
   offset?: number;
 }): Promise<{ jobs: GroupedJob[]; total: number }> {
-  const { category, roleType, search, usOnly, postedWithin = "14d", limit = 50, offset = 0 } = options;
+  const { source = "simplify", ...rest } = options;
+
+  if (source === "hiringcafe") {
+    return searchHiringCafeJobs({
+      search: rest.search,
+      category: rest.category,
+      roleType: rest.roleType,
+      limit: rest.limit,
+      offset: rest.offset,
+    });
+  }
+
+  const { category, roleType, search, usOnly, postedWithin = "14d", limit = 50, offset = 0 } = rest;
   const all = await fetchListings();
 
   let filtered = all.filter(

@@ -1,5 +1,11 @@
 import prisma from "../lib/prisma";
-import { ApplicationStatus } from "../../generated/prisma/enums";
+import { ApplicationStatus, ApplicationPriority } from "../../generated/prisma/enums";
+
+function toPriority(v: unknown): ApplicationPriority | null {
+  if (v === null || v === undefined) return null;
+  if (typeof v === "string" && ["HIGH", "MEDIUM", "LOW"].includes(v)) return v as ApplicationPriority;
+  return null;
+}
 
 const APPLICATION_INCLUDE = {
   notes: true,
@@ -38,6 +44,7 @@ export function createApplication(
     salaryMax?: number;
     url?: string;
     status?: ApplicationStatus;
+    priority?: string | null;
     dateApplied?: string;
     followUpDate?: string;
   }
@@ -52,6 +59,7 @@ export function createApplication(
       salaryMax: data.salaryMax,
       url: data.url,
       status: data.status ?? ApplicationStatus.SAVED,
+      priority: toPriority(data.priority),
       dateApplied: data.dateApplied ? new Date(data.dateApplied) : null,
       followUpDate: data.followUpDate ? new Date(data.followUpDate) : null,
     },
@@ -68,20 +76,23 @@ export function updateApplication(
     salaryMin?: number | null;
     salaryMax?: number | null;
     url?: string | null;
+    priority?: ApplicationPriority | string | null;
     dateApplied?: string | null;
     followUpDate?: string | null;
     coverLetter?: string | null;
   }
 ) {
+  const { priority, dateApplied, followUpDate, ...rest } = data;
   return prisma.application.updateMany({
     where: { id, clerkUserId },
     data: {
-      ...data,
-      dateApplied: data.dateApplied !== undefined
-        ? data.dateApplied ? new Date(data.dateApplied) : null
+      ...rest,
+      priority: priority !== undefined ? toPriority(priority) : undefined,
+      dateApplied: dateApplied !== undefined
+        ? dateApplied ? new Date(dateApplied) : null
         : undefined,
-      followUpDate: data.followUpDate !== undefined
-        ? data.followUpDate ? new Date(data.followUpDate) : null
+      followUpDate: followUpDate !== undefined
+        ? followUpDate ? new Date(followUpDate) : null
         : undefined,
     },
   });
@@ -125,6 +136,7 @@ export function bulkCreateApplications(
     salaryMax?: number;
     url?: string;
     status?: ApplicationStatus;
+    priority?: string | null;
     dateApplied?: string;
   }>
 ) {
@@ -137,6 +149,7 @@ export function bulkCreateApplications(
     salaryMax: row.salaryMax || null,
     url: row.url || null,
     status: row.status ?? ApplicationStatus.SAVED,
+    priority: toPriority(row.priority),
     dateApplied: row.dateApplied ? new Date(row.dateApplied) : null,
   }));
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { useJobs, type JobListing } from "../hooks/useJobs";
+import { useJobs, type JobListing, type JobSource } from "../hooks/useJobs";
+import { normalizeForDedup } from "../lib/utils";
 import { useCreateApplication, useApplications } from "../hooks/useApplications";
 import EmptyState from "../components/ui/EmptyState";
 
@@ -125,7 +126,13 @@ function JobCard({
   );
 }
 
+const SOURCES: { value: JobSource; label: string; description: string }[] = [
+  { value: "simplify", label: "SimplifyJobs", description: "Summer 2026 tech internships" },
+  { value: "hiringcafe", label: "Hiring.Cafe", description: "Software engineering roles" },
+];
+
 export default function JobFinderPage() {
+  const [source, setSource] = useState<JobSource>("simplify");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [roleType, setRoleType] = useState("");
@@ -144,13 +151,14 @@ export default function JobFinderPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, category, roleType, usOnly, postedWithin]);
+  }, [source, debouncedSearch, category, roleType, usOnly, postedWithin]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [page]);
 
   const { data, isLoading, error } = useJobs({
+    source,
     search: debouncedSearch || undefined,
     category: category || undefined,
     roleType: roleType || undefined,
@@ -163,16 +171,17 @@ export default function JobFinderPage() {
   const trackedKeys = useMemo(() => {
     const set = new Set<string>();
     for (const app of applications ?? []) {
-      const key = `${(app.company ?? "").toLowerCase().trim()}|${(app.title ?? "").toLowerCase().trim()}`;
-      set.add(key);
+      for (const k of normalizeForDedup(app.company ?? "", app.title ?? "")) set.add(k);
       if (app.url) set.add(app.url);
     }
     return set;
   }, [applications]);
 
   function isJobTracked(job: JobListing): boolean {
-    const companyTitleKey = `${(job.company_name ?? "").toLowerCase().trim()}|${(job.title ?? "").toLowerCase().trim()}`;
-    return trackedKeys.has(companyTitleKey) || (!!job.url && trackedKeys.has(job.url));
+    const jobKeys = normalizeForDedup(job.company_name ?? "", job.title ?? "");
+    if (jobKeys.some((k) => trackedKeys.has(k))) return true;
+    if (job.url && trackedKeys.has(job.url)) return true;
+    return false;
   }
 
   function handleAdd(job: JobListing) {
@@ -198,19 +207,35 @@ export default function JobFinderPage() {
           Job Finder
         </h1>
         <p className="mt-1 text-sm text-text-secondary">
-          Summer 2026 tech internships from{" "}
+          {source === "simplify"
+            ? "Summer 2026 tech internships from "
+            : "Software engineering roles from "}
           <a
-            href="https://github.com/SimplifyJobs/Summer2026-Internships"
+            href={source === "simplify" ? "https://github.com/SimplifyJobs/Summer2026-Internships" : "https://hiring.cafe"}
             target="_blank"
             rel="noopener noreferrer"
             className="text-accent hover:underline"
           >
-            SimplifyJobs/Summer2026-Internships
+            {source === "simplify" ? "SimplifyJobs/Summer2026-Internships" : "Hiring.Cafe"}
           </a>
         </p>
       </div>
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <div className="flex w-full items-center gap-2 sm:w-auto">
+          <label className="text-sm font-medium text-text-secondary">Source</label>
+          <select
+            value={source}
+            onChange={(e) => setSource(e.target.value as JobSource)}
+            className="rounded-lg border border-border-default bg-surface-secondary px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+          >
+            {SOURCES.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label} — {s.description}
+              </option>
+            ))}
+          </select>
+        </div>
         <input
           type="search"
           placeholder="Search company, role, or location…"
@@ -270,7 +295,10 @@ export default function JobFinderPage() {
 
       {error && (
         <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-red-400">
-          Failed to load jobs. The GitHub repo may be temporarily unavailable.
+          Failed to load jobs.
+          {source === "simplify"
+            ? " The GitHub repo may be temporarily unavailable."
+            : " Hiring.Cafe may be temporarily unavailable."}
         </div>
       )}
 
@@ -289,7 +317,7 @@ export default function JobFinderPage() {
       {data && data.jobs.length > 0 && (
         <>
           <p className="mb-4 text-sm text-text-tertiary">
-            {data.total} internship{data.total !== 1 ? "s" : ""} found · sorted by newest
+            {data.total} {source === "simplify" ? "internship" : "job"}{data.total !== 1 ? "s" : ""} found · sorted by newest
           </p>
           <div className="space-y-3">
             {data.jobs.map((job) => (

@@ -83,6 +83,7 @@ export default function BoardPage() {
         salaryMax: form.salaryMax ? Number(form.salaryMax) : undefined,
         url: form.url || undefined,
         status: form.status,
+        priority: form.priority || undefined,
         dateApplied: form.dateApplied || undefined,
         followUpDate: form.followUpDate || undefined,
       },

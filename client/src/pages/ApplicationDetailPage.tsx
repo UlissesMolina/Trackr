@@ -12,6 +12,7 @@ import StatusTimeline from "../components/applications/StatusTimeline";
 import NotesList from "../components/applications/NotesList";
 import InterviewList from "../components/applications/InterviewList";
 import TagSelect from "../components/applications/TagSelect";
+import PrioritySelect from "../components/applications/PrioritySelect";
 import ApplicationForm, {
   type ApplicationFormData,
 } from "../components/applications/ApplicationForm";
@@ -38,6 +39,7 @@ export default function ApplicationDetailPage() {
         salaryMin: form.salaryMin ? Number(form.salaryMin) : null,
         salaryMax: form.salaryMax ? Number(form.salaryMax) : null,
         url: form.url || null,
+        priority: form.priority || null,
         dateApplied: form.dateApplied || null,
         followUpDate: form.followUpDate || null,
       },
@@ -81,6 +83,7 @@ export default function ApplicationDetailPage() {
     salaryMax: app.salaryMax?.toString() ?? "",
     url: app.url ?? "",
     status: boardStatus(app.status),
+    priority: app.priority ?? "",
     dateApplied: app.dateApplied ? app.dateApplied.slice(0, 10) : "",
     followUpDate: app.followUpDate ? app.followUpDate.slice(0, 10) : "",
   };
@@ -121,6 +124,7 @@ export default function ApplicationDetailPage() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <PrioritySelect applicationId={app.id} currentPriority={app.priority ?? null} />
             <StatusSelect applicationId={app.id} currentStatus={app.status} />
             <button
               onClick={() => setShowEdit(true)}

@@ -16,6 +16,12 @@ enum ApplicationStatus {
   REJECTED
 }
 
+enum ApplicationPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
 enum InterviewType {
   PHONE_SCREEN
   TECHNICAL
@@ -35,6 +41,7 @@ model Application {
   salaryMax     Int?
   url           String?
   status        ApplicationStatus   @default(SAVED)
+  priority      ApplicationPriority?
   dateApplied   DateTime?
   followUpDate  DateTime?
   coverLetter   String?

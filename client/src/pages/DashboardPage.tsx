@@ -5,6 +5,7 @@ import { useDashboardStats, useDashboardChart } from "../hooks/useDashboard";
 import { useApplications } from "../hooks/useApplications";
 import StatsCards from "../components/dashboard/StatsCards";
 import ApplicationsChart from "../components/dashboard/ApplicationsChart";
+import LocationChart from "../components/dashboard/LocationChart";
 import StatusBadge from "../components/applications/StatusBadge";
 import EmptyState from "../components/ui/EmptyState";
 import { formatDate, formatRelativeDateTime } from "../lib/utils";
@@ -205,13 +206,18 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Chart */}
-      <div className="mb-6">
-        {chartLoading ? (
-          <div className="h-[364px] animate-pulse rounded-xl border border-border-default bg-surface-secondary" />
-        ) : (
-          <ApplicationsChart data={chartData ?? []} days={7} />
-        )}
+      {/* Charts */}
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div>
+          {chartLoading ? (
+            <div className="h-[364px] animate-pulse rounded-xl border border-border-default bg-surface-secondary" />
+          ) : (
+            <ApplicationsChart data={chartData ?? []} days={7} />
+          )}
+        </div>
+        <div>
+          <LocationChart applications={applications} />
+        </div>
       </div>
 
       {/* Upcoming — separate section below */}

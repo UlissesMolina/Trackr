@@ -8,6 +8,7 @@ router.use(requireAuth());
 
 router.get("/", async (req: Request, res: Response) => {
   try {
+    const source = (req.query.source as string) === "hiringcafe" ? "hiringcafe" : "simplify";
     const category = req.query.category as string | undefined;
     const roleType = req.query.roleType as string | undefined;
     const search = req.query.search as string | undefined;
@@ -19,6 +20,7 @@ router.get("/", async (req: Request, res: Response) => {
     const offset = parseInt(req.query.offset as string) || 0;
 
     const result = await jobService.searchJobs({
+      source,
       category,
       roleType,
       search,

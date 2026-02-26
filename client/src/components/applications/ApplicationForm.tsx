@@ -1,5 +1,12 @@
 import { useState, type FormEvent } from "react";
-import { BOARD_STATUSES, STATUS_LABELS, type BoardStatus } from "../../lib/constants";
+import {
+  BOARD_STATUSES,
+  STATUS_LABELS,
+  PRIORITY_LEVELS,
+  PRIORITY_LABELS,
+  type BoardStatus,
+  type ApplicationPriority,
+} from "../../lib/constants";
 
 export interface ApplicationFormData {
   title: string;
@@ -9,6 +16,7 @@ export interface ApplicationFormData {
   salaryMax: string;
   url: string;
   status: BoardStatus;
+  priority: ApplicationPriority | "";
   dateApplied: string;
   followUpDate: string;
 }
@@ -28,6 +36,7 @@ const EMPTY: ApplicationFormData = {
   salaryMax: "",
   url: "",
   status: "SAVED",
+  priority: "",
   dateApplied: "",
   followUpDate: "",
 };
@@ -72,6 +81,15 @@ export default function ApplicationForm({
           <select value={form.status} onChange={(e) => update("status", e.target.value)} className={INPUT}>
             {BOARD_STATUSES.map((s) => (
               <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+            ))}
+          </select>
+        </div>
+        <div className="col-span-2 sm:col-span-1">
+          <label className="mb-1 block text-sm font-medium text-text-secondary">Priority</label>
+          <select value={form.priority} onChange={(e) => update("priority", e.target.value)} className={INPUT}>
+            <option value="">None</option>
+            {PRIORITY_LEVELS.map((p) => (
+              <option key={p} value={p}>{PRIORITY_LABELS[p]}</option>
             ))}
           </select>
         </div>

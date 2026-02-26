@@ -3,7 +3,14 @@ import Papa from "papaparse";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../lib/api";
 import Modal from "../ui/Modal";
-import { APPLICATION_STATUSES, STATUS_LABELS, type ApplicationStatus } from "../../lib/constants";
+import {
+  APPLICATION_STATUSES,
+  STATUS_LABELS,
+  PRIORITY_LEVELS,
+  PRIORITY_LABELS,
+  type ApplicationStatus,
+  type ApplicationPriority,
+} from "../../lib/constants";
 
 type RawRow = Record<string, string>;
 
@@ -15,6 +22,7 @@ interface MappedRow {
   salaryMax?: number;
   url?: string;
   status?: ApplicationStatus;
+  priority?: ApplicationPriority | null;
   dateApplied?: string;
 }
 
@@ -22,6 +30,7 @@ const FIELDS = [
   { key: "title", label: "Job Title", required: true },
   { key: "company", label: "Company", required: true },
   { key: "location", label: "Location", required: false },
+  { key: "priority", label: "Priority", required: false },
   { key: "salaryMin", label: "Min Salary", required: false },
   { key: "salaryMax", label: "Max Salary", required: false },
   { key: "url", label: "URL", required: false },
@@ -39,6 +48,7 @@ function guessMapping(headers: string[]): Record<FieldKey, string> {
     ["title", /^(job.?title|title|position|role)$/i],
     ["company", /^(company|employer|organization|org)$/i],
     ["location", /^(location|city|place)$/i],
+    ["priority", /^(priority|importance)$/i],
     ["salaryMin", /^(salary.?min|min.?salary|salary.?low)$/i],
     ["salaryMax", /^(salary.?max|max.?salary|salary.?high)$/i],
     ["url", /^(url|link|job.?url|job.?link|posting)$/i],
@@ -52,6 +62,15 @@ function guessMapping(headers: string[]): Record<FieldKey, string> {
   }
 
   return mapping as Record<FieldKey, string>;
+}
+
+function normalizePriority(raw: string | undefined): ApplicationPriority | null | undefined {
+  if (!raw) return undefined;
+  const upper = raw.toUpperCase().replace(/[\s-]+/g, "_");
+  if (PRIORITY_LEVELS.includes(upper as ApplicationPriority)) return upper as ApplicationPriority;
+  const labelMap: Record<string, ApplicationPriority> = {};
+  for (const p of PRIORITY_LEVELS) labelMap[PRIORITY_LABELS[p].toUpperCase()] = p;
+  return labelMap[raw.toUpperCase().trim()] ?? undefined;
 }
 
 function normalizeStatus(raw: string | undefined): ApplicationStatus | undefined {
@@ -140,6 +159,7 @@ export default function ImportModal({ open, onClose }: ImportModalProps) {
           salaryMax: mapping.salaryMax && row[mapping.salaryMax] ? Number(row[mapping.salaryMax]) || undefined : undefined,
           url: row[mapping.url]?.trim() || undefined,
           status: normalizeStatus(row[mapping.status]),
+          priority: normalizePriority(row[mapping.priority]) ?? undefined,
           dateApplied: row[mapping.dateApplied]?.trim() || undefined,
         } as MappedRow;
       })
@@ -183,7 +203,7 @@ export default function ImportModal({ open, onClose }: ImportModalProps) {
           <div className="mt-4 rounded-lg border border-border-default bg-surface-tertiary p-4">
             <p className="text-xs font-medium text-text-secondary">Expected columns</p>
             <p className="mt-1 text-xs text-text-tertiary">
-              title, company, location, salaryMin, salaryMax, url, status, dateApplied
+              title, company, location, priority, salaryMin, salaryMax, url, status, dateApplied
             </p>
             <p className="mt-2 text-xs text-text-tertiary">
               Only <span className="text-text-secondary">title</span> and <span className="text-text-secondary">company</span> are required. Column names are auto-matched.
@@ -249,6 +269,7 @@ export default function ImportModal({ open, onClose }: ImportModalProps) {
                 <tr>
                   <th className="px-3 py-2 font-medium">Title</th>
                   <th className="px-3 py-2 font-medium">Company</th>
+                  <th className="px-3 py-2 font-medium">Priority</th>
                   <th className="px-3 py-2 font-medium">Status</th>
                 </tr>
               </thead>
@@ -257,6 +278,7 @@ export default function ImportModal({ open, onClose }: ImportModalProps) {
                   <tr key={i} className="text-text-primary">
                     <td className="px-3 py-2">{row.title}</td>
                     <td className="px-3 py-2">{row.company}</td>
+                    <td className="px-3 py-2 text-text-secondary">{row.priority ? PRIORITY_LABELS[row.priority] : "—"}</td>
                     <td className="px-3 py-2 text-text-secondary">{row.status ? STATUS_LABELS[row.status] : "Saved"}</td>
                   </tr>
                 ))}

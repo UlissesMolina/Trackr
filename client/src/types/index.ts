@@ -1,4 +1,4 @@
-import type { ApplicationStatus, InterviewType } from "../lib/constants";
+import type { ApplicationStatus, ApplicationPriority, InterviewType } from "../lib/constants";
 
 export interface Application {
   id: string;
@@ -10,6 +10,7 @@ export interface Application {
   salaryMax: number | null;
   url: string | null;
   status: ApplicationStatus;
+  priority: ApplicationPriority | null;
   dateApplied: string | null;
   followUpDate: string | null;
   coverLetter: string | null;

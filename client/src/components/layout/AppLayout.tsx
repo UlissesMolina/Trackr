@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { UserButton, useClerk } from "@clerk/clerk-react";
+import { useTheme } from "../../hooks/useTheme";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthToken } from "../../hooks/useAuthToken";
@@ -14,7 +15,7 @@ const NAV_ITEMS = [
   { label: "Cover Letter", path: "/cover-letter" },
 ];
 
-function SettingsPanel({ onClose }: { onClose: () => void }) {
+function SettingsPanel({ onClose, theme }: { onClose: () => void; theme: ReturnType<typeof useTheme> }) {
   const qc = useQueryClient();
   const { openUserProfile, signOut } = useClerk();
   const [exporting, setExporting] = useState(false);
@@ -30,6 +31,7 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
         { key: "title", label: "Title" },
         { key: "company", label: "Company" },
         { key: "location", label: "Location" },
+        { key: "priority", label: "Priority" },
         { key: "status", label: "Status" },
         { key: "dateApplied", label: "Date Applied" },
         { key: "url", label: "URL" },
@@ -71,6 +73,29 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
     <>
       <div className="fixed inset-0 z-20" onClick={onClose} />
       <div className="absolute bottom-12 left-2 right-2 z-30 animate-settings-pop rounded-lg border border-border-default bg-surface-elevated p-1 shadow-xl">
+        <div className="border-b border-border-default px-3 py-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">Appearance</p>
+        </div>
+        <button
+          onClick={() => { theme.toggleTheme(); onClose(); }}
+          className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm text-text-secondary hover:bg-surface-tertiary hover:text-text-primary"
+        >
+          {theme.theme === "dark" ? (
+            <>
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+              </svg>
+              Switch to light mode
+            </>
+          ) : (
+            <>
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+              </svg>
+              Switch to dark mode
+            </>
+          )}
+        </button>
         <div className="border-b border-border-default px-3 py-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">Account</p>
         </div>
@@ -135,6 +160,7 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
 
 export default function AppLayout() {
   useAuthToken();
+  const theme = useTheme();
   const { pathname } = useLocation();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -213,7 +239,7 @@ export default function AppLayout() {
         </nav>
 
         <div className="relative border-t border-border-default p-3">
-          {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}
+          {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} theme={theme} />}
           <div className="flex items-center justify-between">
             <UserButton
               afterSignOutUrl="/"

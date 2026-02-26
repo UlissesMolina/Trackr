@@ -13,7 +13,14 @@ import ResumePage from "./pages/ResumePage";
 import SankeyPage from "./pages/SankeyPage";
 import JobFinderPage from "./pages/JobFinderPage";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 

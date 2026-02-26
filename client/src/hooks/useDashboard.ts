@@ -17,11 +17,11 @@ export interface ChartDataPoint {
   count: number;
 }
 
-export function useDashboardChart() {
+export function useDashboardChart(days = 7) {
   return useQuery<ChartDataPoint[]>({
-    queryKey: ["dashboard", "chart"],
+    queryKey: ["dashboard", "chart", days],
     queryFn: async () => {
-      const { data } = await api.get("/dashboard/chart");
+      const { data } = await api.get(`/dashboard/chart?days=${days}`);
       return Array.isArray(data) ? data : [];
     },
   });

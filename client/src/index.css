@@ -14,11 +14,16 @@
   --color-accent-hover: #34d399;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   background-color: var(--color-surface-primary);
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 @keyframes fade-up {
@@ -35,6 +40,21 @@ body {
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-enter {
+  animation: page-enter 0.25s ease-out both;
 }
 
 @keyframes slide-down {
@@ -146,4 +166,13 @@ body {
 .glow-card:hover::before {
   opacity: 1;
   animation: border-rotate 2.5s linear infinite;
+}
+
+@keyframes hero-glow-pulse {
+  0%, 100% { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
+  50% { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 40px -10px rgba(16, 185, 129, 0.15); }
+}
+
+.hero-screenshot-animate {
+  animation: hero-glow-pulse 4s ease-in-out 1s infinite;
 }

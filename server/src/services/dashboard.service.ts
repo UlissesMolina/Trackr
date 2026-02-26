@@ -3,18 +3,20 @@ import prisma from "../lib/prisma";
 export async function getStats(clerkUserId: string) {
   const apps = await prisma.application.findMany({
     where: { clerkUserId },
-    select: { status: true },
+    select: { status: true, createdAt: true, dateApplied: true },
   });
 
   const total = apps.length;
-  if (total === 0) {
-    return {
-      totalApplications: 0,
-      responseRate: 0,
-      rejectionRate: 0,
-      interviewConversion: 0,
-    };
-  }
+
+  const now = new Date();
+  const sevenDaysAgo = new Date(now);
+  sevenDaysAgo.setDate(now.getDate() - 7);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+
+  const applicationsThisWeek = apps.filter((a) => {
+    const d = a.dateApplied ?? a.createdAt;
+    return new Date(d) >= sevenDaysAgo;
+  }).length;
 
   const rejected = apps.filter((a) => a.status === "REJECTED").length;
   const interviews = apps.filter((a) => a.status === "INTERVIEW").length;
@@ -24,25 +26,37 @@ export async function getStats(clerkUserId: string) {
 
   return {
     totalApplications: total,
-    responseRate: Math.round((responded / total) * 100),
-    rejectionRate: Math.round((rejected / total) * 100),
-    interviewConversion: responded > 0
-      ? Math.round(((interviews + offers) / responded) * 100)
-      : 0,
+    applicationsThisWeek,
+    responseRate: total > 0 ? Math.round((responded / total) * 100) : 0,
+    rejectionRate: total > 0 ? Math.round((rejected / total) * 100) : 0,
+    interviewConversion:
+      responded > 0
+        ? Math.round(((interviews + offers) / responded) * 100)
+        : 0,
+    interviewsCount: interviews,
+    offersCount: offers,
   };
 }
 
-export async function getChartData(clerkUserId: string) {
+export async function getChartData(clerkUserId: string, days = 7) {
   const apps = await prisma.application.findMany({
     where: { clerkUserId },
     select: { createdAt: true, dateApplied: true },
   });
 
+  const now = new Date();
+  const cutoff = new Date(now);
+  cutoff.setDate(now.getDate() - days);
+  cutoff.setHours(0, 0, 0, 0);
+
   const buckets: Record<string, number> = {};
 
   for (const app of apps) {
-    const date = (app.dateApplied ?? app.createdAt).toISOString().slice(0, 10);
-    buckets[date] = (buckets[date] || 0) + 1;
+    const d = app.dateApplied ?? app.createdAt;
+    const dateStr = new Date(d).toISOString().slice(0, 10);
+    if (new Date(d) >= cutoff) {
+      buckets[dateStr] = (buckets[dateStr] || 0) + 1;
+    }
   }
 
   return Object.entries(buckets)
@@ -68,25 +82,10 @@ const FLOW_NODE_COLORS: Record<string, string> = {
 
 const FLOW_ORDER = ["APPLIED", "GHOSTED_WAITING", "INTERVIEW", "OFFER", "REJECTED"];
 
-function reachedInterview(
-  status: string,
-  statusChanges: Array<{ fromStatus: string; toStatus: string }>
-): boolean {
-  if (status === "INTERVIEW" || status === "OFFER") return true;
-  return statusChanges.some(
-    (sc) => sc.fromStatus === "INTERVIEW" || sc.toStatus === "INTERVIEW"
-  );
-}
-
 export async function getSankeyData(clerkUserId: string) {
   const applications = await prisma.application.findMany({
     where: { clerkUserId },
-    select: {
-      status: true,
-      statusChanges: {
-        select: { fromStatus: true, toStatus: true },
-      },
-    },
+    select: { status: true },
   });
 
   // Only include applications that have been applied (exclude SAVED)
@@ -103,26 +102,14 @@ export async function getSankeyData(clerkUserId: string) {
     return { nodes: [], links: [] };
   }
 
+  // Use current status only — matches the board columns
   const ghostedWaitingCount = applied.filter(
     (a) => a.status === "APPLIED" || a.status === "UNDER_REVIEW"
   ).length;
 
-  const rejectedBeforeInterview = applied.filter(
-    (a) =>
-      a.status === "REJECTED" &&
-      !reachedInterview(a.status, a.statusChanges)
-  ).length;
-
-  const reachedInterviewCount = applied.filter((a) =>
-    reachedInterview(a.status, a.statusChanges)
-  ).length;
-
+  const rejectedCount = applied.filter((a) => a.status === "REJECTED").length;
+  const interviewCount = applied.filter((a) => a.status === "INTERVIEW").length;
   const offerCount = applied.filter((a) => a.status === "OFFER").length;
-  const rejectedAfterInterview = applied.filter(
-    (a) =>
-      a.status === "REJECTED" &&
-      reachedInterview(a.status, a.statusChanges)
-  ).length;
 
   const links: Array<{ source: string; target: string; value: number }> = [];
   if (ghostedWaitingCount > 0) {
@@ -132,18 +119,18 @@ export async function getSankeyData(clerkUserId: string) {
       value: ghostedWaitingCount,
     });
   }
-  if (rejectedBeforeInterview > 0) {
+  if (rejectedCount > 0) {
     links.push({
       source: FLOW_LABELS.APPLIED,
       target: FLOW_LABELS.REJECTED,
-      value: rejectedBeforeInterview,
+      value: rejectedCount,
     });
   }
-  if (reachedInterviewCount > 0) {
+  if (interviewCount > 0) {
     links.push({
       source: FLOW_LABELS.APPLIED,
       target: FLOW_LABELS.INTERVIEW,
-      value: reachedInterviewCount,
+      value: interviewCount,
     });
   }
   if (offerCount > 0) {
@@ -151,13 +138,6 @@ export async function getSankeyData(clerkUserId: string) {
       source: FLOW_LABELS.INTERVIEW,
       target: FLOW_LABELS.OFFER,
       value: offerCount,
-    });
-  }
-  if (rejectedAfterInterview > 0) {
-    links.push({
-      source: FLOW_LABELS.INTERVIEW,
-      target: FLOW_LABELS.REJECTED,
-      value: rejectedAfterInterview,
     });
   }
 

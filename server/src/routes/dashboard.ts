@@ -14,7 +14,8 @@ router.get("/stats", async (req: Request, res: Response) => {
 
 router.get("/chart", async (req: Request, res: Response) => {
   const userId = getUserId(req);
-  const data = await dashboardService.getChartData(userId);
+  const days = Math.min(30, Math.max(1, parseInt(req.query.days as string) || 7));
+  const data = await dashboardService.getChartData(userId, days);
   res.json(data);
 });
 

@@ -63,9 +63,12 @@ export interface ApplicationTag {
 
 export interface DashboardStats {
   totalApplications: number;
+  applicationsThisWeek?: number;
   responseRate: number;
   rejectionRate: number;
   interviewConversion: number;
+  interviewsCount?: number;
+  offersCount?: number;
 }
 
 export interface Resume {

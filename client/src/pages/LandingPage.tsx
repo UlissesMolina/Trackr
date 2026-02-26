@@ -1,7 +1,12 @@
 import { useRef, useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
+import { Search, LayoutGrid, Target } from "lucide-react";
 import logo from "../assets/trackr-logo-white.svg";
+import dashboardScreenshot from "../assets/trackr-dashbaord.png";
+import boardScreenshot from "../assets/trackrBoard.png";
+import coverLetterScreenshot from "../assets/coverLetterGen.png";
+import jobFinderScreenshot from "../assets/jobFinder.png";
 
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
@@ -11,7 +16,12 @@ function useInView(threshold = 0.15) {
     const el = ref.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
       { threshold }
     );
     observer.observe(el);
@@ -38,197 +48,131 @@ const FEATURES = [
   {
     title: "Kanban Board",
     description:
-      "Drag-and-drop your applications through every stage — from saved to offer.",
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z" />
-      </svg>
-    ),
-  },
-  {
-    title: "Real-time Dashboard",
-    description:
-      "Track response rates, interview conversions, and application volume over time.",
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-      </svg>
-    ),
+      "Your entire job search, on one board. No more digging through emails to remember where you stand.",
+    align: "left" as const,
+    image: boardScreenshot,
   },
   {
     title: "AI Cover Letters",
     description:
-      "Generate tailored cover letters in seconds with GPT-4o, linked directly to your applications.",
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
-      </svg>
-    ),
+      "Paste the job description. Get a cover letter. Edit it, link it to the application, done. Takes 30 seconds.",
+    align: "right" as const,
+    image: coverLetterScreenshot,
   },
   {
-    title: "Interview Scheduling",
+    title: "Job Finder",
     description:
-      "Log phone screens, technicals, and onsites with dates, locations, and prep notes.",
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-      </svg>
-    ),
-  },
-  {
-    title: "Follow-up Reminders",
-    description:
-      "Set follow-up dates so you never forget to nudge a recruiter after a week of silence.",
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-  },
-  {
-    title: "Tags & Notes",
-    description:
-      "Label applications as \"dream job\" or \"referral,\" add notes, and track every status change.",
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
-      </svg>
-    ),
+      "2,800+ internships pulled from a live database. Filter by role, US only, posted today. Add to your board without leaving the page.",
+    align: "left" as const,
+    image: jobFinderScreenshot,
   },
 ];
-
-function PipelineDots() {
-  const dots = [
-    { cx: 50, fill: "#475569", r: 4, delay: "0.9s" },
-    { cx: 130, fill: "#64748b", r: 4, delay: "1.05s" },
-    { cx: 210, fill: "#94a3b8", r: 4, delay: "1.2s" },
-    { cx: 290, fill: "#cbd5e1", r: 4, delay: "1.35s" },
-    { cx: 370, fill: "#f8fafc", r: 5, delay: "1.5s" },
-  ];
-
-  return (
-    <svg className="h-4 w-full" viewBox="0 0 400 16" fill="none" preserveAspectRatio="xMidYMid">
-      <line
-        x1="0" y1="8" x2="400" y2="8"
-        stroke="#334155" strokeWidth="2" strokeLinecap="round"
-        strokeDasharray="400" strokeDashoffset="400"
-        style={{ animation: "draw-line 0.8s ease-out 0.7s forwards" }}
-      />
-      {dots.map((d) => (
-        <circle
-          key={d.cx} cx={d.cx} cy="8" r={d.r} fill={d.fill}
-          style={{ opacity: 0, transformOrigin: `${d.cx}px 8px`, animation: `dot-pop 0.4s ease-out ${d.delay} forwards` }}
-        />
-      ))}
-    </svg>
-  );
-}
 
 export default function LandingPage() {
   const { isSignedIn } = useAuth();
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b]">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#0a0a0b]">
       {/* Nav */}
       <header className="animate-slide-down fixed inset-x-0 top-0 z-50 border-b border-[#1e293b]/60 bg-[#0a0a0b]/80 backdrop-blur-lg">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:h-16 sm:px-6">
           <Link to="/" className="py-2">
-            <img src={logo} alt="Trackr" className="h-9" />
+            <img src={logo} alt="Trackr" className="h-8 sm:h-9" />
           </Link>
-          <div className="flex items-center gap-3">
-            {isSignedIn ? (
-              <Link
-                to="/dashboard"
-                className="rounded-lg bg-[#f8fafc] px-5 py-2 text-sm font-semibold text-[#0f172a] shadow-sm shadow-white/10 hover:bg-[#e2e8f0]"
-              >
-                Open App
-              </Link>
-            ) : (
-              <>
-                <Link
-                  to="/sign-in"
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-[#94a3b8] hover:text-[#f8fafc]"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  to="/sign-up"
-                  className="rounded-lg bg-[#f8fafc] px-5 py-2 text-sm font-semibold text-[#0f172a] shadow-sm shadow-white/10 hover:bg-[#e2e8f0]"
-                >
-                  Get Started
-                </Link>
-              </>
-            )}
-          </div>
+          <Link
+            to={isSignedIn ? "/dashboard" : "/sign-up"}
+            className="rounded-lg bg-[#10b981] px-4 py-2 text-sm font-semibold text-white hover:bg-[#34d399] transition-colors sm:px-5"
+          >
+            Open App
+          </Link>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden pt-36 pb-20">
+      {/* Hero — pure black, radial green glow behind headline */}
+      <section className="relative overflow-hidden bg-black pt-24 pb-12 sm:pt-32 sm:pb-16">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-[#1e293b]/40 blur-[120px]" />
-          <div className="absolute top-20 left-1/3 h-[300px] w-[400px] -translate-x-1/2 rounded-full bg-[#334155]/20 blur-[100px]" />
+          <div className="absolute -top-20 left-1/2 h-[500px] w-[700px] -translate-x-1/2 rounded-full opacity-100" style={{ background: "radial-gradient(ellipse 70% 50% at 50% 20%, rgba(16, 185, 129, 0.15), transparent 70%)" }} />
         </div>
 
-        <div className="relative mx-auto max-w-3xl px-6 text-center">
-          <div className="animate-fade-up mb-6 inline-flex items-center gap-2 rounded-full border border-[#1e293b] bg-[#0f172a] px-4 py-1.5" style={{ animationDelay: "0.1s" }}>
-            <span className="h-1.5 w-1.5 rounded-full bg-[#94a3b8]" />
-            <span className="text-xs font-medium text-[#94a3b8]">Open Source Job Tracker</span>
-          </div>
-
-          <h1 className="animate-fade-up text-4xl font-bold leading-tight tracking-tight text-[#f8fafc] sm:text-5xl md:text-6xl" style={{ animationDelay: "0.2s" }}>
-            Track every application.
+        <div className="relative mx-auto max-w-6xl px-4 text-center sm:px-6">
+          <h1 className="animate-fade-up text-3xl font-bold leading-tight tracking-tight text-white sm:text-5xl md:text-6xl" style={{ animationDelay: "0.1s" }}>
+            Stop losing track.
             <br />
-            <span className="text-[#f8fafc]">Land the job.</span>
+            <span className="text-white">Start landing jobs.</span>
           </h1>
 
-          <p className="animate-fade-up mx-auto mt-6 max-w-xl text-base leading-relaxed text-[#94a3b8] sm:text-lg" style={{ animationDelay: "0.35s" }}>
-            A modern job tracker with a kanban board, analytics dashboard, and AI-powered cover letter generation.
+          <p className="animate-fade-up mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[#94a3b8] sm:mt-6 sm:text-lg" style={{ animationDelay: "0.2s" }}>
+            Trackr keeps every application organized — so you can apply more, stress less, and actually follow up.
           </p>
 
-          <div className="mx-auto mt-12 max-w-sm">
-            <PipelineDots />
-          </div>
-
-          <div className="animate-fade-up mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4" style={{ animationDelay: "0.55s" }}>
+          <div className="animate-fade-up mt-8 sm:mt-10" style={{ animationDelay: "0.35s" }}>
             <Link
               to={isSignedIn ? "/dashboard" : "/sign-up"}
-              className="rounded-lg bg-[#f8fafc] px-6 py-2.5 text-sm font-semibold text-[#0f172a] shadow-lg shadow-white/5 hover:bg-[#e2e8f0]"
+              className="inline-flex w-full max-w-xs justify-center rounded-lg bg-[#10b981] px-8 py-3 text-sm font-semibold text-white hover:bg-[#34d399] transition-colors shadow-lg shadow-[#10b981]/20 sm:w-auto"
             >
-              {isSignedIn ? "Open Dashboard" : "Start Tracking — Free"}
+              Open Dashboard
             </Link>
-            <a
-              href="https://github.com/UlissesMolina/Trackr"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg border border-[#1e293b] px-6 py-2.5 text-sm font-semibold text-[#94a3b8] hover:border-[#334155] hover:bg-[#0f172a] hover:text-[#f8fafc]"
-            >
-              View on GitHub
-            </a>
           </div>
+        </div>
+
+        {/* Full-width app screenshot — lifted off background */}
+        <div className="relative mx-auto mt-10 w-full max-w-6xl px-4 sm:mt-12 sm:px-6">
+          <div className="animate-fade-up hero-screenshot-animate overflow-hidden rounded-2xl border-2 border-white/20 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.08)]" style={{ animationDelay: "0.45s" }}>
+            <img
+              src={dashboardScreenshot}
+              alt="Trackr dashboard"
+              className="h-auto w-full max-w-full object-cover object-top"
+              style={{ maxHeight: "min(42vh, 380px)" }}
+            />
+          </div>
+        </div>
+
+        {/* Social Proof Bar — under hero only */}
+        <div className="mx-auto mt-8 flex max-w-6xl flex-col items-center justify-center gap-3 px-4 pb-8 text-sm text-[#94a3b8] sm:flex-row sm:flex-wrap sm:gap-x-8 sm:gap-y-2 sm:px-6">
+          <span className="flex items-center gap-2">
+            <svg className="h-5 w-5 shrink-0 text-[#10b981]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            2,800+ internships indexed
+          </span>
+          <span className="hidden text-[#475569] sm:inline">·</span>
+          <span className="flex items-center gap-2">
+            <svg className="h-5 w-5 shrink-0 text-[#10b981]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+            </svg>
+            AI cover letters in seconds
+          </span>
+          <span className="hidden text-[#475569] sm:inline">·</span>
+          <span className="flex items-center gap-2">
+            <svg className="h-5 w-5 shrink-0 text-[#10b981]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+            </svg>
+            Real-time analytics
+          </span>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="border-t border-[#1e293b] py-24">
-        <div className="mx-auto max-w-5xl px-6">
+      {/* How it works — slightly lighter bg, numbered steps */}
+      <section className="border-t border-[#1e293b] bg-[#0d0d0f] py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <ScrollReveal>
-            <div className="mb-16 text-center">
-              <h2 className="text-3xl font-bold tracking-tight text-[#f8fafc]">Everything you need</h2>
-              <p className="mt-3 text-[#64748b]">Simple, focused tools to manage your job search from start to finish.</p>
-            </div>
+            <h2 className="text-center text-2xl font-bold tracking-tight text-white sm:text-4xl">Simple by design</h2>
+            <p className="mx-auto mt-2 max-w-xl text-center text-sm text-[#94a3b8] sm:text-base">Three steps. No fluff.</p>
           </ScrollReveal>
-
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f, i) => (
-              <ScrollReveal key={f.title} delay={i * 80}>
-                <div className="glow-card group h-full rounded-xl border border-[#334155]/50 bg-[#0f172a]/60 p-7 transition-all duration-300 hover:border-transparent hover:bg-[#0f172a]">
-                  <div className="mb-4 inline-flex rounded-lg bg-[#1e293b] p-2.5 text-[#94a3b8] transition-colors group-hover:text-[#f8fafc]">
-                    {f.icon}
+          <div className="mt-16 grid gap-12 sm:grid-cols-3 sm:gap-8">
+            {[
+              { num: "01", title: "Find it", desc: "Browse 2,800+ Summer 2026 internships and add them to your board in one click.", Icon: Search },
+              { num: "02", title: "Track it", desc: "Move applications through stages as things progress. Applied, interviewing, ghosted — it's all there.", Icon: LayoutGrid },
+              { num: "03", title: "Land it", desc: "Use AI cover letters, follow-up reminders, and analytics to stay ahead of everyone else.", Icon: Target },
+            ].map((item, i) => (
+              <ScrollReveal key={item.title} delay={i * 80}>
+                <div className="flex flex-col items-center text-center">
+                  <span className="text-4xl font-bold tabular-nums tracking-tight text-[#10b981] sm:text-5xl">{item.num}</span>
+                  <div className="mt-4 flex h-14 w-14 items-center justify-center rounded-xl border border-white/15 bg-[#131316]">
+                    <item.Icon className="h-7 w-7 text-[#34d399]" strokeWidth={1.5} />
                   </div>
-                  <h3 className="text-lg font-semibold text-[#f8fafc]">{f.title}</h3>
-                  <p className="mt-2 text-[0.938rem] leading-relaxed text-[#94a3b8]">{f.description}</p>
+                  <h3 className="mt-4 text-lg font-semibold text-white sm:text-xl">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[#94a3b8]">{item.desc}</p>
                 </div>
               </ScrollReveal>
             ))}
@@ -236,21 +180,129 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-24">
-        <div className="relative mx-auto max-w-2xl px-6 text-center">
-          <div className="pointer-events-none absolute left-1/2 -top-24 h-[400px] w-[800px] -translate-x-1/2 rounded-full bg-[#1e293b]/15 blur-[160px]" />
+      {/* Features — browser frame, green accent on text */}
+      <section className="bg-black py-20 sm:py-28">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          {FEATURES.map((f, i) => (
+            <ScrollReveal key={f.title} delay={i * 100}>
+              <div
+                className={`mb-20 flex flex-col gap-8 last:mb-0 sm:mb-24 sm:gap-10 md:flex-row md:items-center md:gap-16 ${
+                  f.align === "right" ? "md:flex-row-reverse" : ""
+                }`}
+              >
+                <div className="min-w-0 flex-1 md:flex-[5]">
+                  <div className="overflow-hidden rounded-xl border border-[#1e293b] bg-[#0d0d0f] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] sm:rounded-2xl">
+                    <div className="flex items-center gap-2 border-b border-[#1e293b] bg-[#131316] px-4 py-3">
+                      <div className="flex gap-1.5">
+                        <div className="h-3 w-3 rounded-full bg-[#3f3f46]" />
+                        <div className="h-3 w-3 rounded-full bg-[#3f3f46]" />
+                        <div className="h-3 w-3 rounded-full bg-[#3f3f46]" />
+                      </div>
+                      <div className="ml-2 flex-1 rounded-md bg-[#1e1e24] px-3 py-1.5 text-xs text-[#71717a]">trackr.app/dashboard</div>
+                    </div>
+                    <img src={f.image} alt="" className="w-full max-w-full" />
+                  </div>
+                </div>
+                <div className="relative min-w-0 flex-1 border-l-4 border-[#10b981] pl-6 md:flex-[2] md:pl-8">
+                  <h3 className="text-xl font-bold tracking-tight text-white sm:text-2xl">{f.title}</h3>
+                  <p className="mt-3 text-base leading-relaxed text-[#94a3b8] sm:mt-4 sm:text-lg">{f.description}</p>
+                </div>
+              </div>
+            </ScrollReveal>
+          ))}
+        </div>
+      </section>
+
+      {/* Built for students who — lighter cards, bigger checks, hover */}
+      <section className="border-t border-[#1e293b] bg-[#0d0d0f] py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <ScrollReveal>
+            <h2 className="text-center text-2xl font-bold tracking-tight text-white sm:text-4xl">Built for students who</h2>
+            <p className="mx-auto mt-2 max-w-xl text-center text-sm text-[#94a3b8]">Sound familiar?</p>
+          </ScrollReveal>
+          <div className="mx-auto mt-12 max-w-2xl space-y-4">
+            {[
+              "Apply to a lot of jobs and lose track fast",
+              "Hate writing cover letters from scratch every time",
+              "Know they should follow up but always forget",
+              "Are tired of managing a job search in a spreadsheet",
+            ].map((pain, i) => (
+              <ScrollReveal key={pain} delay={i * 60}>
+                <div className="flex items-center gap-4 rounded-xl border border-white/10 border-l-4 border-l-[#10b981] bg-[#18181c] px-5 py-4 transition-colors hover:bg-[#1e1e24] sm:px-6 sm:py-5">
+                  <svg className="h-6 w-6 shrink-0 text-[#34d399]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-[#e2e8f0] sm:text-base">{pain}</span>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing — card, features list, big Free, green tint bg */}
+      <section className="border-t border-[#1e293b] py-20 sm:py-24" style={{ background: "rgba(16, 185, 129, 0.03)" }}>
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <ScrollReveal>
+            <div className="mx-auto max-w-lg rounded-2xl border-2 border-[#10b981]/40 bg-[#0a0a0b] p-8 shadow-xl shadow-[#10b981]/5 sm:p-10">
+              <p className="text-center text-5xl font-bold tracking-tight text-[#10b981] sm:text-6xl">Free</p>
+              <p className="mt-2 text-center text-lg font-semibold text-white">Genuinely.</p>
+              <p className="mt-4 text-center text-sm text-[#94a3b8]">No trial, no credit card, no premium tier. Just sign in and start tracking.</p>
+              <ul className="mx-auto mt-6 max-w-xs space-y-2 text-sm text-[#94a3b8] sm:mt-8">
+                {["Kanban board", "AI cover letters", "Job Finder (2,800+ internships)", "Analytics & flow diagram", "CSV import", "Follow-up reminders"].map((item) => (
+                  <li key={item} className="flex items-center gap-2">
+                    <svg className="h-4 w-4 shrink-0 text-[#10b981]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* FAQ — more spacing, green left border on items */}
+      <section className="border-t border-[#1e293b] bg-black py-20 sm:py-24">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <ScrollReveal>
+            <h2 className="text-center text-2xl font-bold tracking-tight text-white sm:text-4xl">Frequently asked questions</h2>
+            <p className="mx-auto mt-2 max-w-xl text-center text-sm text-[#94a3b8]">Quick answers.</p>
+          </ScrollReveal>
+          <div className="mx-auto mt-12 max-w-2xl space-y-5">
+            {[
+              { q: "Is it actually free?", a: "Yes. All of it. No catch." },
+              { q: "Do you store my resume?", a: "Only if you save it. We use it to autofill cover letters — that's it." },
+              { q: "What's the AI cover letter thing?", a: "You paste a job description, we generate a personalized letter using GPT-4o. You can edit it before sending. It takes about 30 seconds." },
+              { q: "Can I bring in jobs I already applied to?", a: "Yes — import a CSV or add them manually. Takes two minutes." },
+            ].map((faq, i) => (
+              <ScrollReveal key={faq.q} delay={i * 60}>
+                <div className="rounded-xl border border-white/10 border-l-4 border-l-[#10b981]/60 bg-[#131316] p-5 sm:p-6">
+                  <h3 className="font-semibold text-white sm:text-lg">{faq.q}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[#94a3b8] sm:text-base">{faq.a}</p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Footer */}
+      <section className="border-t border-[#1e293b] bg-[#0d0d0f] py-20 sm:py-28">
+        <div className="relative mx-auto max-w-2xl px-4 text-center sm:px-6">
+          <div className="pointer-events-none absolute left-1/2 -top-24 h-[400px] w-[800px] -translate-x-1/2 rounded-full bg-[#10b981]/10 blur-[160px]" />
           <ScrollReveal>
             <div className="relative">
-              <h2 className="text-3xl font-bold tracking-tight text-[#f8fafc]">Ready to get organized?</h2>
-              <p className="mt-4 text-lg text-[#94a3b8]">
-                <span className="font-semibold text-[#cbd5e1]">Stop losing track of applications in spreadsheets.</span> Start using Trackr today.
-              </p>
+              <h2 className="text-2xl font-bold tracking-tight text-white sm:text-4xl">Your next offer starts here.</h2>
               <Link
                 to={isSignedIn ? "/dashboard" : "/sign-up"}
-                className="mt-8 inline-flex rounded-lg bg-[#f8fafc] px-8 py-3 text-sm font-semibold text-[#0f172a] shadow-lg shadow-white/5 hover:bg-[#e2e8f0]"
+                className="mt-6 inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-lg bg-[#10b981] px-8 py-3 text-sm font-semibold text-white hover:bg-[#34d399] transition-colors shadow-lg shadow-[#10b981]/20 sm:mt-8 sm:w-auto"
               >
-                {isSignedIn ? "Go to Dashboard" : "Get Started for Free"}
+                Open Dashboard
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
               </Link>
             </div>
           </ScrollReveal>
@@ -258,13 +310,10 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-[#1e293b] py-8">
+      <footer className="border-t border-[#1e293b] py-6 sm:py-8">
         <ScrollReveal>
-          <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-6 sm:flex-row sm:justify-between">
-            <img src={logo} alt="Trackr" className="h-10 opacity-40 sm:h-12" />
-            <p className="text-xs text-[#475569]">
-              Built with React, Express, Prisma &amp; OpenAI.
-            </p>
+          <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 sm:flex-row sm:justify-between sm:px-6">
+            <img src={logo} alt="Trackr" className="h-8 opacity-40 sm:h-10 md:h-12" />
           </div>
         </ScrollReveal>
       </footer>

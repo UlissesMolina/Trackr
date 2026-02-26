@@ -7,7 +7,7 @@ import StatsCards from "../components/dashboard/StatsCards";
 import ApplicationsChart from "../components/dashboard/ApplicationsChart";
 import StatusBadge from "../components/applications/StatusBadge";
 import EmptyState from "../components/ui/EmptyState";
-import { formatDate, formatShortDate, formatDateTime } from "../lib/utils";
+import { formatDate, formatRelativeDateTime } from "../lib/utils";
 import { INTERVIEW_TYPE_LABELS } from "../lib/constants";
 import type { Application, Interview } from "../types";
 
@@ -20,7 +20,7 @@ function getGreeting(): string {
 
 function getContextualSubtitle(
   applications: Application[],
-  stats: { totalApplications: number } | undefined
+  stats: { totalApplications: number; applicationsThisWeek?: number } | undefined
 ): string {
   const now = new Date();
   const startOfWeek = new Date(now);
@@ -42,6 +42,11 @@ function getContextualSubtitle(
     return `You have ${followUpsDueThisWeek} follow-up${followUpsDueThisWeek === 1 ? "" : "s"} due this week`;
   }
   if (inFlight > 0) {
+    const total = stats?.totalApplications ?? inFlight;
+    const thisWeek = stats?.applicationsThisWeek;
+    if (thisWeek != null && total > 0) {
+      return `${total} total · ${thisWeek} this week · Keep going`;
+    }
     return `${inFlight} application${inFlight === 1 ? "" : "s"} · Keep going`;
   }
   if (stats && stats.totalApplications > 0) {
@@ -74,7 +79,7 @@ function getUpcomingItems(applications: Application[]): UpcomingItem[] {
           items.push({
             type: "interview",
             date: scheduled,
-            label: `${app.company} — ${INTERVIEW_TYPE_LABELS[int.type] ?? int.type} at ${formatDateTime(int.scheduledAt)}`,
+            label: `${app.company} — ${INTERVIEW_TYPE_LABELS[int.type] ?? int.type} · ${formatRelativeDateTime(int.scheduledAt)}`,
             app,
             interview: int,
             isOverdue: false,
@@ -85,10 +90,11 @@ function getUpcomingItems(applications: Application[]): UpcomingItem[] {
     if (app.followUpDate) {
       const d = new Date(app.followUpDate);
       if (d <= in7Days) {
+        const rel = d >= now ? formatRelativeDateTime(app.followUpDate) : "Overdue";
         items.push({
           type: "follow-up",
           date: d,
-          label: `${app.company} — follow up by ${formatShortDate(app.followUpDate)}`,
+          label: `${app.company} — Follow up · ${rel}`,
           app,
           isOverdue: d < now,
           isApproaching: d >= now && d.getTime() - now.getTime() < 3 * 24 * 60 * 60 * 1000,
@@ -132,7 +138,20 @@ export default function DashboardPage() {
         <p className="mt-1 text-sm text-text-secondary">{subtitle}</p>
       </div>
 
-      {/* Recent Applications — Hero (first content) */}
+      {/* Stats cards */}
+      {statsLoading ? (
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-28 animate-pulse rounded-xl border border-border-default bg-surface-secondary" />
+          ))}
+        </div>
+      ) : stats ? (
+        <div className="mb-6">
+          <StatsCards stats={stats} />
+        </div>
+      ) : null}
+
+      {/* Recent Applications */}
       <div className="mb-6 rounded-xl border border-border-default bg-surface-secondary p-6">
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-text-secondary">
           Recently visited
@@ -186,25 +205,24 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Stats cards */}
-      {statsLoading ? (
-        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 animate-pulse rounded-xl border border-border-default bg-surface-secondary" />
-          ))}
-        </div>
-      ) : stats ? (
-        <div className="mb-6">
-          <StatsCards stats={stats} />
-        </div>
-      ) : null}
+      {/* Chart */}
+      <div className="mb-6">
+        {chartLoading ? (
+          <div className="h-[364px] animate-pulse rounded-xl border border-border-default bg-surface-secondary" />
+        ) : (
+          <ApplicationsChart data={chartData ?? []} days={7} />
+        )}
+      </div>
 
-      {/* Upcoming: interviews + follow-ups */}
-      {upcomingItems.length > 0 && (
-        <div className="mb-6 rounded-xl border border-border-default bg-surface-secondary p-6">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-text-secondary">
-            Upcoming
-          </h2>
+      {/* Upcoming — separate section below */}
+      <div className="rounded-xl border border-border-default bg-surface-secondary p-6">
+        <h2 className="mb-1 text-sm font-semibold uppercase tracking-wider text-text-secondary">
+          Upcoming
+        </h2>
+        <p className="mb-4 text-xs text-text-tertiary">
+          Interviews and follow-ups in the next 7 days
+        </p>
+        {upcomingItems.length > 0 ? (
           <div className="space-y-2">
             {upcomingItems.map((item) => (
               <Link
@@ -214,7 +232,7 @@ export default function DashboardPage() {
                     : `${item.app.id}-followup`
                 }
                 to={`/applications/${item.app.id}`}
-                className="flex items-center justify-between gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-tertiary"
+                className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-surface-tertiary"
               >
                 <span className="min-w-0 truncate text-sm text-text-primary">
                   {item.label}
@@ -232,15 +250,10 @@ export default function DashboardPage() {
               </Link>
             ))}
           </div>
-        </div>
-      )}
-
-      {/* Chart */}
-      <div>
-        {chartLoading ? (
-          <div className="h-[364px] animate-pulse rounded-xl border border-border-default bg-surface-secondary" />
         ) : (
-          <ApplicationsChart data={chartData ?? []} />
+          <p className="text-sm text-text-tertiary">
+            No interviews or follow-ups in the next 7 days. Add interviews or follow-up dates on your applications to see them here.
+          </p>
         )}
       </div>
     </div>

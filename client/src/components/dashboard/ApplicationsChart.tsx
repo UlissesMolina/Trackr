@@ -11,9 +11,10 @@ import type { ChartDataPoint } from "../../hooks/useDashboard";
 
 interface ApplicationsChartProps {
   data: ChartDataPoint[];
+  days?: number;
 }
 
-export default function ApplicationsChart({ data }: ApplicationsChartProps) {
+export default function ApplicationsChart({ data, days = 7 }: ApplicationsChartProps) {
   const safeData = Array.isArray(data) ? data : [];
   if (safeData.length === 0) {
     return (
@@ -37,7 +38,7 @@ export default function ApplicationsChart({ data }: ApplicationsChartProps) {
   return (
     <div className="rounded-xl border border-border-default bg-surface-secondary p-6">
       <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-text-secondary">
-        Applications Over Time
+        Applications — Last {days} days
       </h2>
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart data={formatted}>

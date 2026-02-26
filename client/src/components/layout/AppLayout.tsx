@@ -151,7 +151,9 @@ export default function AppLayout() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
         </button>
-        <span className="text-lg font-bold tracking-tight text-text-primary">Trackr</span>
+        <Link to="/" className="text-lg font-bold tracking-tight text-text-primary hover:text-text-secondary transition-colors">
+          Trackr
+        </Link>
         <UserButton
           afterSignOutUrl="/"
           appearance={{ elements: { avatarBox: "h-7 w-7" } }}
@@ -173,9 +175,9 @@ export default function AppLayout() {
         }`}
       >
         <div className="flex h-14 items-center justify-between border-b border-border-default px-5">
-          <span className="text-lg font-bold tracking-tight text-text-primary">
+          <Link to="/" onClick={() => setMobileOpen(false)} className="text-lg font-bold tracking-tight text-text-primary hover:text-text-secondary transition-colors">
             Trackr
-          </span>
+          </Link>
           <button
             onClick={() => setMobileOpen(false)}
             className="rounded-md p-1 text-text-tertiary md:hidden"
@@ -235,7 +237,9 @@ export default function AppLayout() {
       </aside>
 
       <main className="w-full flex-1 pt-14 md:ml-60 md:pt-0 p-4 md:p-8">
-        <Outlet />
+        <div key={pathname} className="animate-page-enter">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

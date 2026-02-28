@@ -46,7 +46,6 @@ export function normalizeForDedup(company: string, title: string): string[] {
   const c = (company ?? "").toLowerCase().trim().replace(/\s*(inc\.?|llc|corp\.?|ltd\.?|co\.?|plc)\s*$/i, "").replace(/[^\w\s]/g, "").replace(/\s+/g, " ");
   const t = (title ?? "").toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/\s+/g, " ");
   const keys: string[] = [`${c}|${t}`];
-  if (c) keys.push(c);
   if (t) {
     const core = t.replace(/\s*[-–—]\s*.*$/, "").replace(/\s*\(.*\)$/, "").trim();
     if (core && core !== t) keys.push(`${c}|${core}`);

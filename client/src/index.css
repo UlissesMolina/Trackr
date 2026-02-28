@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* Dark theme (default) */
+  /* Dark theme (default) — green nudged off Tailwind default */
   --color-surface-primary: #0a0a0b;
   --color-surface-secondary: #131316;
   --color-surface-tertiary: #1a1a1f;
@@ -11,8 +11,8 @@
   --color-text-primary: #ededef;
   --color-text-secondary: #8a8a96;
   --color-text-tertiary: #5c5c69;
-  --color-accent: #10b981;
-  --color-accent-hover: #34d399;
+  --color-accent: #0ead81;
+  --color-accent-hover: #10c98c;
 }
 
 /* Light theme */
@@ -32,14 +32,17 @@ html.light {
 
 html {
   overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 body {
+  font-family: "Inter", system-ui, sans-serif;
   background-color: var(--color-surface-primary);
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  font-feature-settings: "cv02" 1, "cv03" 1, "cv04" 1, "cv11" 1, "tnum" 1;
 }
 
 @keyframes fade-up {
@@ -186,9 +189,56 @@ body {
 
 @keyframes hero-glow-pulse {
   0%, 100% { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
-  50% { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 40px -10px rgba(16, 185, 129, 0.15); }
+  50% { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 40px -10px rgba(14, 173, 129, 0.15); }
 }
 
 .hero-screenshot-animate {
   animation: hero-glow-pulse 4s ease-in-out 1s infinite;
 }
+
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.typing-cursor {
+  animation: cursor-blink 1s step-end infinite;
+}
+
+@keyframes border-shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.pricing-card-shimmer {
+  position: relative;
+}
+.pricing-card-shimmer::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(14, 173, 129, 0.3),
+    rgba(16, 201, 140, 0.5),
+    rgba(14, 173, 129, 0.3),
+    transparent
+  );
+  background-size: 200% 100%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.pricing-card-shimmer:hover::before {
+  opacity: 1;
+  animation: border-shimmer 2s linear infinite;
+}
+
+/* Noise texture overlay — fixed, 3–5% opacity, organic depth */

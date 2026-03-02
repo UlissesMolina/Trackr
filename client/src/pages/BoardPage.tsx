@@ -160,8 +160,8 @@ export default function BoardPage() {
   }
 
   return (
-    <div>
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="pt-2">
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-text-primary">Application Board</h1>
         <div className="flex items-center gap-2">
           <button
@@ -180,7 +180,7 @@ export default function BoardPage() {
       </div>
 
       {/* Filter bar */}
-      <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-3">
+      <div className="mb-6 flex flex-wrap items-center gap-2 sm:gap-3">
         <div className="relative min-w-0 flex-1 basis-full sm:basis-auto">
           <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />

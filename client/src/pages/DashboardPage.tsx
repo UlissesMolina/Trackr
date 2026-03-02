@@ -130,9 +130,9 @@ export default function DashboardPage() {
   const upcomingItems = useMemo(() => getUpcomingItems(applications), [applications]);
 
   return (
-    <div>
+    <div className="pt-2">
       {/* Header with greeting */}
-      <div className="mb-6">
+      <div className="mb-8">
         <h1 className="text-2xl font-bold text-text-primary">
           {greeting}, {firstName}
         </h1>

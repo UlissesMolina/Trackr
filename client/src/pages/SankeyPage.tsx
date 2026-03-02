@@ -208,8 +208,8 @@ export default function SankeyPage() {
   }
 
   return (
-    <div>
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="pt-2">
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-text-primary">Application Flow</h1>
           <p className="mt-1 hidden text-sm text-text-secondary sm:block">
@@ -262,7 +262,7 @@ export default function SankeyPage() {
 
       {/* Stage toggles */}
       {data && data.nodes.length > 0 && (
-        <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="mb-6 flex flex-wrap items-center gap-2">
           <span className="mr-1 text-xs font-medium uppercase tracking-wider text-text-tertiary">
             Stages
           </span>

@@ -74,8 +74,8 @@ export default function ResumePage() {
 
   if (isLoading) {
     return (
-      <div>
-        <h1 className="mb-6 text-2xl font-bold text-text-primary">My Resume</h1>
+      <div className="pt-2">
+        <h1 className="mb-8 text-2xl font-bold text-text-primary">My Resume</h1>
         <div className="space-y-3">
           <div className="h-4 w-1/3 animate-pulse rounded bg-surface-elevated" />
           <div className="h-40 animate-pulse rounded-lg bg-surface-elevated" />
@@ -85,8 +85,8 @@ export default function ResumePage() {
   }
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
+    <div className="pt-2">
+      <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-text-primary">My Resume</h1>
           <p className="mt-1 text-sm text-text-tertiary">

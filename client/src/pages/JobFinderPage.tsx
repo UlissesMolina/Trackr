@@ -201,8 +201,8 @@ export default function JobFinderPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <div className="mb-6">
+    <div className="mx-auto max-w-4xl pt-2">
+      <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight text-text-primary">
           Job Finder
         </h1>
@@ -221,7 +221,7 @@ export default function JobFinderPage() {
         </p>
       </div>
 
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <div className="flex w-full items-center gap-2 sm:w-auto">
           <label className="text-sm font-medium text-text-secondary">Source</label>
           <select

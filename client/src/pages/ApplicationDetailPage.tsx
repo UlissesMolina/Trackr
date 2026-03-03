@@ -39,6 +39,7 @@ export default function ApplicationDetailPage() {
         salaryMin: form.salaryMin ? Number(form.salaryMin) : null,
         salaryMax: form.salaryMax ? Number(form.salaryMax) : null,
         url: form.url || null,
+        jobDescription: form.jobDescription || null,
         priority: form.priority || null,
         dateApplied: form.dateApplied || null,
         followUpDate: form.followUpDate || null,
@@ -82,6 +83,7 @@ export default function ApplicationDetailPage() {
     salaryMin: app.salaryMin?.toString() ?? "",
     salaryMax: app.salaryMax?.toString() ?? "",
     url: app.url ?? "",
+    jobDescription: app.jobDescription ?? "",
     status: boardStatus(app.status),
     priority: app.priority ?? "",
     dateApplied: app.dateApplied ? app.dateApplied.slice(0, 10) : "",
@@ -193,6 +195,13 @@ export default function ApplicationDetailPage() {
               )}
             </dl>
           </div>
+
+          {app.jobDescription && (
+            <div className="rounded-xl border border-border-default bg-surface-secondary p-6">
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-text-secondary">Job Description</h2>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-primary">{app.jobDescription}</p>
+            </div>
+          )}
 
           <div className="rounded-xl border border-border-default bg-surface-secondary p-6">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-text-secondary">Interviews</h2>

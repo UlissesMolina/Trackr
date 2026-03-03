@@ -10,8 +10,17 @@ router.use(requireAuth());
 
 router.post("/cover-letter", async (req: Request, res: Response) => {
   const userId = getUserId(req);
-  const { jobDescription, jobTitle, company, applicationId } = req.body;
-  let { resumeText } = req.body;
+  const { jobTitle, company, applicationId } = req.body;
+  let { jobDescription, resumeText } = req.body;
+
+  // Auto-fill jobDescription from the linked application if not supplied
+  if (applicationId && !jobDescription) {
+    const app = await prisma.application.findFirst({
+      where: { id: applicationId, clerkUserId: userId },
+      select: { jobDescription: true },
+    });
+    if (app?.jobDescription) jobDescription = app.jobDescription;
+  }
 
   if (!resumeText) {
     const saved = await getResume(userId);

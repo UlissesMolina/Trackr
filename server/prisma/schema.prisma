@@ -43,8 +43,9 @@ model Application {
   status        ApplicationStatus   @default(SAVED)
   priority      ApplicationPriority?
   dateApplied   DateTime?
-  followUpDate  DateTime?
-  coverLetter   String?
+  followUpDate     DateTime?
+  jobDescription   String?
+  coverLetter      String?
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
 

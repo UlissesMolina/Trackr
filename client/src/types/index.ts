@@ -13,6 +13,7 @@ export interface Application {
   priority: ApplicationPriority | null;
   dateApplied: string | null;
   followUpDate: string | null;
+  jobDescription: string | null;
   coverLetter: string | null;
   createdAt: string;
   updatedAt: string;

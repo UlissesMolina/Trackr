@@ -17,6 +17,9 @@ server/prisma/migrations/
 !.vscode/extensions.json
 .idea/
 
+# Claude
+.claude/
+
 # Logs
 *.log
 npm-debug.log*

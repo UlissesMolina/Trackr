@@ -27,6 +27,12 @@ export default function CoverLetterPage() {
     if (preselectedId) setApplicationId(preselectedId);
   }, [preselectedId]);
 
+  // Auto-fill job description from the selected application
+  useEffect(() => {
+    const selected = applications.find((a) => a.id === applicationId);
+    if (selected?.jobDescription) setJobDescription(selected.jobDescription);
+  }, [applicationId, applications]);
+
   useEffect(() => {
     if (resume?.content && useSavedResume) {
       setResumeText(resume.content);

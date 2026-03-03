@@ -43,6 +43,7 @@ export function createApplication(
     salaryMin?: number;
     salaryMax?: number;
     url?: string;
+    jobDescription?: string;
     status?: ApplicationStatus;
     priority?: string | null;
     dateApplied?: string;
@@ -58,6 +59,7 @@ export function createApplication(
       salaryMin: data.salaryMin,
       salaryMax: data.salaryMax,
       url: data.url,
+      jobDescription: data.jobDescription,
       status: data.status ?? ApplicationStatus.SAVED,
       priority: toPriority(data.priority),
       dateApplied: data.dateApplied ? new Date(data.dateApplied) : null,
@@ -76,6 +78,7 @@ export function updateApplication(
     salaryMin?: number | null;
     salaryMax?: number | null;
     url?: string | null;
+    jobDescription?: string | null;
     priority?: ApplicationPriority | string | null;
     dateApplied?: string | null;
     followUpDate?: string | null;

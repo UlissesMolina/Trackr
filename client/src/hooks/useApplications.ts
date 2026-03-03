@@ -35,6 +35,7 @@ export function useCreateApplication() {
       salaryMin?: number;
       salaryMax?: number;
       url?: string;
+      jobDescription?: string;
       status?: ApplicationStatus;
       priority?: ApplicationPriority | null;
       dateApplied?: string;
@@ -64,6 +65,7 @@ export function useUpdateApplication() {
       salaryMin?: number | null;
       salaryMax?: number | null;
       url?: string | null;
+      jobDescription?: string | null;
       priority?: ApplicationPriority | null;
       dateApplied?: string | null;
       followUpDate?: string | null;

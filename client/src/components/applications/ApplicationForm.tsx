@@ -15,6 +15,7 @@ export interface ApplicationFormData {
   salaryMin: string;
   salaryMax: string;
   url: string;
+  jobDescription: string;
   status: BoardStatus;
   priority: ApplicationPriority | "";
   dateApplied: string;
@@ -35,6 +36,7 @@ const EMPTY: ApplicationFormData = {
   salaryMin: "",
   salaryMax: "",
   url: "",
+  jobDescription: "",
   status: "SAVED",
   priority: "",
   dateApplied: "",
@@ -112,6 +114,16 @@ export default function ApplicationForm({
         <div className="col-span-2 sm:col-span-1">
           <label className="mb-1 block text-sm font-medium text-text-secondary">Follow Up By</label>
           <input type="date" value={form.followUpDate} onChange={(e) => update("followUpDate", e.target.value)} className={INPUT} />
+        </div>
+        <div className="col-span-2">
+          <label className="mb-1 block text-sm font-medium text-text-secondary">Job Description</label>
+          <textarea
+            value={form.jobDescription}
+            onChange={(e) => update("jobDescription", e.target.value)}
+            placeholder="Paste the job description here — used to auto-fill the AI cover letter generator."
+            rows={5}
+            className={INPUT}
+          />
         </div>
       </div>
 

@@ -29,7 +29,7 @@ interface DragState {
 }
 
 const INPUT =
-  "rounded-lg border border-border-default bg-surface-secondary px-3 py-1.5 text-sm text-text-primary placeholder-text-tertiary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+  "rounded-lg border border-border-default bg-surface-secondary px-3 py-1.5 text-sm text-text-primary placeholder-text-tertiary transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
 
 export default function BoardPage() {
   const { data: applications = [], isLoading } = useApplications();
@@ -196,7 +196,7 @@ export default function BoardPage() {
         <select
           value={stageJump}
           onChange={(e) => setStageJump(e.target.value as BoardStatus | "ALL")}
-          className={INPUT}
+          className={`${INPUT} cursor-pointer`}
         >
           <option value="ALL">All Stages</option>
           {BOARD_STATUSES.map((s) => (
@@ -206,7 +206,7 @@ export default function BoardPage() {
         <select
           value={dateFilter}
           onChange={(e) => setDateFilter(e.target.value as "all" | "7" | "30")}
-          className={INPUT}
+          className={`${INPUT} cursor-pointer`}
         >
           <option value="all">All Time</option>
           <option value="7">Last 7 days</option>

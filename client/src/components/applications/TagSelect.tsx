@@ -102,7 +102,7 @@ export default function TagSelect({ applicationId, currentTags }: TagSelectProps
       </div>
 
       {open && (
-        <div className="absolute left-0 top-full z-20 mt-2 w-56 rounded-lg border border-border-default bg-surface-secondary p-2 shadow-lg">
+        <div className="animate-settings-pop absolute left-0 top-full z-20 mt-2 w-56 rounded-lg border border-border-default bg-surface-secondary p-2 shadow-lg">
           {safeAllTags.length > 0 && (
             <div className="mb-2 max-h-40 space-y-0.5 overflow-y-auto">
               {safeAllTags.map((tag) => (

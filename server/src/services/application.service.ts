@@ -48,6 +48,7 @@ export function createApplication(
     priority?: string | null;
     dateApplied?: string;
     followUpDate?: string;
+    rejectionDate?: string;
   }
 ) {
   return prisma.application.create({
@@ -64,6 +65,7 @@ export function createApplication(
       priority: toPriority(data.priority),
       dateApplied: data.dateApplied ? new Date(data.dateApplied) : null,
       followUpDate: data.followUpDate ? new Date(data.followUpDate) : null,
+      rejectionDate: data.rejectionDate ? new Date(data.rejectionDate) : null,
     },
   });
 }
@@ -82,10 +84,11 @@ export function updateApplication(
     priority?: ApplicationPriority | string | null;
     dateApplied?: string | null;
     followUpDate?: string | null;
+    rejectionDate?: string | null;
     coverLetter?: string | null;
   }
 ) {
-  const { priority, dateApplied, followUpDate, ...rest } = data;
+  const { priority, dateApplied, followUpDate, rejectionDate, ...rest } = data;
   return prisma.application.updateMany({
     where: { id, clerkUserId },
     data: {
@@ -96,6 +99,9 @@ export function updateApplication(
         : undefined,
       followUpDate: followUpDate !== undefined
         ? followUpDate ? new Date(followUpDate) : null
+        : undefined,
+      rejectionDate: rejectionDate !== undefined
+        ? rejectionDate ? new Date(rejectionDate) : null
         : undefined,
     },
   });

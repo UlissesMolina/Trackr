@@ -69,6 +69,7 @@ export function useUpdateApplication() {
       priority?: ApplicationPriority | null;
       dateApplied?: string | null;
       followUpDate?: string | null;
+      rejectionDate?: string | null;
       coverLetter?: string | null;
     }) => {
       const { data } = await api.patch(`/applications/${id}`, body);

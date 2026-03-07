@@ -12,7 +12,7 @@ interface PrioritySelectProps {
 }
 
 const INPUT =
-  "rounded-lg border border-border-default bg-surface-tertiary px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+  "cursor-pointer rounded-lg border border-border-default bg-surface-tertiary px-3 py-1.5 text-sm text-text-primary transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
 
 export default function PrioritySelect({
   applicationId,

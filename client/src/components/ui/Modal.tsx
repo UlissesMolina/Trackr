@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 interface ModalProps {
   open: boolean;
@@ -8,8 +8,6 @@ interface ModalProps {
 }
 
 export default function Modal({ open, onClose, title, children }: ModalProps) {
-  const overlayRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -21,13 +19,10 @@ export default function Modal({ open, onClose, title, children }: ModalProps) {
   if (!open) return null;
 
   return (
-    <div
-      ref={overlayRef}
-      onClick={(e) => e.target === overlayRef.current && onClose()}
-      className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-black/60 p-0 sm:items-start sm:justify-center sm:pt-8 sm:pb-8 sm:px-4"
-    >
-      <div className="w-full max-h-[90vh] overflow-y-auto rounded-t-xl border border-border-default bg-surface-secondary shadow-2xl sm:max-w-lg sm:rounded-xl">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border-default bg-surface-secondary px-5 py-4 sm:px-6">
+    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-start sm:justify-center sm:pt-10 sm:px-6 sm:pb-6">
+      <div className="animate-modal-backdrop absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="animate-modal-panel relative w-full rounded-t-xl border border-border-default bg-surface-secondary shadow-2xl sm:max-w-lg sm:rounded-xl">
+        <div className="flex items-center justify-between border-b border-border-default px-5 py-4 sm:px-6">
           <h2 className="text-lg font-semibold text-text-primary">{title}</h2>
           <button
             onClick={onClose}
@@ -38,7 +33,7 @@ export default function Modal({ open, onClose, title, children }: ModalProps) {
             </svg>
           </button>
         </div>
-        <div className="px-5 py-4 sm:px-6">{children}</div>
+        <div className="max-h-[75vh] overflow-y-auto px-5 py-4 sm:px-6">{children}</div>
       </div>
     </div>
   );

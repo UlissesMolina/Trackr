@@ -20,6 +20,7 @@ export interface ApplicationFormData {
   priority: ApplicationPriority | "";
   dateApplied: string;
   followUpDate: string;
+  rejectionDate: string;
 }
 
 interface ApplicationFormProps {
@@ -41,10 +42,11 @@ const EMPTY: ApplicationFormData = {
   priority: "",
   dateApplied: "",
   followUpDate: "",
+  rejectionDate: "",
 };
 
 const INPUT =
-  "w-full rounded-lg border border-border-default bg-surface-tertiary px-3 py-2 text-sm text-text-primary placeholder-text-tertiary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+  "w-full rounded-lg border border-border-default bg-surface-tertiary px-3 py-2 text-sm text-text-primary placeholder-text-tertiary transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
 
 export default function ApplicationForm({
   initial,
@@ -80,7 +82,7 @@ export default function ApplicationForm({
         </div>
         <div className="col-span-2 sm:col-span-1">
           <label className="mb-1 block text-sm font-medium text-text-secondary">Status</label>
-          <select value={form.status} onChange={(e) => update("status", e.target.value)} className={INPUT}>
+          <select value={form.status} onChange={(e) => update("status", e.target.value)} className={`${INPUT} cursor-pointer`}>
             {BOARD_STATUSES.map((s) => (
               <option key={s} value={s}>{STATUS_LABELS[s]}</option>
             ))}
@@ -88,7 +90,7 @@ export default function ApplicationForm({
         </div>
         <div className="col-span-2 sm:col-span-1">
           <label className="mb-1 block text-sm font-medium text-text-secondary">Priority</label>
-          <select value={form.priority} onChange={(e) => update("priority", e.target.value)} className={INPUT}>
+          <select value={form.priority} onChange={(e) => update("priority", e.target.value)} className={`${INPUT} cursor-pointer`}>
             <option value="">None</option>
             {PRIORITY_LEVELS.map((p) => (
               <option key={p} value={p}>{PRIORITY_LABELS[p]}</option>
@@ -115,6 +117,12 @@ export default function ApplicationForm({
           <label className="mb-1 block text-sm font-medium text-text-secondary">Follow Up By</label>
           <input type="date" value={form.followUpDate} onChange={(e) => update("followUpDate", e.target.value)} className={INPUT} />
         </div>
+        {form.status === "REJECTED" && (
+          <div className="col-span-2 sm:col-span-1">
+            <label className="mb-1 block text-sm font-medium text-text-secondary">Rejection Date</label>
+            <input type="date" value={form.rejectionDate} onChange={(e) => update("rejectionDate", e.target.value)} className={INPUT} />
+          </div>
+        )}
         <div className="col-span-2">
           <label className="mb-1 block text-sm font-medium text-text-secondary">Job Description</label>
           <textarea

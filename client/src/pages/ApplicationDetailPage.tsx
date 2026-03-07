@@ -43,6 +43,7 @@ export default function ApplicationDetailPage() {
         priority: form.priority || null,
         dateApplied: form.dateApplied || null,
         followUpDate: form.followUpDate || null,
+        rejectionDate: form.rejectionDate || null,
       },
       { onSuccess: () => setShowEdit(false) }
     );
@@ -88,6 +89,7 @@ export default function ApplicationDetailPage() {
     priority: app.priority ?? "",
     dateApplied: app.dateApplied ? app.dateApplied.slice(0, 10) : "",
     followUpDate: app.followUpDate ? app.followUpDate.slice(0, 10) : "",
+    rejectionDate: app.rejectionDate ? app.rejectionDate.slice(0, 10) : "",
   };
 
   const followUpStatus = (() => {
@@ -183,6 +185,12 @@ export default function ApplicationDetailPage() {
                 <div>
                   <dt className="text-xs font-medium text-text-tertiary">Date Applied</dt>
                   <dd className="mt-1 text-sm text-text-primary">{formatDate(app.dateApplied)}</dd>
+                </div>
+              )}
+              {app.rejectionDate && (
+                <div>
+                  <dt className="text-xs font-medium text-text-tertiary">Rejection Date</dt>
+                  <dd className="mt-1 text-sm text-text-primary">{formatDate(app.rejectionDate)}</dd>
                 </div>
               )}
               {app.url && (

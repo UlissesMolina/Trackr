@@ -87,6 +87,30 @@ body {
   }
 }
 
+@keyframes modal-backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-modal-backdrop {
+  animation: modal-backdrop-enter 0.2s ease-out both;
+}
+
+.animate-modal-panel {
+  animation: modal-panel-enter 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 @keyframes settings-pop {
   from {
     opacity: 0;

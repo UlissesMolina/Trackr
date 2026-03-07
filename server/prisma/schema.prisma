@@ -44,6 +44,7 @@ model Application {
   priority      ApplicationPriority?
   dateApplied   DateTime?
   followUpDate     DateTime?
+  rejectionDate    DateTime?
   jobDescription   String?
   coverLetter      String?
   createdAt     DateTime            @default(now())

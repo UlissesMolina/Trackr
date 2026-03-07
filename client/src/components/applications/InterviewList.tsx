@@ -16,7 +16,7 @@ interface InterviewListProps {
 }
 
 const INPUT =
-  "w-full rounded-lg border border-border-default bg-surface-tertiary px-3 py-2 text-sm text-text-primary placeholder-text-tertiary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+  "w-full rounded-lg border border-border-default bg-surface-tertiary px-3 py-2 text-sm text-text-primary placeholder-text-tertiary transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
 
 function formatTime(dateStr: string): string {
   return new Date(dateStr).toLocaleTimeString("en-US", {
@@ -131,7 +131,7 @@ export default function InterviewList({ applicationId }: InterviewListProps) {
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
               <label className="mb-1 block text-xs font-medium text-text-secondary">Type</label>
-              <select value={type} onChange={(e) => setType(e.target.value as InterviewType)} className={INPUT}>
+              <select value={type} onChange={(e) => setType(e.target.value as InterviewType)} className={`${INPUT} cursor-pointer`}>
                 {INTERVIEW_TYPES.map((t) => (
                   <option key={t} value={t}>{INTERVIEW_TYPE_LABELS[t]}</option>
                 ))}

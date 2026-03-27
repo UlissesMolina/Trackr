@@ -4,7 +4,6 @@ import type { Application } from "../../types";
 import StatusSelect from "./StatusSelect";
 import PrioritySelect from "./PrioritySelect";
 import { formatDate, formatSalary } from "../../lib/utils";
-import { STATUS_DOT_COLORS, PRIORITY_DOT_COLORS } from "../../lib/constants";
 
 type SortKey =
   | "company"

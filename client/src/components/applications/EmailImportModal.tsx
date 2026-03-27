@@ -4,7 +4,6 @@ import api from "../../lib/api";
 import Modal from "../ui/Modal";
 import {
   STATUS_LABELS,
-  PRIORITY_LABELS,
   type ApplicationStatus,
   type ApplicationPriority,
 } from "../../lib/constants";

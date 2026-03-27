@@ -68,7 +68,7 @@ function ScrollWord({ word, scrollYProgress, rangeStart, rangeEnd, color }: { wo
   );
 }
 
-function GlowCard({ children, className = "", style, ...props }: { children: ReactNode; className?: string; style?: React.CSSProperties; whileHover?: Record<string, unknown>; transition?: Record<string, unknown> }) {
+function GlowCard({ children, className = "", style, ...props }: { children: ReactNode; className?: string; style?: React.CSSProperties } & Omit<React.ComponentProps<typeof motion.div>, "ref" | "children" | "className" | "style" | "onMouseMove" | "onMouseEnter" | "onMouseLeave">) {
   const ref = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(-400);
   const mouseY = useMotionValue(-400);
@@ -113,7 +113,6 @@ function StepNumber({ target, inView }: { target: string; inView: boolean }) {
   useEffect(() => {
     if (!inView || hasRun.current) return;
     hasRun.current = true;
-    const num = parseInt(target);
     let frame = 0;
     const totalFrames = 18;
     const id = setInterval(() => {
@@ -131,7 +130,7 @@ function StepNumber({ target, inView }: { target: string; inView: boolean }) {
   return <>{display}</>;
 }
 
-function StepDot({ left, threshold, linePathLength }: { left: string; threshold: number; linePathLength: ReturnType<typeof useTransform> }) {
+function StepDot({ left, threshold, linePathLength }: { left: string; threshold: number; linePathLength: import("framer-motion").MotionValue<number> }) {
   const dotScale = useTransform(linePathLength, [threshold - 0.02, threshold + 0.05], [0, 1]);
   const dotOpacity = useTransform(linePathLength, [threshold - 0.02, threshold + 0.05], [0, 1]);
 
@@ -168,7 +167,7 @@ function Reveal({ children, delay = 0, className = "", direction }: { children: 
 
 // GradientDivider removed — replaced by CSS section-blend mask edges
 
-function ScrollReveal({ children, delay = 0, className = "", direction }: { children: ReactNode; delay?: number; className?: string; direction?: "left" | "right" }) {
+function ScrollReveal({ children, delay: _delay = 0, className = "", direction }: { children: ReactNode; delay?: number; className?: string; direction?: "left" | "right" }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
 
@@ -374,51 +373,6 @@ function SankeyFlowPath({ d, fill, id, index, scrollYProgress, hovered, setHover
       onMouseEnter={() => setHovered(id)}
       onMouseLeave={() => setHovered(null)}
     />
-  );
-}
-
-function SankeyPreview() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const [hovered, setHovered] = useState<string | null>(null);
-
-  return (
-    <div ref={ref} className="flex flex-col items-center justify-center p-4" style={{ minHeight: 200 }}>
-      <svg viewBox="0 0 220 90" className="w-full" style={{ maxWidth: 280 }}>
-        <defs>
-          <linearGradient id="sk1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#3b82f6" stopOpacity="0.5" /><stop offset="100%" stopColor="#a855f7" stopOpacity="0.4" /></linearGradient>
-          <linearGradient id="sk2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#a855f7" stopOpacity="0.4" /><stop offset="100%" stopColor="#48de94" stopOpacity="0.5" /></linearGradient>
-          <linearGradient id="sk3" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#a855f7" stopOpacity="0.35" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0.3" /></linearGradient>
-        </defs>
-
-        {/* Labels */}
-        <text x="4" y="10" fill="#3b82f6" fontSize="6" fontFamily="JetBrains Mono, monospace" fontWeight="600" opacity="0.8">Applied</text>
-        <text x="88" y="18" fill="#a855f7" fontSize="6" fontFamily="JetBrains Mono, monospace" fontWeight="600" opacity="0.8">Interview</text>
-        <text x="185" y="28" fill="#48de94" fontSize="6" fontFamily="JetBrains Mono, monospace" fontWeight="600" opacity="0.8">Offer</text>
-        <text x="185" y="66" fill="#ef4444" fontSize="6" fontFamily="JetBrains Mono, monospace" fontWeight="600" opacity="0.7">Rejected</text>
-
-        {/* Counts */}
-        <text x="4" y="74" fill="#3b82f6" fontSize="8" fontFamily="JetBrains Mono, monospace" fontWeight="700" opacity="0.5">47</text>
-        <text x="88" y="56" fill="#a855f7" fontSize="8" fontFamily="JetBrains Mono, monospace" fontWeight="700" opacity="0.5">18</text>
-        <text x="185" y="38" fill="#48de94" fontSize="8" fontFamily="JetBrains Mono, monospace" fontWeight="700" opacity="0.5">5</text>
-        <text x="185" y="78" fill="#ef4444" fontSize="8" fontFamily="JetBrains Mono, monospace" fontWeight="700" opacity="0.5">13</text>
-
-        {/* Flows — scroll-proportional clip-path reveal */}
-        {[
-          { d: "M0,15 C50,15 50,22 100,22 L100,50 C50,50 50,70 0,70 Z", fill: "url(#sk1)", id: "applied" },
-          { d: "M100,22 C145,22 145,30 220,30 L220,44 C145,44 145,50 100,50 Z", fill: "url(#sk2)", id: "offer" },
-          { d: "M100,50 C145,50 145,60 220,60 L220,76 C145,76 145,68 100,68 Z", fill: "url(#sk3)", id: "rejected" },
-        ].map((path, i) => (
-          <SankeyFlowPath key={path.id} {...path} index={i} scrollYProgress={scrollYProgress} hovered={hovered} setHovered={setHovered} />
-        ))}
-      </svg>
-      <div className="mt-2 text-[8px]" style={{ color: C.dim, fontFamily: F.mono }}>
-        {hovered === "applied" && "47 applied → 18 got interviews (38%)"}
-        {hovered === "offer" && "18 interviews → 5 offers (28%)"}
-        {hovered === "rejected" && "18 interviews → 13 rejected (72%)"}
-        {!hovered && "Hover a flow to see conversion rates"}
-      </div>
-    </div>
   );
 }
 

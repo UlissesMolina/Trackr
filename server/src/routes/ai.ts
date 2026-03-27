@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { requireAuth, getUserId } from "../middleware/auth";
-import { generateCoverLetter } from "../services/ai.service";
+import { generateCoverLetter, extractFromEmails } from "../services/ai.service";
 import { getResume } from "../services/resume.service";
 import prisma from "../lib/prisma";
 
@@ -50,6 +50,22 @@ router.post("/cover-letter", async (req: Request, res: Response) => {
   }
 
   res.json({ coverLetter });
+});
+
+router.post("/extract-from-email", async (req: Request, res: Response) => {
+  const { emailText } = req.body;
+
+  if (!emailText || typeof emailText !== "string" || emailText.trim().length < 10) {
+    res.status(400).json({ error: "Please paste your email text (at least 10 characters)." });
+    return;
+  }
+
+  try {
+    const applications = await extractFromEmails(emailText);
+    res.json({ applications });
+  } catch {
+    res.status(500).json({ error: "Failed to extract applications from email text." });
+  }
 });
 
 export default router;

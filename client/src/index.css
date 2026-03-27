@@ -211,14 +211,6 @@ body {
   animation: border-rotate 2.5s linear infinite;
 }
 
-@keyframes hero-glow-pulse {
-  0%, 100% { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
-  50% { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 40px -10px rgba(14, 173, 129, 0.15); }
-}
-
-.hero-screenshot-animate {
-  animation: hero-glow-pulse 4s ease-in-out 1s infinite;
-}
 
 @keyframes cursor-blink {
   0%, 50% { opacity: 1; }
@@ -263,6 +255,129 @@ body {
 .pricing-card-shimmer:hover::before {
   opacity: 1;
   animation: border-shimmer 2s linear infinite;
+}
+
+/* ─── Section blend — soft fade edges so root bg shows through ──────────── */
+.section-blend {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 140px, black calc(100% - 140px), transparent);
+  mask-image: linear-gradient(to bottom, transparent, black 140px, black calc(100% - 140px), transparent);
+}
+
+/* ─── Landing page animations ─────────────────────────────────────────────── */
+
+@keyframes blob-drift-1 {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(30px, -20px); }
+  66% { transform: translate(-20px, 15px); }
+}
+
+@keyframes blob-drift-2 {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(-25px, 25px); }
+  66% { transform: translate(20px, -15px); }
+}
+
+@keyframes blob-drift-3 {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(15px, 20px); }
+  66% { transform: translate(-30px, -10px); }
+}
+
+.landing-blob-1 { animation: blob-drift-1 70s linear infinite; }
+.landing-blob-2 { animation: blob-drift-2 80s linear infinite; }
+.landing-blob-3 { animation: blob-drift-3 90s linear infinite; }
+
+@keyframes float-pill {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.float-pill-1 { animation: float-pill 6s ease-in-out infinite; }
+.float-pill-2 { animation: float-pill 7s ease-in-out 1s infinite; }
+.float-pill-3 { animation: float-pill 8s ease-in-out 2s infinite; }
+.float-pill-4 { animation: float-pill 6.5s ease-in-out 0.5s infinite; }
+
+@keyframes badge-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.badge-dot-pulse {
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes typing-cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.landing-typing-cursor {
+  animation: typing-cursor-blink 1s step-end infinite;
+}
+
+@keyframes kanban-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-1.5deg); }
+  75% { transform: rotate(1.5deg); }
+}
+
+/* Nav underline expand from center */
+.nav-link-underline {
+  position: relative;
+}
+.nav-link-underline::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: #48de94;
+  transition: width 0.3s ease, left 0.3s ease;
+}
+.nav-link-underline:hover::after {
+  width: 100%;
+  left: 0;
+}
+
+/* Ghost button underline — slides from left on hover */
+.ghost-btn-underline {
+  position: relative;
+}
+.ghost-btn-underline::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.4);
+  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ghost-btn-underline:hover::after {
+  width: 100%;
+}
+
+/* Accent text shimmer */
+@keyframes text-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.accent-shimmer {
+  background: linear-gradient(
+    90deg,
+    #48de94 0%,
+    #7dffc0 30%,
+    #48de94 50%,
+    #2ec47a 70%,
+    #48de94 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-shimmer 4s linear infinite;
 }
 
 /* Noise texture overlay — fixed, 3–5% opacity, organic depth */

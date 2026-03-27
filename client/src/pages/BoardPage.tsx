@@ -18,6 +18,8 @@ import ApplicationForm, {
 } from "../components/applications/ApplicationForm";
 import Modal from "../components/ui/Modal";
 import ImportModal from "../components/applications/ImportModal";
+import EmailImportModal from "../components/applications/EmailImportModal";
+import ApplicationTable from "../components/applications/ApplicationTable";
 
 interface DragState {
   id: string;
@@ -35,8 +37,18 @@ export default function BoardPage() {
   const { data: applications = [], isLoading } = useApplications();
   const createMutation = useCreateApplication();
   const statusMutation = useUpdateApplicationStatus();
+  const [viewMode, setViewMode] = useState<"kanban" | "table">(() => {
+    const saved = localStorage.getItem("boardViewMode");
+    return saved === "table" ? "table" : "kanban";
+  });
   const [showForm, setShowForm] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showEmailImport, setShowEmailImport] = useState(false);
+
+  function setView(mode: "kanban" | "table") {
+    setViewMode(mode);
+    localStorage.setItem("boardViewMode", mode);
+  }
 
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<"all" | "7" | "30">("all");
@@ -164,11 +176,37 @@ export default function BoardPage() {
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-text-primary">Application Board</h1>
         <div className="flex items-center gap-2">
+          <div className="flex rounded-lg border border-border-default overflow-hidden">
+            <button
+              onClick={() => setView("kanban")}
+              className={`px-2.5 py-2 text-sm ${viewMode === "kanban" ? "bg-surface-elevated text-text-primary" : "text-text-tertiary hover:text-text-secondary hover:bg-surface-secondary"}`}
+              title="Kanban view"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 4H5a1 1 0 00-1 1v5a1 1 0 001 1h4a1 1 0 001-1V5a1 1 0 00-1-1zm10 0h-4a1 1 0 00-1 1v10a1 1 0 001 1h4a1 1 0 001-1V5a1 1 0 00-1-1zM9 16H5a1 1 0 00-1 1v2a1 1 0 001 1h4a1 1 0 001-1v-2a1 1 0 00-1-1z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setView("table")}
+              className={`px-2.5 py-2 text-sm border-l border-border-default ${viewMode === "table" ? "bg-surface-elevated text-text-primary" : "text-text-tertiary hover:text-text-secondary hover:bg-surface-secondary"}`}
+              title="Table view"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
           <button
             onClick={() => setShowImport(true)}
             className="rounded-lg border border-border-default px-4 py-2 text-sm font-medium text-text-secondary hover:bg-surface-elevated"
           >
             Import CSV
+          </button>
+          <button
+            onClick={() => setShowEmailImport(true)}
+            className="rounded-lg border border-border-default px-4 py-2 text-sm font-medium text-text-secondary hover:bg-surface-elevated"
+          >
+            Paste Email
           </button>
           <button
             onClick={() => setShowForm(true)}
@@ -222,6 +260,11 @@ export default function BoardPage() {
         )}
       </div>
 
+      {viewMode === "table" && (
+        <ApplicationTable applications={filteredApps} />
+      )}
+
+      {viewMode === "kanban" && (<>
       <div className="flex gap-3 overflow-x-auto pb-4 sm:gap-4">
         {BOARD_STATUSES.map((status) => {
           const cards = filteredApps.filter((a) => boardStatus(a.status) === status);
@@ -295,6 +338,7 @@ export default function BoardPage() {
         </div>,
         document.body
       )}
+      </>)}
 
       <Modal open={showForm} onClose={() => setShowForm(false)} title="Add Application">
         <ApplicationForm
@@ -305,6 +349,7 @@ export default function BoardPage() {
       </Modal>
 
       <ImportModal open={showImport} onClose={() => setShowImport(false)} />
+      <EmailImportModal open={showEmailImport} onClose={() => setShowEmailImport(false)} />
     </div>
   );
 }

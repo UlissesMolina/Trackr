@@ -6,6 +6,20 @@ const router = Router();
 
 router.use(requireAuth());
 
+router.get("/export/csv", async (req: Request, res: Response) => {
+  try {
+    const days = Math.min(Math.max(parseInt(req.query.days as string) || 1, 1), 365);
+    const jobs = await jobService.getJobsForExport(days);
+    const csv = jobService.jobsToCsv(jobs);
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="jobs-last-${days}-days.csv"`);
+    res.send(csv);
+  } catch (err) {
+    console.error("CSV export error:", err);
+    res.status(500).json({ error: "Failed to export jobs" });
+  }
+});
+
 router.get("/", async (req: Request, res: Response) => {
   try {
     const category = req.query.category as string | undefined;

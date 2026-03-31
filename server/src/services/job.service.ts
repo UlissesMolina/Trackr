@@ -230,3 +230,42 @@ export async function searchJobs(options: {
   const jobs = grouped.slice(offset, offset + limit);
   return { jobs, total };
 }
+
+export async function getJobsForExport(days: number): Promise<GroupedJob[]> {
+  const all = await fetchListings();
+
+  let filtered = all.filter(
+    (l) =>
+      l.active &&
+      l.is_visible !== false &&
+      isSummer2026(l)
+  );
+
+  let grouped = groupByCompanyAndTitle(filtered);
+
+  const now = Math.floor(Date.now() / 1000);
+  const cutoff = now - days * 86400;
+  grouped = grouped.filter((g) => (g.date_posted ?? 0) >= cutoff);
+  grouped.sort((a, b) => (b.date_posted ?? 0) - (a.date_posted ?? 0));
+
+  return grouped;
+}
+
+export function jobsToCsv(jobs: GroupedJob[]): string {
+  const headers = ["Company", "Title", "Locations", "Date Posted", "URL"];
+  const rows = jobs.map((job) => [
+    escapeCsvField(job.company_name ?? ""),
+    escapeCsvField(job.title ?? ""),
+    escapeCsvField((job.locations ?? []).join("; ")),
+    job.date_posted ? new Date(job.date_posted * 1000).toISOString().split("T")[0] : "",
+    escapeCsvField(job.url ?? ""),
+  ]);
+  return [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+}
+
+function escapeCsvField(field: string): string {
+  if (field.includes(",") || field.includes('"') || field.includes("\n")) {
+    return `"${field.replace(/"/g, '""')}"`;
+  }
+  return field;
+}

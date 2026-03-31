@@ -1,8 +1,17 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useJobs, type JobListing } from "../hooks/useJobs";
 import { normalizeForDedup } from "../lib/utils";
 import { useCreateApplication, useApplications } from "../hooks/useApplications";
+import { useAuth } from "@clerk/clerk-react";
 import EmptyState from "../components/ui/EmptyState";
+
+const CSV_DAY_OPTIONS = [
+  { value: 1, label: "Last 1 day" },
+  { value: 3, label: "Last 3 days" },
+  { value: 7, label: "Last 7 days" },
+  { value: 14, label: "Last 14 days" },
+  { value: 30, label: "Last 30 days" },
+];
 
 const CATEGORIES = [
   { value: "", label: "All categories" },
@@ -135,8 +144,12 @@ export default function JobFinderPage() {
   const [page, setPage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [addingJobId, setAddingJobId] = useState<string | null>(null);
+  const [csvOpen, setCsvOpen] = useState(false);
+  const [csvExporting, setCsvExporting] = useState(false);
+  const csvRef = useRef<HTMLDivElement>(null);
   const createMutation = useCreateApplication();
   const { data: applications } = useApplications();
+  const { getToken } = useAuth();
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300);
@@ -177,6 +190,39 @@ export default function JobFinderPage() {
     return false;
   }
 
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (csvRef.current && !csvRef.current.contains(e.target as Node)) {
+        setCsvOpen(false);
+      }
+    }
+    if (csvOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [csvOpen]);
+
+  async function handleCsvExport(days: number) {
+    setCsvExporting(true);
+    setCsvOpen(false);
+    try {
+      const token = await getToken();
+      const res = await fetch(`/api/jobs/export/csv?days=${days}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `jobs-last-${days}-days.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("Failed to export CSV. Please try again.");
+    } finally {
+      setCsvExporting(false);
+    }
+  }
+
   function handleAdd(job: JobListing) {
     setAddingJobId(job.id);
     createMutation.mutate(
@@ -195,21 +241,57 @@ export default function JobFinderPage() {
 
   return (
     <div className="mx-auto max-w-4xl pt-2">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight text-text-primary">
-          Job Finder
-        </h1>
-        <p className="mt-1 text-sm text-text-secondary">
-          Summer 2026 tech internships from{" "}
-          <a
-            href="https://github.com/SimplifyJobs/Summer2026-Internships"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-accent hover:underline"
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+            Job Finder
+          </h1>
+          <p className="mt-1 text-sm text-text-secondary">
+            Summer 2026 tech internships from{" "}
+            <a
+              href="https://github.com/SimplifyJobs/Summer2026-Internships"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent hover:underline"
+            >
+              SimplifyJobs/Summer2026-Internships
+            </a>
+          </p>
+        </div>
+        <div className="relative" ref={csvRef}>
+          <button
+            onClick={() => setCsvOpen((o) => !o)}
+            disabled={csvExporting}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-surface-secondary px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-elevated disabled:opacity-50"
           >
-            SimplifyJobs/Summer2026-Internships
-          </a>
-        </p>
+            {csvExporting ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-text-tertiary border-t-transparent" />
+                Exporting…
+              </>
+            ) : (
+              <>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Export CSV
+              </>
+            )}
+          </button>
+          {csvOpen && (
+            <div className="absolute right-0 z-10 mt-1 w-44 rounded-lg border border-border-default bg-surface-secondary py-1 shadow-lg">
+              {CSV_DAY_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => handleCsvExport(opt.value)}
+                  className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-surface-elevated"
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">

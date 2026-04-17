@@ -170,7 +170,7 @@ function SettingsPanel({ onClose, theme }: { onClose: () => void; theme: ReturnT
 }
 
 export default function AppLayout() {
-  useAuthToken();
+  const authReady = useAuthToken();
   const theme = useTheme();
   const { pathname } = useLocation();
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -298,7 +298,11 @@ export default function AppLayout() {
 
       <main className={`w-full flex-1 pt-14 md:pt-0 p-4 md:p-8 ${sidebarCollapsed ? "md:ml-16" : "md:ml-60"}`}>
         <div key={pathname} className="animate-page-enter">
-          <Outlet />
+          {authReady ? <Outlet /> : (
+            <div className="flex h-64 items-center justify-center">
+              <p className="text-text-secondary">Loading...</p>
+            </div>
+          )}
         </div>
       </main>
     </div>

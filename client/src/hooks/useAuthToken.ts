@@ -1,18 +1,17 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
-import { setAuthToken } from "../lib/api";
+import { setAuthInterceptor } from "../lib/api";
 
 export function useAuthToken() {
   const { getToken } = useAuth();
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(async () => {
-      const token = await getToken();
-      setAuthToken(token);
-    }, 50_000);
-
-    getToken().then(setAuthToken);
-
-    return () => clearInterval(interval);
+    const ejectInterceptor = setAuthInterceptor(getToken);
+    // Signal ready once the interceptor is installed
+    setReady(true);
+    return ejectInterceptor;
   }, [getToken]);
+
+  return ready;
 }

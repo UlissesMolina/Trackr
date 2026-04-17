@@ -67,6 +67,7 @@ export function createApplication(
       followUpDate: data.followUpDate ? new Date(data.followUpDate) : null,
       rejectionDate: data.rejectionDate ? new Date(data.rejectionDate) : null,
     },
+    include: APPLICATION_INCLUDE,
   });
 }
 

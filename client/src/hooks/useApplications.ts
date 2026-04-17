@@ -44,8 +44,10 @@ export function useCreateApplication() {
       const { data } = await api.post("/applications", body);
       return data as Application;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["applications"] });
+    onSuccess: (newApp) => {
+      queryClient.setQueryData<Application[]>(["applications"], (old) =>
+        old ? [newApp, ...old] : [newApp]
+      );
     },
   });
 }

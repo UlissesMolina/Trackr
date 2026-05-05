@@ -123,6 +123,7 @@ export async function updateApplicationStatus(
     prisma.application.update({
       where: { id },
       data: { status: newStatus },
+      include: APPLICATION_INCLUDE,
     }),
     prisma.statusChange.create({
       data: {

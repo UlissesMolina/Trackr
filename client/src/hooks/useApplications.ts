@@ -92,7 +92,20 @@ export function useUpdateApplicationStatus() {
       const { data } = await api.patch(`/applications/${id}/status`, { status });
       return data as Application;
     },
-    onSuccess: (_data, variables) => {
+    onMutate: async ({ id, status }) => {
+      await queryClient.cancelQueries({ queryKey: ["applications"] });
+      const previous = queryClient.getQueryData<Application[]>(["applications"]);
+      queryClient.setQueryData<Application[]>(["applications"], (old) =>
+        old?.map((app) => (app.id === id ? { ...app, status } : app))
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["applications"], context.previous);
+      }
+    },
+    onSettled: (_data, _err, variables) => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
       queryClient.invalidateQueries({ queryKey: ["applications", variables.id] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });

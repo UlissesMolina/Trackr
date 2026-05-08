@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import type { Application } from "../../types";
 import { formatShortDate } from "../../lib/utils";
-import { STATUS_BORDER_COLORS, PRIORITY_DOT_COLORS } from "../../lib/constants";
+import { PRIORITY_DOT_COLORS } from "../../lib/constants";
 
 interface ApplicationCardProps {
   application: Application;
@@ -24,12 +24,17 @@ function getFollowUpIndicator(followUpDate: string | null) {
 export default function ApplicationCard({ application }: ApplicationCardProps) {
   const followUp = getFollowUpIndicator(application.followUpDate);
   const tags = Array.isArray(application.tags) ? application.tags : [];
-  const borderColor = STATUS_BORDER_COLORS[application.status] ?? "border-l-zinc-500";
 
   return (
     <Link
       to={`/applications/${application.id}`}
-      className={`block rounded-lg border border-border-default border-l-[3px] ${borderColor} bg-surface-secondary p-2 px-3 transition-colors hover:border-border-subtle hover:border-l-[3px] hover:bg-surface-tertiary ${borderColor}`}
+      className="block rounded-lg p-2 px-3 transition-[background-color] duration-150"
+      style={{
+        background: "var(--color-nav-hover)",
+        borderRadius: 8,
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "var(--color-nav-active)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "var(--color-nav-hover)"; }}
     >
       {tags.length > 0 && (
         <div className="mb-1 flex flex-wrap gap-1">

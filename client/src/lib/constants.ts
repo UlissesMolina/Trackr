@@ -24,21 +24,21 @@ export function boardStatus(status: ApplicationStatus): BoardStatus {
 }
 
 export const STATUS_COLORS: Record<ApplicationStatus, string> = {
-  SAVED: "bg-zinc-700/50 text-zinc-300",
-  APPLIED: "bg-emerald-500/20 text-emerald-400",
-  UNDER_REVIEW: "bg-emerald-500/20 text-emerald-400",
-  INTERVIEW: "bg-amber-500/20 text-amber-400",
-  OFFER: "bg-emerald-500/20 text-emerald-400",
-  REJECTED: "bg-red-500/20 text-red-400",
+  SAVED: "bg-gray-100 text-gray-600",
+  APPLIED: "bg-gray-100 text-gray-600",
+  UNDER_REVIEW: "bg-amber-50 text-amber-700",
+  INTERVIEW: "bg-blue-50 text-blue-700",
+  OFFER: "bg-emerald-50 text-emerald-700",
+  REJECTED: "bg-red-50 text-red-600",
 };
 
 export const STATUS_DOT_COLORS: Record<string, string> = {
-  SAVED: "bg-zinc-500",
-  APPLIED: "bg-emerald-500",
-  UNDER_REVIEW: "bg-emerald-500",
-  INTERVIEW: "bg-amber-500",
-  OFFER: "bg-emerald-500",
-  REJECTED: "bg-red-500",
+  SAVED: "bg-white/30",
+  APPLIED: "bg-blue-400/60",
+  UNDER_REVIEW: "bg-blue-400/60",
+  INTERVIEW: "bg-amber-400/60",
+  OFFER: "bg-green-400/60",
+  REJECTED: "bg-red-400/60",
 };
 
 export const STATUS_LABELS: Record<string, string> = {

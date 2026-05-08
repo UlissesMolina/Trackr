@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { UserButton, useClerk } from "@clerk/clerk-react";
 import { useTheme } from "../../hooks/useTheme";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthToken } from "../../hooks/useAuthToken";
 import api from "../../lib/api";
-import { LayoutDashboard, LayoutGrid, Briefcase, GitBranch, FileText, FileEdit, PanelLeftClose, PanelLeft } from "lucide-react";
+import { LayoutDashboard, LayoutGrid, Briefcase, GitBranch, FileText, FileEdit, PanelLeftClose, PanelLeft, Search, Bell, Settings } from "lucide-react";
 
 const NAV_ITEMS = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -80,86 +80,92 @@ function SettingsPanel({ onClose, theme }: { onClose: () => void; theme: ReturnT
     onClose();
   }
 
+  const sectionCls = "px-3 py-2" as const;
+  const sectionLabelCls = "text-xs uppercase tracking-wider" as const;
+  const btnCls = "flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors" as const;
+
   return (
     <>
-      <div className="fixed inset-0 z-20" onClick={onClose} />
-      <div className="absolute bottom-12 left-2 right-2 z-30 animate-settings-pop rounded-lg border border-border-default bg-surface-elevated p-1 shadow-xl">
-        <div className="border-b border-border-default px-3 py-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">Appearance</p>
+      <div className="fixed inset-0 z-40" onClick={onClose} />
+      <div
+        className="relative z-50 w-[220px] animate-settings-pop rounded-lg border border-border-default bg-surface-secondary p-1 shadow-lg"
+      >
+        <div className={sectionCls + " border-b border-border-subtle"}>
+          <p className={sectionLabelCls + " font-medium text-text-tertiary"}>Appearance</p>
         </div>
         <button
           onClick={() => { theme.toggleTheme(); onClose(); }}
-          className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm text-text-secondary hover:bg-surface-tertiary hover:text-text-primary"
+          className={btnCls + " text-text-primary hover:bg-surface-elevated"}
         >
           {theme.theme === "dark" ? (
             <>
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <svg className="h-4 w-4 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
               </svg>
               Switch to light mode
             </>
           ) : (
             <>
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <svg className="h-4 w-4 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
               </svg>
               Switch to dark mode
             </>
           )}
         </button>
-        <div className="border-b border-border-default px-3 py-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">Account</p>
+        <div className={sectionCls + " border-b border-border-subtle"}>
+          <p className={sectionLabelCls + " font-medium text-text-tertiary"}>Account</p>
         </div>
         <button
           onClick={() => { openUserProfile(); onClose(); }}
-          className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm text-text-secondary hover:bg-surface-tertiary hover:text-text-primary"
+          className={btnCls + " text-text-primary hover:bg-surface-elevated"}
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <svg className="h-4 w-4 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.79 17.79 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
           </svg>
           Manage account
         </button>
         <button
           onClick={() => signOut({ redirectUrl: "/" })}
-          className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm text-text-secondary hover:bg-surface-tertiary hover:text-text-primary"
+          className={btnCls + " text-text-primary hover:bg-surface-elevated"}
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <svg className="h-4 w-4 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v3.75M9 12L3 9m0 0l6-3M3 9v12a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 21V9" />
           </svg>
           Sign out
         </button>
-        <div className="border-b border-border-default px-3 py-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">Data</p>
+        <div className={sectionCls + " border-b border-border-subtle"}>
+          <p className={sectionLabelCls + " font-medium text-text-tertiary"}>Data</p>
         </div>
         <button
           onClick={handleExportCsv}
           disabled={exporting}
-          className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm text-text-secondary hover:bg-surface-tertiary hover:text-text-primary disabled:opacity-50"
+          className={`${btnCls} text-text-primary hover:bg-surface-elevated disabled:opacity-50`}
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <svg className="h-4 w-4 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
           </svg>
           {exporting ? "Exporting…" : "Export as CSV"}
         </button>
         <button
           onClick={handleClearCache}
-          className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm text-text-secondary hover:bg-surface-tertiary hover:text-text-primary"
+          className={btnCls + " text-text-primary hover:bg-surface-elevated"}
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <svg className="h-4 w-4 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
           </svg>
           Refresh data
         </button>
-        <div className="border-b border-border-default px-3 py-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">Links</p>
+        <div className={sectionCls + " border-b border-border-subtle"}>
+          <p className={sectionLabelCls + " font-medium text-text-tertiary"}>Links</p>
         </div>
         <a
           href="https://github.com/UlissesMolina/Trackr"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm text-text-secondary hover:bg-surface-tertiary hover:text-text-primary"
+          className={btnCls + " text-text-primary hover:bg-surface-elevated"}
         >
-          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+          <svg className="h-4 w-4 text-text-tertiary" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
           </svg>
           GitHub
@@ -176,135 +182,197 @@ export default function AppLayout() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(getSidebarCollapsed);
+  const navRef = useRef<HTMLElement>(null);
+  const [highlightStyle, setHighlightStyle] = useState({ y: 0, height: 0 });
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed));
   }, [sidebarCollapsed]);
 
+  const updateHighlight = useCallback(() => {
+    if (!navRef.current) return;
+    const activePath = NAV_ITEMS.find((n) =>
+      n.path === "/" ? pathname === "/" : pathname.startsWith(n.path)
+    )?.path;
+    if (!activePath) { setHighlightStyle({ y: 0, height: 0 }); return; }
+    const el = navRef.current.querySelector<HTMLElement>(`[data-nav-path="${activePath}"]`);
+    if (!el) { setHighlightStyle({ y: 0, height: 0 }); return; }
+    const navRect = navRef.current.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    setHighlightStyle({
+      y: elRect.top - navRect.top,
+      height: elRect.height,
+    });
+  }, [pathname]);
+
+  useEffect(() => {
+    updateHighlight();
+  }, [updateHighlight, sidebarCollapsed]);
+
   return (
-    <div className="flex min-h-screen bg-surface-primary">
-      {/* Mobile top bar */}
-      <header className="fixed inset-x-0 top-0 z-20 flex h-14 items-center justify-between border-b border-border-default bg-surface-secondary px-4 md:hidden">
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="rounded-md p-1.5 text-text-secondary"
-        >
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        </button>
-        <Link to="/" className="text-lg font-bold tracking-tight text-text-primary hover:text-text-secondary transition-colors">
-          Trackr
-        </Link>
-        <UserButton
-          afterSignOutUrl="/"
-          appearance={{ elements: { avatarBox: "h-7 w-7" } }}
-        />
+    <div className="flex min-h-screen flex-col bg-surface-primary">
+      {/* Top navigation bar */}
+      <header
+        className="fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between px-5"
+        style={{
+          backgroundColor: "var(--color-header-bg)",
+          borderBottom: "1px solid var(--color-header-border)",
+          backdropFilter: "blur(12px)",
+        }}
+      >
+        {/* Left: Logo + mobile hamburger */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="rounded-md p-1.5 text-text-tertiary md:hidden"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+          </button>
+          <Link to="/" className="text-base font-semibold text-text-primary">
+            Trackr
+          </Link>
+        </div>
+
+        {/* Center-left: Search bar */}
+        <div className="hidden h-[34px] w-[280px] items-center rounded-lg border border-border-default bg-surface-tertiary px-3 md:flex">
+          <Search className="h-3.5 w-3.5 shrink-0 text-text-tertiary" />
+          <input
+            type="text"
+            placeholder="Search applications..."
+            className="ml-2 w-full border-none bg-transparent text-[13px] text-text-primary placeholder-text-tertiary outline-none"
+          />
+        </div>
+
+        {/* Right: Icons + avatar */}
+        <div className="flex items-center gap-4">
+          <button
+            className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-elevated"
+            title="Notifications"
+          >
+            <Bell className="h-[18px] w-[18px]" />
+          </button>
+          <button
+            className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-elevated"
+            onClick={() => setSettingsOpen((p) => !p)}
+            title="Settings"
+          >
+            <Settings className="h-[18px] w-[18px]" />
+          </button>
+          <UserButton
+            afterSignOutUrl="/"
+            appearance={{ elements: { avatarBox: "h-8 w-8" } }}
+          />
+        </div>
       </header>
 
-      {/* Backdrop */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/50 md:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
+      {/* Settings panel (anchored to top bar) */}
+      {settingsOpen && (
+        <div className="fixed top-14 right-5 z-50">
+          <SettingsPanel onClose={() => setSettingsOpen(false)} theme={theme} />
+        </div>
       )}
 
-      {/* Sidebar */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 flex flex-col border-r border-border-default bg-surface-secondary transition-all duration-200 md:translate-x-0 md:z-10 ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        } ${sidebarCollapsed ? "md:w-16" : "w-60"}`}
-      >
-        <div className={`flex h-14 items-center justify-between border-b border-border-default ${sidebarCollapsed ? "px-2" : "px-5"}`}>
-          {!sidebarCollapsed && (
-            <Link to="/" onClick={() => setMobileOpen(false)} className="text-lg font-bold tracking-tight text-text-primary hover:text-text-secondary transition-colors">
-              Trackr
-            </Link>
-          )}
-          <div className={`flex items-center gap-1 ${sidebarCollapsed ? "w-full justify-center" : ""}`}>
+      {/* Below top bar: sidebar + content */}
+      <div className="flex flex-1" style={{ marginTop: "56px" }}>
+        {/* Backdrop */}
+        {mobileOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/60 md:hidden"
+            style={{ top: "56px" }}
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+
+        {/* Sidebar */}
+        <aside
+          className={`fixed left-0 bottom-0 z-40 flex flex-col bg-surface-primary transition-all duration-200 md:translate-x-0 md:z-10 ${
+            mobileOpen ? "translate-x-0" : "-translate-x-full"
+          } ${sidebarCollapsed ? "md:w-16" : "w-60"}`}
+          style={{ top: "56px", backgroundColor: "var(--color-sidebar-bg)", borderRight: "1px solid var(--color-sidebar-border)" }}
+        >
+          {/* Collapse toggle */}
+          <div
+            className={`flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-4"} py-3`}
+          >
+            {!sidebarCollapsed && (
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="rounded-md p-1 text-text-tertiary md:hidden"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
             <button
               onClick={() => setSidebarCollapsed((c) => !c)}
-              className="hidden rounded-md p-1.5 text-text-tertiary transition-colors hover:bg-surface-tertiary hover:text-text-secondary md:flex"
+              className="hidden rounded-md p-1.5 text-text-tertiary transition-colors hover:bg-surface-elevated md:flex"
               title={sidebarCollapsed ? "Expand sidebar" : "Minimize sidebar"}
             >
               {sidebarCollapsed ? <PanelLeft className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
             </button>
-            <button
-              onClick={() => setMobileOpen(false)}
-              className="rounded-md p-1 text-text-tertiary md:hidden"
-            >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
           </div>
-        </div>
 
-        <nav className="flex-1 space-y-0.5 px-2 py-3">
-          {NAV_ITEMS.map((item) => {
-            const isActive =
-              item.path === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.path);
-            const Icon = item.icon;
-
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setMobileOpen(false)}
-                title={sidebarCollapsed ? item.label : undefined}
-                className={`flex items-center gap-3 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                  sidebarCollapsed ? "justify-center px-2" : ""
-                } ${
-                  isActive
-                    ? "bg-surface-elevated text-text-primary"
-                    : "text-text-secondary hover:bg-surface-tertiary hover:text-text-primary"
-                }`}
-              >
-                <Icon className="h-5 w-5 shrink-0" />
-                {!sidebarCollapsed && <span>{item.label}</span>}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className={`relative border-t border-border-default p-3 ${sidebarCollapsed ? "px-2" : ""}`}>
-          {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} theme={theme} />}
-          <div className={`flex items-center ${sidebarCollapsed ? "justify-center" : "justify-between"}`}>
-            <UserButton
-              afterSignOutUrl="/"
-              appearance={{
-                elements: {
-                  avatarBox: "h-7 w-7",
-                },
+          <nav className="relative flex flex-1 flex-col gap-0.5 px-2" ref={navRef}>
+            {/* Sliding highlight */}
+            <div
+              className="absolute left-2 right-2 rounded-lg transition-all duration-300 ease-in-out"
+              style={{
+                backgroundColor: "var(--color-nav-active)",
+                height: highlightStyle.height,
+                transform: `translateY(${highlightStyle.y}px)`,
+                opacity: highlightStyle.height > 0 ? 1 : 0,
               }}
             />
-            {!sidebarCollapsed && (
-              <button
-                onClick={() => setSettingsOpen((p) => !p)}
-                className="rounded-md p-1.5 text-text-tertiary transition-colors hover:bg-surface-tertiary hover:text-text-secondary"
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </button>
-            )}
-          </div>
-        </div>
-      </aside>
+            {NAV_ITEMS.map((item) => {
+              const isActive =
+                item.path === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(item.path);
+              const Icon = item.icon;
 
-      <main className={`w-full flex-1 pt-14 md:pt-0 p-4 md:p-8 ${sidebarCollapsed ? "md:ml-16" : "md:ml-60"}`}>
-        <div key={pathname} className="animate-page-enter">
-          {authReady ? <Outlet /> : (
-            <div className="flex h-64 items-center justify-center">
-              <p className="text-text-secondary">Loading...</p>
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setMobileOpen(false)}
+                  title={sidebarCollapsed ? item.label : undefined}
+                  data-nav-path={item.path}
+                  className={`relative z-[1] flex items-center gap-3 rounded-lg text-sm transition-colors duration-200 ${
+                    sidebarCollapsed ? "justify-center" : ""
+                  } ${
+                    isActive
+                      ? "font-medium text-text-primary"
+                      : "text-text-secondary hover:text-text-primary"
+                  }`}
+                  style={{
+                    padding: sidebarCollapsed ? "7px 8px" : "7px 12px",
+                  }}
+                  onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = "var(--color-nav-hover)"; }}
+                  onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = "transparent"; }}
+                >
+                  <Icon className="h-5 w-5 shrink-0" style={{ color: isActive ? "var(--color-icon-active)" : "var(--color-icon-muted)" }} />
+                  {!sidebarCollapsed && <span>{item.label}</span>}
+                </Link>
+              );
+            })}
+          </nav>
+        </aside>
+
+        <main className={`w-full flex-1 ${sidebarCollapsed ? "md:ml-16" : "md:ml-60"}`}>
+          <div className="px-5 pb-8 pt-6 md:px-10 md:pt-8">
+            <div key={pathname} className="animate-page-enter">
+              {authReady ? <Outlet /> : (
+                <div className="flex h-64 items-center justify-center">
+                  <p className="text-text-tertiary">Loading...</p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </main>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

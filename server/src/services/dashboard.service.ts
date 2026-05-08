@@ -82,63 +82,71 @@ const FLOW_NODE_COLORS: Record<string, string> = {
 
 const FLOW_ORDER = ["APPLIED", "GHOSTED_WAITING", "INTERVIEW", "OFFER", "REJECTED"];
 
+// Rank determines allowed flow direction — links may only go from lower to higher rank.
+// Equal-rank links are dropped to prevent cycles.
+const FLOW_RANK: Record<string, number> = {
+  APPLIED: 0,
+  GHOSTED_WAITING: 1,
+  INTERVIEW: 1,
+  OFFER: 2,
+  REJECTED: 2,
+};
+
 export async function getSankeyData(clerkUserId: string) {
-  const applications = await prisma.application.findMany({
-    where: { clerkUserId },
-    select: { status: true },
+  // Get actual status transitions from history
+  const changes = await prisma.statusChange.findMany({
+    where: { application: { clerkUserId } },
+    select: { applicationId: true, fromStatus: true, toStatus: true },
   });
 
-  // Only include applications that have been applied (exclude SAVED)
-  const applied = applications.filter(
-    (a) =>
-      a.status === "APPLIED" ||
-      a.status === "UNDER_REVIEW" ||
-      a.status === "INTERVIEW" ||
-      a.status === "OFFER" ||
-      a.status === "REJECTED"
+  // Get current status of all apps to identify "ghosted" ones
+  const apps = await prisma.application.findMany({
+    where: { clerkUserId },
+    select: { id: true, status: true },
+  });
+
+  // Normalize status to Sankey label key
+  const toKey = (status: string): string | null => {
+    if (status === "SAVED") return null;
+    if (status === "APPLIED" || status === "UNDER_REVIEW") return "APPLIED";
+    return status; // INTERVIEW, OFFER, REJECTED
+  };
+
+  // Aggregate transitions into link counts — only forward transitions allowed
+  const linkCounts = new Map<string, number>();
+  for (const { fromStatus, toStatus } of changes) {
+    const from = toKey(fromStatus);
+    const to = toKey(toStatus);
+    if (!from || !to || from === to) continue;
+    // Skip backward transitions that would create cycles in the Sankey diagram
+    if ((FLOW_RANK[from] ?? 0) >= (FLOW_RANK[to] ?? 0)) continue;
+    const key = `${FLOW_LABELS[from]}||${FLOW_LABELS[to]}`;
+    linkCounts.set(key, (linkCounts.get(key) || 0) + 1);
+  }
+
+  // Find apps that have outgoing transitions from Applied
+  const appsWithOutgoingIds = new Set(
+    changes
+      .filter((c) => toKey(c.fromStatus) === "APPLIED" && toKey(c.toStatus) !== null && toKey(c.toStatus) !== "APPLIED")
+      .map((c) => c.applicationId)
   );
 
-  if (applied.length === 0) {
-    return { nodes: [], links: [] };
-  }
-
-  // Use current status only — matches the board columns
-  const ghostedWaitingCount = applied.filter(
-    (a) => a.status === "APPLIED" || a.status === "UNDER_REVIEW"
+  const ghostedCount = apps.filter(
+    (a) =>
+      (a.status === "APPLIED" || a.status === "UNDER_REVIEW") &&
+      !appsWithOutgoingIds.has(a.id)
   ).length;
 
-  const rejectedCount = applied.filter((a) => a.status === "REJECTED").length;
-  const interviewCount = applied.filter((a) => a.status === "INTERVIEW").length;
-  const offerCount = applied.filter((a) => a.status === "OFFER").length;
+  if (ghostedCount > 0) {
+    const key = `${FLOW_LABELS.APPLIED}||${FLOW_LABELS.GHOSTED_WAITING}`;
+    linkCounts.set(key, (linkCounts.get(key) || 0) + ghostedCount);
+  }
 
+  // Build links array
   const links: Array<{ source: string; target: string; value: number }> = [];
-  if (ghostedWaitingCount > 0) {
-    links.push({
-      source: FLOW_LABELS.APPLIED,
-      target: FLOW_LABELS.GHOSTED_WAITING,
-      value: ghostedWaitingCount,
-    });
-  }
-  if (rejectedCount > 0) {
-    links.push({
-      source: FLOW_LABELS.APPLIED,
-      target: FLOW_LABELS.REJECTED,
-      value: rejectedCount,
-    });
-  }
-  if (interviewCount > 0) {
-    links.push({
-      source: FLOW_LABELS.APPLIED,
-      target: FLOW_LABELS.INTERVIEW,
-      value: interviewCount,
-    });
-  }
-  if (offerCount > 0) {
-    links.push({
-      source: FLOW_LABELS.INTERVIEW,
-      target: FLOW_LABELS.OFFER,
-      value: offerCount,
-    });
+  for (const [key, value] of linkCounts) {
+    const [source, target] = key.split("||");
+    links.push({ source, target, value });
   }
 
   if (links.length === 0) {

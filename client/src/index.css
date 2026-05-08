@@ -1,7 +1,37 @@
 @import "tailwindcss";
 
+/* ── Design tokens (light mode defaults) ─────────────────────────────────── */
 @theme {
-  /* Dark theme (default) — green nudged off Tailwind default */
+  --color-surface-primary: #f5f5f0;
+  --color-surface-secondary: #ffffff;
+  --color-surface-tertiary: #f9f9f8;
+  --color-surface-elevated: #ffffff;
+  --color-border-default: #f0f0f0;
+  --color-border-subtle: #f5f5f5;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-tertiary: #9ca3af;
+  --color-accent: #059669;
+  --color-accent-hover: #047857;
+}
+
+/* ── Layout-specific vars (not Tailwind utilities, used via var()) ──────── */
+:root {
+  --color-header-bg: rgba(255,255,255,0.85);
+  --color-header-border: rgba(0,0,0,0.08);
+  --color-sidebar-bg: rgba(0,0,0,0.02);
+  --color-sidebar-border: rgba(0,0,0,0.06);
+  --color-nav-hover: rgba(0,0,0,0.05);
+  --color-nav-active: rgba(0,0,0,0.07);
+  --color-icon-muted: #9ca3af;
+  --color-icon-active: #6b7280;
+  --color-tooltip-bg: #ffffff;
+  --color-tooltip-border: #e5e7eb;
+  --color-chart-tick: #9ca3af;
+}
+
+/* ── Dark mode overrides ─────────────────────────────────────────────────── */
+html.dark {
   --color-surface-primary: #0a0a0b;
   --color-surface-secondary: #131316;
   --color-surface-tertiary: #1a1a1f;
@@ -13,21 +43,18 @@
   --color-text-tertiary: #5c5c69;
   --color-accent: #0ead81;
   --color-accent-hover: #10c98c;
-}
 
-/* Light theme */
-html.light {
-  --color-surface-primary: #f8fafc;
-  --color-surface-secondary: #f1f5f9;
-  --color-surface-tertiary: #e2e8f0;
-  --color-surface-elevated: #ffffff;
-  --color-border-default: #e2e8f0;
-  --color-border-subtle: #cbd5e1;
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-tertiary: #64748b;
-  --color-accent: #059669;
-  --color-accent-hover: #047857;
+  --color-header-bg: rgba(255,255,255,0.03);
+  --color-header-border: rgba(255,255,255,0.06);
+  --color-sidebar-bg: rgba(255,255,255,0.02);
+  --color-sidebar-border: rgba(255,255,255,0.05);
+  --color-nav-hover: rgba(255,255,255,0.05);
+  --color-nav-active: rgba(255,255,255,0.08);
+  --color-icon-muted: #666;
+  --color-icon-active: #999;
+  --color-tooltip-bg: #1a1a1f;
+  --color-tooltip-border: #2e2e35;
+  --color-chart-tick: #555;
 }
 
 html {
@@ -37,8 +64,10 @@ html {
 
 body {
   font-family: "Inter", system-ui, sans-serif;
+  background-color: #f5f5f0;
   background-color: var(--color-surface-primary);
-  color: var(--color-text-primary);
+  color: #374151;
+  color: var(--color-text-secondary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;

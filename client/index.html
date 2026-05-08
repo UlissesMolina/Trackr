@@ -8,8 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <script>
       (function() {
+        var migrated = localStorage.getItem('trackr-theme-v2');
+        if (!migrated) { localStorage.removeItem('trackr-theme'); localStorage.setItem('trackr-theme-v2', '1'); }
         var s = localStorage.getItem('trackr-theme');
-        var theme = (s === 'light' || s === 'dark') ? s : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        var theme = (s === 'light' || s === 'dark') ? s : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         document.documentElement.classList.add(theme);
       })();
     </script>

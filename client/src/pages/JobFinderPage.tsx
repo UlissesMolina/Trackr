@@ -39,6 +39,30 @@ const POSTED_OPTIONS = [
 
 const PAGE_SIZE = 25;
 
+/* ── Initials + color (same system as dashboard) ──────────────── */
+const PALETTE = [
+  { bg: "rgba(139, 92, 246, 0.12)", text: "#a78bfa" },
+  { bg: "rgba(96, 165, 250, 0.12)", text: "#93b5e1" },
+  { bg: "rgba(251, 191, 36, 0.12)", text: "#fbbf24" },
+  { bg: "rgba(244, 114, 182, 0.12)", text: "#f472b6" },
+  { bg: "rgba(74, 222, 128, 0.12)", text: "#6ee7a0" },
+  { bg: "rgba(248, 113, 113, 0.12)", text: "#f87171" },
+  { bg: "rgba(147, 181, 225, 0.12)", text: "#93b5e1" },
+  { bg: "rgba(167, 139, 250, 0.12)", text: "#a78bfa" },
+];
+
+function getInitial(company: string): string {
+  return (company[0] ?? "?").toUpperCase();
+}
+
+function getCompanyColor(company: string) {
+  let hash = 0;
+  for (let i = 0; i < company.length; i++) {
+    hash = company.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return PALETTE[Math.abs(hash) % PALETTE.length];
+}
+
 function formatPostedAgo(datePosted: number): string {
   if (!datePosted) return "";
   const now = Math.floor(Date.now() / 1000);
@@ -50,6 +74,9 @@ function formatPostedAgo(datePosted: number): string {
   if (days < 30) return `${Math.floor(days / 7)}w ago`;
   return `${Math.floor(days / 30)}mo ago`;
 }
+
+const INPUT_CLS =
+  "rounded-lg border px-3 py-2 text-sm text-text-primary placeholder-text-tertiary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
 
 function JobCard({
   job,
@@ -67,69 +94,74 @@ function JobCard({
       ? `${job.locations.length} locations`
       : job.locations?.[0] ?? null;
   const postedAgo = formatPostedAgo(job.date_posted ?? 0);
+  const color = getCompanyColor(job.company_name);
+  const initial = getInitial(job.company_name);
 
   return (
-    <div className="rounded-lg border border-border-default bg-surface-secondary p-4 transition-colors hover:border-border-subtle">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate font-medium text-text-primary">{job.title}</h3>
-            {postedAgo && (
-              <span
-                className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${
-                  postedAgo === "Today"
-                    ? "bg-accent/20 text-accent"
-                    : postedAgo === "1d ago"
-                      ? "bg-accent/15 text-accent"
-                      : "bg-surface-elevated text-text-tertiary"
-                }`}
-              >
-                {postedAgo}
-              </span>
-            )}
-          </div>
-          <p className="truncate text-sm text-text-secondary">{job.company_name}</p>
+    <div className="flex items-center gap-3.5 px-1 py-3.5 sm:gap-4">
+      {/* Company initial circle */}
+      <div
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+        style={{ backgroundColor: color.bg, color: color.text }}
+      >
+        {initial}
+      </div>
+
+      {/* Text block */}
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="truncate text-sm font-medium text-text-primary">{job.title}</h3>
+          {postedAgo && (
+            <span className="shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium bg-surface-elevated text-text-tertiary">
+              {postedAgo}
+            </span>
+          )}
+        </div>
+        <p className="mt-0.5 truncate text-[13px]">
+          <span className="text-text-secondary">{job.company_name}</span>
           {locationLabel && (
-            <p className="mt-0.5 text-xs text-text-tertiary">{locationLabel}</p>
+            <span className="text-text-tertiary"> · {locationLabel}</span>
           )}
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          {job.url && (
-            <a
-              href={job.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-md border border-accent/50 bg-accent/10 px-3 py-1.5 text-sm font-medium text-accent transition-colors hover:bg-accent/20 hover:border-accent"
-            >
-              Apply
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </a>
-          )}
-          <button
-            onClick={onAdd}
-            disabled={isAdding || isTracked}
-            className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              isTracked
-                ? "cursor-default border border-border-default bg-surface-secondary text-text-tertiary"
-                : "bg-accent text-white hover:bg-accent-hover disabled:opacity-50"
-            }`}
+        </p>
+      </div>
+
+      {/* Actions */}
+      <div className="flex shrink-0 items-center gap-2">
+        {job.url && (
+          <a
+            href={job.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border-default px-3 py-1.5 text-sm font-medium text-text-secondary transition-colors hover:border-text-tertiary hover:text-text-primary"
           >
-            {isTracked ? (
-              <>
-                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                Added
-              </>
-            ) : isAdding ? (
-              "Adding…"
-            ) : (
-              "Add to Trackr"
-            )}
-          </button>
-        </div>
+            Apply
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        )}
+        <button
+          onClick={onAdd}
+          disabled={isAdding || isTracked}
+          className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            isTracked
+              ? "cursor-default border border-border-default text-text-tertiary"
+              : "border border-border-default text-text-secondary hover:border-text-tertiary hover:text-text-primary disabled:opacity-50"
+          }`}
+        >
+          {isTracked ? (
+            <>
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              Added
+            </>
+          ) : isAdding ? (
+            "Adding…"
+          ) : (
+            "Add to Trackr"
+          )}
+        </button>
       </div>
     </div>
   );
@@ -262,7 +294,8 @@ export default function JobFinderPage() {
           <button
             onClick={() => setCsvOpen((o) => !o)}
             disabled={csvExporting}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-surface-secondary px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-elevated disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-text-tertiary hover:text-text-primary disabled:opacity-50"
+            style={{ backgroundColor: "var(--color-sidebar-bg)" }}
           >
             {csvExporting ? (
               <>
@@ -294,18 +327,21 @@ export default function JobFinderPage() {
         </div>
       </div>
 
+      {/* ── Filter bar ─────────────────────────────────────────── */}
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <input
           type="search"
           placeholder="Search company, role, or location…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="min-w-0 flex-1 rounded-lg border border-border-default bg-surface-secondary px-3 py-2 text-sm text-text-primary placeholder-text-tertiary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent sm:min-w-[200px]"
+          className={`${INPUT_CLS} min-w-0 flex-1 sm:min-w-[200px]`}
+          style={{ backgroundColor: "var(--color-sidebar-bg)", borderColor: "var(--color-sidebar-border)" }}
         />
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="rounded-lg border border-border-default bg-surface-secondary px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+          className={INPUT_CLS}
+          style={{ backgroundColor: "var(--color-sidebar-bg)", borderColor: "var(--color-sidebar-border)" }}
         >
           {CATEGORIES.map((c) => (
             <option key={c.value} value={c.value}>
@@ -316,7 +352,8 @@ export default function JobFinderPage() {
         <select
           value={roleType}
           onChange={(e) => setRoleType(e.target.value)}
-          className="rounded-lg border border-border-default bg-surface-secondary px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+          className={INPUT_CLS}
+          style={{ backgroundColor: "var(--color-sidebar-bg)", borderColor: "var(--color-sidebar-border)" }}
         >
           {ROLE_TYPES.map((r) => (
             <option key={r.value} value={r.value}>
@@ -327,7 +364,8 @@ export default function JobFinderPage() {
         <select
           value={postedWithin}
           onChange={(e) => setPostedWithin(e.target.value as "7d" | "14d" | "30d" | "all")}
-          className="rounded-lg border border-border-default bg-surface-secondary px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+          className={INPUT_CLS}
+          style={{ backgroundColor: "var(--color-sidebar-bg)", borderColor: "var(--color-sidebar-border)" }}
         >
           {POSTED_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
@@ -335,7 +373,10 @@ export default function JobFinderPage() {
             </option>
           ))}
         </select>
-        <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border-default bg-surface-secondary px-3 py-2 text-sm text-text-primary">
+        <label
+          className="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm text-text-primary"
+          style={{ backgroundColor: "var(--color-sidebar-bg)", borderColor: "var(--color-sidebar-border)" }}
+        >
           <input
             type="checkbox"
             checked={usOnly}
@@ -375,7 +416,7 @@ export default function JobFinderPage() {
           <p className="mb-4 text-sm text-text-tertiary">
             {data.total} internship{data.total !== 1 ? "s" : ""} found · sorted by newest
           </p>
-          <div className="space-y-3">
+          <div className="divide-y" style={{ borderColor: "var(--color-border-subtle)" }}>
             {data.jobs.map((job) => (
               <JobCard
                 key={job.id}
@@ -388,7 +429,7 @@ export default function JobFinderPage() {
           </div>
 
           {data.total > PAGE_SIZE && (
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-border-default pt-6">
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-border-subtle pt-6">
               <p className="text-sm text-text-tertiary">
                 Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, data.total)} of {data.total}
               </p>

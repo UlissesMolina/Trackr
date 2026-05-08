@@ -21,55 +21,47 @@ export default function LocationChart({ applications }: LocationChartProps) {
     return Object.entries(byLocation)
       .map(([location, count]) => ({ location, count }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
+      .slice(0, 5);
   }, [applications]);
 
   if (data.length === 0) {
     return (
-      <div className="flex h-48 flex-col items-center justify-center gap-3 rounded-xl border border-border-default bg-surface-secondary">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-tertiary text-text-tertiary">
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-          </svg>
-        </div>
-        <p className="text-sm font-medium text-text-secondary">No location data yet</p>
-        <p className="text-xs text-text-tertiary">Add location to your applications to see the breakdown</p>
+      <div className="py-6 text-center">
+        <p className="text-[13px] text-text-tertiary">No location data yet</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-border-default bg-surface-secondary p-6">
-      <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-text-secondary">
-        Applications by Location
-      </h2>
-      <p className="mb-4 text-xs text-text-tertiary">
-        Top locations from your applications — useful for diversifying your search
+    <div>
+      <p className="mb-3 text-[13px] font-medium text-text-secondary">
+        Top locations
       </p>
-      <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={data} layout="vertical" margin={{ left: 0, right: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-default)" />
-          <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12, fill: "var(--color-text-tertiary)" }} />
+      <ResponsiveContainer width="100%" height={160}>
+        <BarChart data={data} layout="vertical" margin={{ left: 0, right: 12 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
+          <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "var(--color-chart-tick)" }} stroke="var(--color-border-subtle)" />
           <YAxis
             type="category"
             dataKey="location"
-            width={100}
-            tick={{ fontSize: 11, fill: "var(--color-text-secondary)" }}
-            tickFormatter={(v) => (v.length > 18 ? v.slice(0, 16) + "…" : v)}
+            width={80}
+            tick={{ fontSize: 11, fill: "var(--color-chart-tick)" }}
+            tickFormatter={(v) => (v.length > 14 ? v.slice(0, 12) + "…" : v)}
+            stroke="var(--color-border-subtle)"
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: "var(--color-surface-tertiary)",
-              border: "1px solid var(--color-border-default)",
+              backgroundColor: "var(--color-tooltip-bg)",
+              border: "1px solid var(--color-tooltip-border)",
               borderRadius: "8px",
               color: "var(--color-text-primary)",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
             }}
-            labelStyle={{ color: "var(--color-text-secondary)" }}
+            labelStyle={{ color: "var(--color-text-tertiary)" }}
             formatter={(value: number | undefined) => [value ?? 0, "Applications"]}
             labelFormatter={(label) => label}
           />
-          <Bar dataKey="count" fill="var(--color-accent)" radius={[0, 4, 4, 0]} name="Applications" />
+          <Bar dataKey="count" fill="rgba(96, 165, 250, 0.25)" radius={[0, 4, 4, 0]} name="Applications" />
         </BarChart>
       </ResponsiveContainer>
     </div>

@@ -97,7 +97,7 @@ export default function ResumePage() {
           <button
             onClick={handleDelete}
             disabled={deleteMutation.isPending}
-            className="rounded-lg border border-red-500/30 px-3 py-1.5 text-xs font-medium text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+            className="rounded-lg px-3 py-1.5 text-xs font-medium text-text-tertiary hover:text-red-400 disabled:opacity-50 transition-colors"
           >
             Remove Resume
           </button>
@@ -112,11 +112,15 @@ export default function ResumePage() {
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 text-center transition-colors ${
+            className={`flex cursor-pointer flex-col items-center justify-center rounded-xl p-8 text-center transition-colors ${
               isDragging
                 ? "border-accent bg-accent/5"
-                : "border-border-default bg-surface-secondary hover:border-text-tertiary"
+                : "hover:border-text-tertiary"
             }`}
+            style={{
+              border: isDragging ? "2px dashed" : "1.5px dashed var(--color-border-default)",
+              background: isDragging ? undefined : "var(--color-sidebar-bg)",
+            }}
           >
             <svg className="mb-3 h-10 w-10 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
@@ -170,13 +174,14 @@ export default function ResumePage() {
             onChange={(e) => setContent(e.target.value)}
             placeholder="Paste your resume text here, or upload a file to auto-fill..."
             rows={20}
-            className={INPUT + " resize-y font-mono text-xs leading-relaxed"}
+            className={INPUT + " resize-y font-mono text-[13px]"}
+            style={{ lineHeight: "1.7" }}
           />
           <div className="mt-3 flex items-center gap-3">
             <button
               type="submit"
               disabled={saveMutation.isPending || !content.trim()}
-              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
+              className="rounded-lg border border-border-default px-4 py-2 text-sm font-medium text-text-secondary hover:border-text-tertiary hover:text-text-primary disabled:opacity-50 transition-colors"
             >
               {saveMutation.isPending ? "Saving..." : "Save Resume"}
             </button>

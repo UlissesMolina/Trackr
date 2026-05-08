@@ -30,17 +30,17 @@ export default function SankeyChart({ data }: SankeyChartProps) {
     enableLinkGradient: true,
     labelPosition: "outside" as const,
     labelPadding: 12,
-    labelTextColor: light ? "#1e293b" : "#e2e8f0",
+    labelTextColor: light ? "#111827" : "#e2e8f0",
     valueFormat: ((v: number) => `${v} app${v === 1 ? "" : "s"}`) as never,
     theme: {
       text: {
-        fill: light ? "#475569" : "#94a3b8",
+        fill: light ? "#6b7280" : "#94a3b8",
         fontSize: 13,
       },
       tooltip: {
         container: {
           background: light ? "#ffffff" : "#1e293b",
-          color: light ? "#0f172a" : "#f8fafc",
+          color: light ? "#111827" : "#f8fafc",
           borderRadius: "8px",
           boxShadow: light
             ? "0 4px 16px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.07)"

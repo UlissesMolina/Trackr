@@ -5,7 +5,7 @@ import SankeyChart from "../components/dashboard/SankeyChart";
 
 const WATERMARK = "usetrackr.netlify.app";
 const WATERMARK_H = 32;
-const BG = "#131316";
+const BG = "#f5f5f0"; // used only for exported SVG/PNG watermark background
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -64,7 +64,7 @@ function stampSvg(svg: SVGSVGElement): SVGSVGElement {
   text.setAttribute("x", String(w / 2));
   text.setAttribute("y", String(h + WATERMARK_H * 0.7));
   text.setAttribute("text-anchor", "middle");
-  text.setAttribute("fill", "#64748b");
+  text.setAttribute("fill", "#9ca3af");
   text.setAttribute("font-size", "13");
   text.setAttribute("font-family", "system-ui, sans-serif");
   text.textContent = WATERMARK;
@@ -177,6 +177,8 @@ function filterSankeyData(
 
 /* ── Page ─────────────────────────────────────────────────────────── */
 
+const cardCls = "bg-surface-secondary border border-border-default shadow-sm rounded-xl";
+
 export default function SankeyPage() {
   const { data, isLoading } = useSankeyData();
   const chartRef = useRef<HTMLDivElement>(null);
@@ -208,10 +210,10 @@ export default function SankeyPage() {
   }
 
   return (
-    <div className="pt-2">
+    <div>
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Application Flow</h1>
+          <h1 className="text-[28px] font-semibold text-text-primary">Application Flow</h1>
           <p className="mt-1 hidden text-sm text-text-secondary sm:block">
             Visualize how your applications move through each stage
           </p>
@@ -221,7 +223,7 @@ export default function SankeyPage() {
             <div className="relative">
               <button
                 onClick={() => setExportOpen(!exportOpen)}
-                className="flex items-center gap-1.5 rounded-lg border border-border-default px-4 py-2 text-sm font-medium text-text-secondary hover:bg-surface-elevated"
+                className="flex items-center gap-1.5 rounded-lg border border-border-default px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-surface-tertiary"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -234,14 +236,14 @@ export default function SankeyPage() {
                   <div className="absolute right-0 z-20 mt-1 w-40 rounded-lg border border-border-default bg-surface-secondary py-1 shadow-lg">
                     <button
                       onClick={() => handleExport("png")}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-text-primary hover:bg-surface-tertiary"
+                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-text-primary transition-colors hover:bg-surface-tertiary"
                     >
                       <span className="rounded bg-surface-elevated px-1.5 py-0.5 text-xs font-medium text-text-secondary">PNG</span>
                       High-res image
                     </button>
                     <button
                       onClick={() => handleExport("svg")}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-text-primary hover:bg-surface-tertiary"
+                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-text-primary transition-colors hover:bg-surface-tertiary"
                     >
                       <span className="rounded bg-surface-elevated px-1.5 py-0.5 text-xs font-medium text-text-secondary">SVG</span>
                       Vector file
@@ -253,7 +255,7 @@ export default function SankeyPage() {
           )}
           <Link
             to="/board"
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
           >
             Go to Board
           </Link>
@@ -263,7 +265,7 @@ export default function SankeyPage() {
       {/* Stage toggles */}
       {data && data.nodes.length > 0 && (
         <div className="mb-6 flex flex-wrap items-center gap-2">
-          <span className="mr-1 text-xs font-medium uppercase tracking-wider text-text-tertiary">
+          <span className="mr-1 text-[11px] font-medium uppercase tracking-wider text-text-tertiary">
             Stages
           </span>
           {data.nodes.map((node) => {
@@ -272,17 +274,18 @@ export default function SankeyPage() {
               <button
                 key={node.id}
                 onClick={() => toggleNode(node.id)}
-                className="flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-all"
+                className="flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-all"
                 style={{
                   borderColor: hidden ? "transparent" : node.nodeColor,
                   backgroundColor: hidden ? "rgba(100,116,139,0.1)" : `${node.nodeColor}18`,
-                  color: hidden ? "#64748b" : node.nodeColor,
+                  color: hidden ? "#9ca3af" : node.nodeColor,
                   opacity: hidden ? 0.5 : 1,
+                  fontWeight: 500,
                 }}
               >
                 <span
                   className="inline-block h-2 w-2 rounded-full"
-                  style={{ backgroundColor: hidden ? "#64748b" : node.nodeColor }}
+                  style={{ backgroundColor: hidden ? "#9ca3af" : node.nodeColor }}
                 />
                 {node.id}
                 {hidden && (
@@ -296,7 +299,7 @@ export default function SankeyPage() {
           {hiddenNodes.size > 0 && (
             <button
               onClick={() => setHiddenNodes(new Set())}
-              className="ml-1 rounded-full px-2.5 py-1 text-xs text-text-tertiary hover:bg-surface-elevated hover:text-text-secondary transition-colors"
+              className="ml-1 rounded-full px-2.5 py-1 text-xs text-text-tertiary transition-colors hover:bg-surface-elevated"
             >
               Reset
             </button>
@@ -305,7 +308,7 @@ export default function SankeyPage() {
       )}
 
       <div className="overflow-x-auto">
-        <div className="min-w-[700px] rounded-xl border border-border-default bg-surface-secondary p-4 sm:p-6">
+        <div className={`min-w-[700px] p-4 sm:p-6 ${cardCls}`}>
           {isLoading ? (
             <div className="flex h-[500px] items-center justify-center">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-border-default border-t-accent" />

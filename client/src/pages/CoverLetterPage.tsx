@@ -10,7 +10,12 @@ interface GenerateResponse {
 }
 
 const INPUT =
-  "w-full rounded-lg border border-border-default bg-surface-tertiary px-3 py-2 text-sm text-text-primary placeholder-text-tertiary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+  "w-full rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-tertiary focus:outline-none transition-colors";
+
+const INPUT_STYLE: React.CSSProperties = {
+  background: "var(--color-sidebar-bg)",
+  border: "1px solid var(--color-sidebar-border)",
+};
 
 export default function CoverLetterPage() {
   const [searchParams] = useSearchParams();
@@ -82,7 +87,7 @@ export default function CoverLetterPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="mb-1 block text-sm font-medium text-text-secondary">Link to Application (optional)</label>
-            <select value={applicationId} onChange={(e) => setApplicationId(e.target.value)} className={INPUT}>
+            <select value={applicationId} onChange={(e) => setApplicationId(e.target.value)} className={INPUT} style={INPUT_STYLE}>
               <option value="">None — standalone generation</option>
               {applications.map((app) => (
                 <option key={app.id} value={app.id}>{app.title} at {app.company}</option>
@@ -93,7 +98,7 @@ export default function CoverLetterPage() {
 
           <div>
             <label className="mb-1 block text-sm font-medium text-text-secondary">Job Description *</label>
-            <textarea required value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} placeholder="Paste the full job description here..." rows={8} className={INPUT} />
+            <textarea required value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} placeholder="Paste the full job description here..." rows={8} className={INPUT} style={INPUT_STYLE} />
           </div>
 
           <div>
@@ -111,9 +116,9 @@ export default function CoverLetterPage() {
             </div>
 
             {useSavedResume && resume?.content ? (
-              <div className="rounded-lg border border-accent/30 bg-accent/5 px-3 py-2.5">
+              <div className="rounded-lg px-3 py-2.5" style={{ background: "var(--color-sidebar-bg)", border: "1px solid var(--color-sidebar-border)" }}>
                 <div className="flex items-center gap-2">
-                  <svg className="h-4 w-4 shrink-0 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="h-4 w-4 shrink-0 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span className="text-sm font-medium text-text-primary">Using your saved resume</span>
@@ -122,7 +127,7 @@ export default function CoverLetterPage() {
                   {resume.content.length.toLocaleString()} characters
                   {resume.fileName ? ` — ${resume.fileName}` : ""}
                   {" · "}
-                  <Link to="/resume" className="text-accent hover:underline">Edit</Link>
+                  <Link to="/resume" className="hover:underline" style={{ color: "#93b5e1" }}>Edit</Link>
                 </p>
               </div>
             ) : (
@@ -134,6 +139,7 @@ export default function CoverLetterPage() {
                   placeholder="Paste your resume text or a summary of your experience..."
                   rows={8}
                   className={INPUT}
+                  style={INPUT_STYLE}
                 />
                 {!resume?.content && (
                   <p className="mt-1 text-xs text-text-tertiary">
@@ -147,7 +153,8 @@ export default function CoverLetterPage() {
           <button
             type="submit"
             disabled={mutation.isPending || !jobDescription.trim() || !resumeText.trim()}
-            className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
+            className="w-full rounded-lg px-4 py-2.5 text-sm font-medium disabled:opacity-50 transition-colors"
+            style={{ background: "rgba(96,165,250,0.15)", color: "#93b5e1" }}
           >
             {mutation.isPending ? "Generating..." : "Generate Cover Letter"}
           </button>
@@ -157,9 +164,9 @@ export default function CoverLetterPage() {
           )}
         </form>
 
-        <div className="rounded-xl border border-border-default bg-surface-secondary p-6">
+        <div className="rounded-xl p-6" style={{ background: "var(--color-sidebar-bg)", border: "1px solid var(--color-sidebar-border)" }}>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-text-secondary">Generated Cover Letter</h2>
+            <h2 className="text-[13px] font-medium text-text-secondary">Generated Cover Letter</h2>
             {result && (
               <button onClick={handleCopy} className="rounded-lg border border-border-default px-3 py-1 text-xs font-medium text-text-secondary hover:bg-surface-elevated">
                 Copy

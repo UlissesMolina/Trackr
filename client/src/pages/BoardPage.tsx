@@ -31,7 +31,12 @@ interface DragState {
 }
 
 const INPUT =
-  "rounded-lg border border-border-default bg-surface-secondary px-3 py-1.5 text-sm text-text-primary placeholder-text-tertiary transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+  "rounded-lg px-3 py-1.5 text-sm text-text-primary placeholder-text-tertiary transition-colors duration-150 focus:outline-none";
+
+const INPUT_STYLE: React.CSSProperties = {
+  background: "var(--color-sidebar-bg)",
+  border: "1px solid var(--color-sidebar-border)",
+};
 
 export default function BoardPage() {
   const { data: applications = [], isLoading } = useApplications();
@@ -176,10 +181,14 @@ export default function BoardPage() {
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-text-primary">Application Board</h1>
         <div className="flex items-center gap-2">
-          <div className="flex rounded-lg border border-border-default overflow-hidden">
+          <div className="flex gap-0.5 rounded-lg p-0.5">
             <button
               onClick={() => setView("kanban")}
-              className={`px-2.5 py-2 text-sm ${viewMode === "kanban" ? "bg-surface-elevated text-text-primary" : "text-text-tertiary hover:text-text-secondary hover:bg-surface-secondary"}`}
+              className="rounded-md px-2.5 py-2 text-sm transition-colors duration-150"
+              style={{
+                background: viewMode === "kanban" ? "var(--color-nav-active)" : "transparent",
+                color: viewMode === "kanban" ? "var(--color-icon-active)" : "var(--color-icon-muted)",
+              }}
               title="Kanban view"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -188,7 +197,11 @@ export default function BoardPage() {
             </button>
             <button
               onClick={() => setView("table")}
-              className={`px-2.5 py-2 text-sm border-l border-border-default ${viewMode === "table" ? "bg-surface-elevated text-text-primary" : "text-text-tertiary hover:text-text-secondary hover:bg-surface-secondary"}`}
+              className="rounded-md px-2.5 py-2 text-sm transition-colors duration-150"
+              style={{
+                background: viewMode === "table" ? "var(--color-nav-active)" : "transparent",
+                color: viewMode === "table" ? "var(--color-icon-active)" : "var(--color-icon-muted)",
+              }}
               title="Table view"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -198,19 +211,28 @@ export default function BoardPage() {
           </div>
           <button
             onClick={() => setShowImport(true)}
-            className="rounded-lg border border-border-default px-4 py-2 text-sm font-medium text-text-secondary hover:bg-surface-elevated"
+            className="rounded-lg px-4 py-2 text-sm font-medium text-text-secondary transition-colors duration-150"
+            style={{ border: "1px solid var(--color-sidebar-border)" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--color-nav-hover)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
           >
             Import CSV
           </button>
           <button
             onClick={() => setShowEmailImport(true)}
-            className="rounded-lg border border-border-default px-4 py-2 text-sm font-medium text-text-secondary hover:bg-surface-elevated"
+            className="rounded-lg px-4 py-2 text-sm font-medium text-text-secondary transition-colors duration-150"
+            style={{ border: "1px solid var(--color-sidebar-border)" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--color-nav-hover)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
           >
             Paste Email
           </button>
           <button
             onClick={() => setShowForm(true)}
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+            className="rounded-lg px-4 py-2 text-sm font-medium text-text-secondary transition-colors duration-150"
+            style={{ border: "1px solid var(--color-sidebar-border)" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--color-nav-hover)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
           >
             + Add
           </button>
@@ -229,12 +251,14 @@ export default function BoardPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className={`${INPUT} w-full pl-9`}
+            style={INPUT_STYLE}
           />
         </div>
         <select
           value={stageJump}
           onChange={(e) => setStageJump(e.target.value as BoardStatus | "ALL")}
           className={`${INPUT} cursor-pointer`}
+          style={INPUT_STYLE}
         >
           <option value="ALL">All Stages</option>
           {BOARD_STATUSES.map((s) => (
@@ -245,6 +269,7 @@ export default function BoardPage() {
           value={dateFilter}
           onChange={(e) => setDateFilter(e.target.value as "all" | "7" | "30")}
           className={`${INPUT} cursor-pointer`}
+          style={INPUT_STYLE}
         >
           <option value="all">All Time</option>
           <option value="7">Last 7 days</option>
@@ -265,7 +290,7 @@ export default function BoardPage() {
       )}
 
       {viewMode === "kanban" && (<>
-      <div className="flex gap-3 overflow-x-auto pb-4 sm:gap-4">
+      <div className="flex gap-4 overflow-x-auto pb-4">
         {BOARD_STATUSES.map((status) => {
           const cards = filteredApps.filter((a) => boardStatus(a.status) === status);
           const isDropTarget = drag && hoverStatus === status;
@@ -277,7 +302,7 @@ export default function BoardPage() {
               className={`flex w-64 min-w-[16rem] flex-shrink-0 flex-col rounded-xl p-3 transition-colors duration-150 sm:w-72 sm:min-w-[18rem] ${
                 isDropTarget
                   ? "bg-accent/10 ring-2 ring-accent/30"
-                  : "bg-surface-secondary"
+                  : ""
               }`}
             >
               <div className="mb-3 flex items-center justify-between px-1">
@@ -308,8 +333,8 @@ export default function BoardPage() {
 
                 {cards.length === 0 && (
                   <div className={`flex flex-1 flex-col items-center justify-center rounded-lg p-6 ${
-                    isDropTarget ? "border-2 border-accent/40 bg-accent/5" : "border border-border-default bg-surface-tertiary/30"
-                  }`}>
+                    isDropTarget ? "border-2 border-accent/40 bg-accent/5" : ""
+                  }`} style={isDropTarget ? undefined : { background: "var(--color-nav-hover)", borderRadius: 8 }}>
                     <p className="text-center text-sm text-text-secondary">
                       {search || dateFilter !== "all"
                         ? "No matches"
@@ -332,7 +357,7 @@ export default function BoardPage() {
             width: drag.width,
           }}
         >
-          <div className="rotate-[2deg] scale-105 rounded-lg border border-accent/40 bg-surface-secondary shadow-xl shadow-black/30">
+          <div className="rotate-[2deg] scale-105 rounded-lg shadow-xl shadow-black/30" style={{ background: "var(--color-nav-active)" }}>
             <ApplicationCard application={draggedApp} />
           </div>
         </div>,

@@ -542,12 +542,6 @@ const BENTO = ["lg:col-span-7", "lg:col-span-5", "lg:col-span-5", "lg:col-span-7
 
 function Navbar({ isSignedIn }: { isSignedIn: boolean }) {
   const hidden = useScrollDirection();
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", fn, { passive: true });
-    return () => window.removeEventListener("scroll", fn);
-  }, []);
   return (
     <motion.header initial={{ opacity: 0, y: 0 }} animate={{ opacity: 1, y: hidden ? "-100%" : "0%" }} transition={{ duration: 0.3, ease: "easeOut" }} className="sticky inset-x-0 top-0 z-50 transition-all duration-300" style={{ background: "rgba(10,10,12,0.7)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6" style={{ fontFamily: F.body }}>

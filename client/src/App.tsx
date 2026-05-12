@@ -12,6 +12,7 @@ import CoverLetterPage from "./pages/CoverLetterPage";
 import ResumePage from "./pages/ResumePage";
 import SankeyPage from "./pages/SankeyPage";
 import JobFinderPage from "./pages/JobFinderPage";
+import SettingsPage from "./pages/SettingsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -75,6 +76,7 @@ function ClerkWithRoutes() {
             <Route path="/cover-letter" element={<CoverLetterPage />} />
             <Route path="/jobs" element={<JobFinderPage />} />
             <Route path="/flow" element={<SankeyPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Routes>
       </QueryClientProvider>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trackr</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Trackr</h1>
+      <p class="subtitle" id="status-msg">Scanning page...</p>
+    </header>
+
+    <div id="no-data" class="message" style="display:none;">
+      <p>No job data found on this page.</p>
+      <p class="hint">Navigate to a LinkedIn or Greenhouse job posting and try again.</p>
+    </div>
+
+    <form id="job-form" style="display:none;">
+      <div class="field">
+        <label for="title">Job Title</label>
+        <input type="text" id="title" required>
+      </div>
+      <div class="field">
+        <label for="company">Company</label>
+        <input type="text" id="company" required>
+      </div>
+      <div class="field">
+        <label for="location">Location</label>
+        <input type="text" id="location">
+      </div>
+      <div class="field">
+        <label for="url">URL</label>
+        <input type="text" id="url" readonly>
+      </div>
+      <div class="field">
+        <label for="job-status">Status</label>
+        <select id="job-status">
+          <option value="SAVED" selected>Saved</option>
+          <option value="APPLIED">Applied</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea id="description" rows="4"></textarea>
+      </div>
+      <button type="submit" id="save-btn">Save to Trackr</button>
+    </form>
+
+    <div id="success-msg" class="message success" style="display:none;">
+      <p>Application saved!</p>
+    </div>
+
+    <div id="error-msg" class="message error" style="display:none;">
+      <p id="error-text">Something went wrong.</p>
+    </div>
+
+    <footer>
+      <a href="#" id="open-options">Settings</a>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

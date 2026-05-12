@@ -11,8 +11,8 @@
   --color-text-primary: #111827;
   --color-text-secondary: #6b7280;
   --color-text-tertiary: #9ca3af;
-  --color-accent: #059669;
-  --color-accent-hover: #047857;
+  --color-accent: #5b8dd9;
+  --color-accent-hover: #4a7bc8;
 }
 
 /* ── Layout-specific vars (not Tailwind utilities, used via var()) ──────── */
@@ -41,8 +41,8 @@ html.dark {
   --color-text-primary: #ededef;
   --color-text-secondary: #8a8a96;
   --color-text-tertiary: #5c5c69;
-  --color-accent: #0ead81;
-  --color-accent-hover: #10c98c;
+  --color-accent: #93b5e1;
+  --color-accent-hover: #a3c2ea;
 
   --color-header-bg: rgba(255,255,255,0.03);
   --color-header-border: rgba(255,255,255,0.06);
@@ -361,7 +361,7 @@ body {
   left: 50%;
   width: 0;
   height: 1px;
-  background: #48de94;
+  background: #93b5e1;
   transition: width 0.3s ease, left 0.3s ease;
 }
 .nav-link-underline:hover::after {
@@ -396,11 +396,11 @@ body {
 .accent-shimmer {
   background: linear-gradient(
     90deg,
-    #48de94 0%,
-    #7dffc0 30%,
-    #48de94 50%,
-    #2ec47a 70%,
-    #48de94 100%
+    #93b5e1 0%,
+    #a78bfa 30%,
+    #93b5e1 50%,
+    #7ba3d4 70%,
+    #93b5e1 100%
   );
   background-size: 200% auto;
   -webkit-background-clip: text;

@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback, type ReactNode } from "react";
+import { useRef, useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
 import {
@@ -6,7 +6,6 @@ import {
   useScroll,
   useTransform,
   useInView,
-  useMotionValue,
   useMotionValueEvent,
   AnimatePresence,
 } from "framer-motion";
@@ -24,9 +23,9 @@ const C = {
   bgInner: "#10121a",
   borderSubtle: "rgba(255,255,255,0.06)",
   borderMed: "rgba(255,255,255,0.1)",
-  borderHover: "rgba(72,222,148,0.18)",
-  accent: "#48de94",
-  accentMuted: "rgba(72,222,148,0.12)",
+  borderHover: "rgba(96,165,250,0.18)",
+  accent: "#93b5e1",
+  accentMuted: "rgba(96,165,250,0.12)",
   white: "#ffffff",
   body: "#e8e8e8",
   muted: "#9ca3af",
@@ -61,90 +60,33 @@ function ScrollWord({ word, scrollYProgress, rangeStart, rangeEnd, color }: { wo
   const blur = useTransform(scrollYProgress, [rangeStart, rangeEnd], [0, 8]);
   const filterStr = useTransform(blur, (v) => `blur(${v}px)`);
 
+  const isGradient = color === "gradient";
+
   return (
-    <motion.span className="mr-[0.22em] inline-block" style={{ color, opacity, filter: filterStr }}>
+    <motion.span
+      className="mr-[0.22em] inline-block"
+      style={{
+        ...(isGradient
+          ? { background: "linear-gradient(135deg, #93b5e1, #a78bfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }
+          : { color }),
+        opacity,
+        filter: filterStr,
+      }}
+    >
       {word}
     </motion.span>
   );
 }
 
-function GlowCard({ children, className = "", style, ...props }: { children: ReactNode; className?: string; style?: React.CSSProperties } & Omit<React.ComponentProps<typeof motion.div>, "ref" | "children" | "className" | "style" | "onMouseMove" | "onMouseEnter" | "onMouseLeave">) {
-  const ref = useRef<HTMLDivElement>(null);
-  const mouseX = useMotionValue(-400);
-  const mouseY = useMotionValue(-400);
-  const [hovered, setHovered] = useState(false);
-
-  const glowBackground = useTransform(
-    [mouseX, mouseY],
-    ([x, y]) => `radial-gradient(400px circle at ${x}px ${y}px, rgba(72,222,148,0.06), transparent 60%)`
-  );
-
-  const onMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    mouseX.set(e.clientX - rect.left);
-    mouseY.set(e.clientY - rect.top);
-  }, [mouseX, mouseY]);
-
+function GlowCard({ children, className = "", style, ...props }: { children: ReactNode; className?: string; style?: React.CSSProperties } & Omit<React.ComponentProps<typeof motion.div>, "ref" | "children" | "className" | "style">) {
   return (
     <motion.div
-      ref={ref}
       className={`relative ${className}`}
       style={style}
-      onMouseMove={onMouseMove}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       {...props}
     >
-      {hovered && (
-        <motion.div
-          className="pointer-events-none absolute inset-0 z-10 rounded-xl"
-          style={{ background: glowBackground }}
-        />
-      )}
       {children}
     </motion.div>
-  );
-}
-
-function StepNumber({ target, inView }: { target: string; inView: boolean }) {
-  const [display, setDisplay] = useState("00");
-  const hasRun = useRef(false);
-
-  useEffect(() => {
-    if (!inView || hasRun.current) return;
-    hasRun.current = true;
-    let frame = 0;
-    const totalFrames = 18;
-    const id = setInterval(() => {
-      frame++;
-      if (frame >= totalFrames) {
-        setDisplay(target);
-        clearInterval(id);
-      } else {
-        setDisplay(String(Math.floor(Math.random() * 10)).padStart(2, "0"));
-      }
-    }, 42);
-    return () => clearInterval(id);
-  }, [inView, target]);
-
-  return <>{display}</>;
-}
-
-function StepDot({ left, threshold, linePathLength }: { left: string; threshold: number; linePathLength: import("framer-motion").MotionValue<number> }) {
-  const dotScale = useTransform(linePathLength, [threshold - 0.02, threshold + 0.05], [0, 1]);
-  const dotOpacity = useTransform(linePathLength, [threshold - 0.02, threshold + 0.05], [0, 1]);
-
-  return (
-    <motion.div
-      className="absolute top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-      style={{
-        left,
-        background: C.accent,
-        boxShadow: "none",
-        scale: dotScale,
-        opacity: dotOpacity,
-      }}
-    />
   );
 }
 
@@ -195,12 +137,6 @@ function ScrollReveal({ children, delay: _delay = 0, className = "", direction }
 
 // ─── Floating pills ──────────────────────────────────────────────────────────
 
-const PILLS = [
-  { label: "Applied", co: "Google", color: "#3b82f6", cls: "float-pill-1", pos: { top: "20%", left: "6%" } },
-  { label: "Interview", co: "Stripe", color: "#a855f7", cls: "float-pill-2", pos: { top: "28%", right: "4%" } },
-  { label: "Offer", co: "Figma", color: "#48de94", cls: "float-pill-3", pos: { bottom: "30%", left: "3%" } },
-  { label: "Rejected", co: "Meta", color: "#ef4444", cls: "float-pill-4", pos: { top: "12%", right: "10%" } },
-];
 
 // ─── INTERACTIVE FEATURE PREVIEWS ────────────────────────────────────────────
 
@@ -231,7 +167,7 @@ function KanbanPreview() {
       { company: "Stripe", role: "Full Stack", daysAgo: "3d", id: "s" },
       { company: "Linear", role: "SWE Intern", daysAgo: "6d", id: "l" },
     ]},
-    { label: "Offer", color: "#48de94", cards: [
+    { label: "Offer", color: "#93b5e1", cards: [
       { company: "Vercel", role: "Frontend", daysAgo: "1d", id: "v" },
     ]},
     { label: "Rejected", color: "#ef4444", cards: [
@@ -340,11 +276,11 @@ function CoverLetterPreview() {
           Generating...
         </motion.div>
       </div>
-      <div className="flex-1 rounded-md border p-3" style={{ background: "rgba(72,222,148,0.02)", borderColor: "rgba(72,222,148,0.08)" }}>
+      <div className="flex-1 rounded-md border p-3" style={{ background: "rgba(96,165,250,0.02)", borderColor: "rgba(96,165,250,0.08)" }}>
         <div className="text-[8px] leading-[1.7]" style={{ color: "rgba(255,255,255,0.55)" }}>Dear Hiring Manager,</div>
         <div className="mt-1.5 text-[8px] leading-[1.7]" style={{ color: "rgba(255,255,255,0.45)" }}>
           {visibleText}
-          {charCount < fullText.length && <span className="landing-typing-cursor ml-0.5 inline-block h-3 w-[1.5px] rounded-full bg-[#48de94]" />}
+          {charCount < fullText.length && <span className="landing-typing-cursor ml-0.5 inline-block h-3 w-[1.5px] rounded-full bg-[#93b5e1]" />}
         </div>
         <div className="mt-3 flex items-center gap-2">
           <div className="h-1 flex-1 overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
@@ -358,16 +294,14 @@ function CoverLetterPreview() {
 }
 
 // 3. SANKEY — paths draw themselves when scrolled into view
-function SankeyFlowPath({ d, fill, id, index, scrollYProgress, hovered, setHovered }: { d: string; fill: string; id: string; index: number; scrollYProgress: ReturnType<typeof useScroll>["scrollYProgress"]; hovered: string | null; setHovered: (v: string | null) => void }) {
-  const clipRight = useTransform(scrollYProgress, [0.1, 0.5 + index * 0.1], [100, 0]);
-  const clipPath = useTransform(clipRight, (v) => `inset(0 ${v}% 0 0)`);
+function SankeyFlowPath({ d, fill, id, hovered, setHovered }: { d: string; fill: string; id: string; index: number; scrollYProgress: ReturnType<typeof useScroll>["scrollYProgress"]; hovered: string | null; setHovered: (v: string | null) => void }) {
   const opacityVal = hovered === null || hovered === id ? 1 : 0.3;
 
   return (
     <motion.path
       d={d}
       fill={fill}
-      style={{ clipPath, cursor: "pointer" }}
+      style={{ cursor: "pointer" }}
       animate={{ opacity: opacityVal }}
       transition={{ duration: 0.3 }}
       onMouseEnter={() => setHovered(id)}
@@ -461,7 +395,7 @@ function ResumePreview() {
           exit={{ opacity: 0, x: 8 }}
           transition={{ duration: 0.25 }}
           className="flex-1 rounded-md border"
-          style={{ background: C.bgInner, borderColor: C.borderHover, boxShadow: `0 2px 16px rgba(72,222,148,0.08)` }}
+          style={{ background: C.bgInner, borderColor: C.borderHover, boxShadow: `0 2px 16px rgba(96,165,250,0.08)` }}
         >
           <div className="border-b p-2.5" style={{ borderColor: C.borderSubtle }}>
             <div className="flex items-center justify-between">
@@ -596,7 +530,7 @@ function TagsPreview() {
 // ─── Bento data ──────────────────────────────────────────────────────────────
 
 const FEATURES: { title: string; desc: string; visual: ReactNode; accent: string; layout: "visual-first" | "default" | "horizontal" | "compact" }[] = [
-  { title: "AI Cover Letters", desc: "Paste a job description, get a tailored cover letter in under 30 seconds.", visual: <CoverLetterPreview />, accent: "#48de94", layout: "visual-first" },
+  { title: "AI Cover Letters", desc: "Paste a job description, get a tailored cover letter in under 30 seconds.", visual: <CoverLetterPreview />, accent: "#93b5e1", layout: "visual-first" },
   { title: "Job Finder", desc: "Search thousands of listings from a live database. Filter, review, add to your board.", visual: <JobFinderPreview />, accent: "#3b82f6", layout: "default" },
   { title: "Resume Manager", desc: "Store multiple resumes. The AI cover letter generator pulls from whichever you choose.", visual: <ResumePreview />, accent: "#a855f7", layout: "horizontal" },
   { title: "Tags & Notes", desc: "Organize with custom tags and attach notes to any application for quick context.", visual: <TagsPreview />, accent: "#f59e0b", layout: "compact" },
@@ -615,7 +549,7 @@ function Navbar({ isSignedIn }: { isSignedIn: boolean }) {
     return () => window.removeEventListener("scroll", fn);
   }, []);
   return (
-    <motion.header initial={{ opacity: 0, y: 0 }} animate={{ opacity: 1, y: hidden ? "-100%" : "0%" }} transition={{ duration: 0.3, ease: "easeOut" }} className="fixed inset-x-0 top-0 z-50 transition-all duration-300" style={{ background: scrolled ? "rgba(8,9,13,0.88)" : "transparent", backdropFilter: scrolled ? "blur(16px) saturate(1.2)" : "none", borderBottom: scrolled ? `1px solid ${C.borderSubtle}` : "1px solid transparent" }}>
+    <motion.header initial={{ opacity: 0, y: 0 }} animate={{ opacity: 1, y: hidden ? "-100%" : "0%" }} transition={{ duration: 0.3, ease: "easeOut" }} className="sticky inset-x-0 top-0 z-50 transition-all duration-300" style={{ background: "rgba(10,10,12,0.7)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6" style={{ fontFamily: F.body }}>
         <Link to="/"><img src={logo} alt="trackr" className="h-7" /></Link>
         <div className="hidden items-center gap-8 sm:flex">
@@ -623,7 +557,7 @@ function Navbar({ isSignedIn }: { isSignedIn: boolean }) {
         </div>
         <div className="flex items-center gap-4">
           <Link to={isSignedIn ? "/dashboard" : "/sign-in"} className="hidden text-sm transition-colors hover:text-white sm:block" style={{ color: C.muted }}>Log in</Link>
-          <Link to={isSignedIn ? "/dashboard" : "/sign-up"} className="rounded-lg border px-5 py-2 text-sm font-medium text-white transition-all duration-300 hover:border-transparent" style={{ borderColor: C.accent }} onMouseEnter={(e) => { e.currentTarget.style.background = C.accent; }} onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>Get started</Link>
+          <Link to={isSignedIn ? "/dashboard" : "/sign-up"} className="rounded-lg px-5 py-2 text-sm font-medium transition-all duration-300 hover:brightness-125" style={{ background: "rgba(255,255,255,0.06)", color: "#ccc", border: "none" }}>Get started</Link>
         </div>
       </nav>
     </motion.header>
@@ -639,71 +573,30 @@ function Hero({ isSignedIn, pageScrollY }: { isSignedIn: boolean; pageScrollY: R
   // Step 3: Mockup at 0.85x — lags behind slightly
   const mockupY = useTransform(pageScrollY, [0, 900], [0, 900 * 0.15]);
 
-  // 5a: 3D scroll-linked transform for mockup
-  const mockupRotateX = useTransform(scrollYProgress, [0, 0.5], [8, 0]);
-  const mockupRotateY = useTransform(scrollYProgress, [0, 0.5], [-4, 0]);
-  const mockupScale = useTransform(scrollYProgress, [0, 0.5], [0.92, 1]);
-
-  // Step 3: Pill parallax — 0.4x to 0.7x (mid-ground layer, page-level scroll)
-  const pillY0 = useTransform(pageScrollY, [0, 2000], [0, -800]);   // 0.4x
-  const pillY1 = useTransform(pageScrollY, [0, 2000], [0, -1400]);  // 0.7x
-  const pillY2 = useTransform(pageScrollY, [0, 2000], [0, -900]);   // 0.45x
-  const pillY3 = useTransform(pageScrollY, [0, 2000], [0, -1200]);  // 0.6x
-  const pillYs = [pillY0, pillY1, pillY2, pillY3];
-
-  // Step 3: Blob parallax — 0.2x (true background layer, page-level scroll)
-  const blobY1 = useTransform(pageScrollY, [0, 3000], [0, -600]);  // 0.2x
-  const blobY2 = useTransform(pageScrollY, [0, 3000], [0, -600]);  // 0.2x
-  const blobY3 = useTransform(pageScrollY, [0, 3000], [0, -600]);  // 0.2x
-
   // 5b: Headline words with scroll ranges
   const headlineLines = [
     { words: [{ w: "Your", color: C.white }, { w: "job", color: C.white }, { w: "search,", color: C.white }], d: 0.35 },
-    { words: [{ w: "finally", color: "rgba(255,255,255,0.45)" }, { w: "organized.", color: C.accent }], d: 0.59 },
+    { words: [{ w: "finally", color: "rgba(255,255,255,0.45)" }, { w: "organized.", color: "gradient" }], d: 0.59 },
   ];
   const allWords = headlineLines.flatMap(l => l.words);
   const wordCount = allWords.length;
 
   return (
     <section ref={ref} className="relative flex items-center overflow-hidden pt-16" style={{ minHeight: "90vh" }}>
-      {/* 5d: Blobs with scroll parallax */}
-      <motion.div className="pointer-events-none absolute" style={{ width: 800, height: 800, top: "-12%", left: "-18%", y: blobY1 }} aria-hidden>
-        <div className="landing-blob-1 h-full w-full" style={{ background: "radial-gradient(circle, rgba(72,222,148,0.1) 0%, transparent 70%)", willChange: "transform" }} />
-      </motion.div>
-      <motion.div className="pointer-events-none absolute" style={{ width: 650, height: 650, top: "8%", right: "-12%", y: blobY2 }} aria-hidden>
-        <div className="landing-blob-2 h-full w-full" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%)", willChange: "transform" }} />
-      </motion.div>
-      <motion.div className="pointer-events-none absolute" style={{ width: 550, height: 550, bottom: "-15%", left: "25%", y: blobY3 }} aria-hidden>
-        <div className="landing-blob-3 h-full w-full" style={{ background: "radial-gradient(circle, rgba(168,85,247,0.06) 0%, transparent 70%)", willChange: "transform" }} />
-      </motion.div>
-
-      {/* 5c: Pills with scroll parallax */}
-      {PILLS.map((p, i) => (
-        <motion.div key={p.co} className="pointer-events-none absolute hidden lg:block" style={{ ...p.pos, y: pillYs[i], willChange: "transform" }} initial={{ opacity: 0 }} animate={{ opacity: 0.25 }} transition={{ duration: 0.6, delay: 1.6 + i * 0.12 }} aria-hidden>
-          <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 6 + i, repeat: Infinity, ease: "easeInOut", delay: i * 0.5 }}>
-            <div className="flex items-center gap-2 rounded-lg border px-3 py-1.5" style={{ borderColor: `${p.color}25`, background: `${p.color}0a`, fontFamily: F.mono, fontSize: 11 }}>
-              <span className="h-1.5 w-1.5 rounded-full" style={{ background: p.color }} />
-              <span style={{ color: p.color }}>{p.label}</span>
-              <span style={{ color: C.dim }}>—</span>
-              <span style={{ color: C.dim }}>{p.co}</span>
-            </div>
-          </motion.div>
-        </motion.div>
-      ))}
 
       <div className="pointer-events-none fixed inset-0 z-[9998] opacity-[0.05] mix-blend-overlay" style={{ backgroundImage: `url(${noiseTexture})`, backgroundRepeat: "repeat" }} aria-hidden />
-      <div className="relative mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 px-6 pb-8 lg:grid-cols-2 lg:gap-6">
+      <div className="relative mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-8 px-6 pb-8 lg:grid-cols-2 lg:gap-6">
         <div className="flex flex-col justify-center py-8 lg:py-0">
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }} className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border px-4 py-1.5" style={{ borderColor: C.borderSubtle, background: "rgba(255,255,255,0.03)", fontFamily: F.mono, fontSize: 12, color: C.muted }}>
-            <span className="badge-dot-pulse h-1.5 w-1.5 rounded-full" style={{ background: C.accent }} />Now in Beta
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }} className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border px-4 py-1.5" style={{ borderColor: "rgba(96,165,250,0.15)", background: "rgba(96,165,250,0.1)", fontFamily: F.mono, fontSize: 12, color: "#93b5e1" }}>
+            <span className="badge-dot-pulse h-1.5 w-1.5 rounded-full" style={{ background: "#93b5e1" }} />Now in Beta
           </motion.div>
 
           {/* 5b: Headline with scroll-linked fade/blur per word */}
-          <h1 style={{ fontFamily: F.display, letterSpacing: "-0.03em", lineHeight: 1.08, textShadow: "0 0 1px rgba(255,255,255,0.08)" }}>
+          <h1 style={{ fontFamily: F.display, letterSpacing: "-0.02em", lineHeight: 1.1, fontWeight: 600, textShadow: "0 0 1px rgba(255,255,255,0.08)" }}>
             {(() => {
               let wordIndex = 0;
               return headlineLines.map((line, li) => (
-                <span key={li} className="block" style={{ fontSize: "clamp(3rem, 6.5vw, 5.5rem)" }}>
+                <span key={li} className="block" style={{ fontSize: "clamp(3rem, 7vw, 56px)" }}>
                   {line.words.map((wordObj, wi) => {
                     const idx = wordIndex++;
                     const rangeStart = 0.15 + (idx / wordCount) * 0.25;
@@ -725,32 +618,28 @@ function Hero({ isSignedIn, pageScrollY }: { isSignedIn: boolean; pageScrollY: R
             })()}
           </h1>
 
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.9 }} className="mt-5 max-w-md leading-relaxed" style={{ fontFamily: F.body, fontSize: "1.1rem", color: C.body }}>Track every application. Generate cover letters. See where you stand.</motion.p>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.9 }} className="mt-5 leading-relaxed" style={{ fontFamily: F.body, fontSize: 17, color: "#888", maxWidth: 400 }}>Track every application. Generate cover letters. See where you stand.</motion.p>
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 1.05 }} className="mt-7 flex flex-wrap items-center gap-4">
-            <Link to={isSignedIn ? "/dashboard" : "/sign-up"} className="group inline-flex items-center gap-2 rounded-lg px-7 py-3 text-sm font-semibold transition-all duration-300 hover:brightness-110" style={{ background: C.accent, fontFamily: F.body, color: "#052e16" }}>
+            <Link to={isSignedIn ? "/dashboard" : "/sign-up"} className="group inline-flex items-center gap-2 rounded-lg border px-7 py-3 text-sm font-semibold transition-all duration-300 hover:bg-[rgba(96,165,250,0.3)]" style={{ background: "rgba(96,165,250,0.2)", color: "#93b5e1", border: "1px solid rgba(96,165,250,0.25)", fontFamily: F.body }}>
               Get started<svg className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
             </Link>
-            {/* 5e: Ghost button underline */}
-            <a href="#features" className="ghost-btn-underline inline-flex items-center rounded-lg border px-7 py-3 text-sm font-medium transition-all duration-300 hover:border-white/20 hover:text-white" style={{ borderColor: C.borderSubtle, color: C.muted, fontFamily: F.body }}>View features</a>
+            <a href="#features" className="inline-flex items-center text-sm font-medium transition-colors duration-300 hover:underline hover:text-white" style={{ color: "#888", fontFamily: F.body }}>View features</a>
           </motion.div>
         </div>
 
-        {/* 5a: Mockup with 3D scroll-linked transform */}
+        {/* 5a: Mockup with perspective tilt */}
         <motion.div className="relative flex items-center justify-center lg:justify-end" initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 1.15, ease: [0.22, 1, 0.36, 1] }} style={{ y: mockupY, willChange: "transform" }}>
-          <motion.div
-            className="relative w-full overflow-hidden rounded-xl border-2"
+          <div
+            className="relative w-full overflow-hidden"
             style={{
-              maxWidth: 580,
-              borderColor: "rgba(255,255,255,0.14)",
-              boxShadow: "0 25px 60px -12px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.06)",
-              rotateX: mockupRotateX,
-              rotateY: mockupRotateY,
-              scale: mockupScale,
-              perspective: 1200,
+              maxWidth: "min(700px, 55vw)",
+              borderRadius: 12,
+              border: "1px solid rgba(255,255,255,0.08)",
+              transform: "perspective(2000px) rotateY(-8deg) rotateX(2deg)",
             }}
           >
-            <img src={boardScreenshot} alt="Trackr Kanban board" className="h-auto w-full object-cover object-top" style={{ filter: "brightness(1.2) contrast(1.08)" }} />
-          </motion.div>
+            <img src={boardScreenshot} alt="Trackr dashboard" className="h-auto w-full object-cover object-top" style={{ filter: "brightness(1.2) contrast(1.08)" }} />
+          </div>
         </motion.div>
       </div>
     </section>
@@ -763,13 +652,14 @@ function FullBleedKanban() {
   return (
     <div className="mx-auto w-[92vw] max-w-[1400px] mt-12">
       {/* Decorative gradient line above card */}
-      <div className="mx-auto mb-4 h-px" style={{ width: "60%", background: "linear-gradient(90deg, transparent, rgba(72,222,148,0.2), transparent)" }} />
+      <div className="mx-auto mb-4 h-px" style={{ width: "60%", background: "linear-gradient(90deg, transparent, rgba(96,165,250,0.2), transparent)" }} />
       <ScrollReveal>
         <GlowCard
-          className="overflow-hidden rounded-2xl border"
+          className="overflow-hidden border"
           style={{
-            background: C.bgCard,
-            borderColor: C.borderSubtle,
+            background: "rgba(255,255,255,0.03)",
+            borderColor: "rgba(255,255,255,0.06)",
+            borderRadius: 16,
             boxShadow: "0 8px 40px rgba(0,0,0,0.4)",
           }}
           whileHover={{ borderColor: C.borderHover, boxShadow: "0 12px 48px rgba(0,0,0,0.5)" }}
@@ -802,9 +692,9 @@ function Features() {
         <Reveal>
           <div className="flex items-center gap-2.5">
             <span className="h-1 w-1 rounded-full" style={{ background: C.accent }} />
-            <span className="text-xs font-medium uppercase tracking-[0.2em]" style={{ color: C.accent, fontFamily: F.mono }}>Features</span>
+            <span className="font-medium uppercase" style={{ fontSize: 12, letterSpacing: "0.1em", color: C.accent, fontFamily: F.mono }}>Features</span>
           </div>
-          <h2 className="mt-3 max-w-lg" style={{ fontFamily: F.display, fontSize: "clamp(2.25rem, 4.5vw, 3.5rem)", color: C.white, letterSpacing: "-0.025em", lineHeight: 1.1, fontWeight: 700 }}>Everything you need to land the role</h2>
+          <h2 className="mt-3 max-w-lg" style={{ fontFamily: F.display, fontSize: 40, color: C.white, letterSpacing: "-0.02em", lineHeight: 1.1, fontWeight: 600 }}>Everything you need to land the role</h2>
           <p className="mt-3 max-w-md" style={{ fontFamily: F.body, color: C.muted, fontSize: "1.05rem", lineHeight: 1.6 }}>From discovery to offer — tracking, cover letters, analytics, and more in one place.</p>
         </Reveal>
       </div>
@@ -817,10 +707,11 @@ function Features() {
           {FEATURES.map((f, i) => (
             <ScrollReveal key={f.title} delay={i * 0.08} className={`relative ${BENTO[i]}`} direction={i % 2 === 0 ? "left" : "right"}>
               <GlowCard
-                className="group flex h-full overflow-hidden rounded-xl border"
+                className="group flex h-full overflow-hidden border"
                 style={{
-                  background: C.bgCard,
-                  borderColor: C.borderSubtle,
+                  background: "rgba(255,255,255,0.03)",
+                  borderColor: "rgba(255,255,255,0.06)",
+                  borderRadius: 16,
                   borderTop: `1px solid ${f.accent}18`,
                   flexDirection: f.layout === "horizontal" ? "row" : "column",
                 }}
@@ -917,30 +808,30 @@ function FullBleedSankey() {
         <svg viewBox="0 0 1200 280" className="w-full" preserveAspectRatio="xMidYMid meet">
           <defs>
             <linearGradient id="skFull1" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.55" />
-              <stop offset="100%" stopColor="#a855f7" stopOpacity="0.45" />
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#a855f7" stopOpacity="0.28" />
             </linearGradient>
             <linearGradient id="skFull2" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#a855f7" stopOpacity="0.45" />
-              <stop offset="100%" stopColor="#48de94" stopOpacity="0.55" />
+              <stop offset="0%" stopColor="#a855f7" stopOpacity="0.28" />
+              <stop offset="100%" stopColor="#93b5e1" stopOpacity="0.35" />
             </linearGradient>
             <linearGradient id="skFull3" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#a855f7" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#ef4444" stopOpacity="0.35" />
+              <stop offset="0%" stopColor="#a855f7" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#ef4444" stopOpacity="0.22" />
             </linearGradient>
           </defs>
 
           {/* Stage labels */}
-          <text x="30" y="58" fill="#3b82f6" fontSize="11" fontFamily="JetBrains Mono, monospace" fontWeight="600" opacity="0.6" letterSpacing="0.1em">APPLIED</text>
-          <text x="530" y="100" fill="#a855f7" fontSize="11" fontFamily="JetBrains Mono, monospace" fontWeight="600" opacity="0.6" letterSpacing="0.1em">INTERVIEW</text>
-          <text x="1060" y="52" fill="#48de94" fontSize="11" fontFamily="JetBrains Mono, monospace" fontWeight="600" opacity="0.6" letterSpacing="0.1em">OFFER</text>
-          <text x="1060" y="170" fill="#ef4444" fontSize="11" fontFamily="JetBrains Mono, monospace" fontWeight="600" opacity="0.5" letterSpacing="0.1em">REJECTED</text>
+          <text x="30" y="58" fill="#888" fontSize="11" fontFamily="JetBrains Mono, monospace" fontWeight="600" letterSpacing="0.1em">APPLIED</text>
+          <text x="530" y="100" fill="#888" fontSize="11" fontFamily="JetBrains Mono, monospace" fontWeight="600" letterSpacing="0.1em">INTERVIEW</text>
+          <text x="1060" y="52" fill="#888" fontSize="11" fontFamily="JetBrains Mono, monospace" fontWeight="600" letterSpacing="0.1em">OFFER</text>
+          <text x="1060" y="170" fill="#888" fontSize="11" fontFamily="JetBrains Mono, monospace" fontWeight="600" letterSpacing="0.1em">REJECTED</text>
 
           {/* Counts */}
-          <text x="30" y="220" fill="#3b82f6" fontSize="28" fontFamily="JetBrains Mono, monospace" fontWeight="800" opacity="0.35">47</text>
-          <text x="530" y="185" fill="#a855f7" fontSize="28" fontFamily="JetBrains Mono, monospace" fontWeight="800" opacity="0.35">18</text>
-          <text x="1060" y="100" fill="#48de94" fontSize="28" fontFamily="JetBrains Mono, monospace" fontWeight="800" opacity="0.35">5</text>
-          <text x="1060" y="230" fill="#ef4444" fontSize="28" fontFamily="JetBrains Mono, monospace" fontWeight="800" opacity="0.3">13</text>
+          <text x="30" y="220" fill="#888" fontSize="28" fontFamily="JetBrains Mono, monospace" fontWeight="800" opacity="0.4">47</text>
+          <text x="530" y="185" fill="#888" fontSize="28" fontFamily="JetBrains Mono, monospace" fontWeight="800" opacity="0.4">18</text>
+          <text x="1060" y="100" fill="#888" fontSize="28" fontFamily="JetBrains Mono, monospace" fontWeight="800" opacity="0.4">5</text>
+          <text x="1060" y="230" fill="#888" fontSize="28" fontFamily="JetBrains Mono, monospace" fontWeight="800" opacity="0.4">13</text>
 
           {/* Flow paths — properly connected at junction */}
           {[
@@ -969,15 +860,37 @@ function FullBleedSankey() {
 function HowItWorks() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const stepAreaRef = useRef<HTMLDivElement>(null);
-  const isStepInView = useInView(stepAreaRef, { once: true, margin: "-100px" });
-  const { scrollYProgress: sectionProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
-  const linePathLength = useTransform(sectionProgress, [0.1, 0.5], [0, 1]);
+  const hasAnimated = useRef(false);
+  const [triggered, setTriggered] = useState(false);
+
+  useEffect(() => {
+    const el = stepAreaRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated.current) {
+          hasAnimated.current = true;
+          setTriggered(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   const steps = [
     { num: "01", title: "Add applications", desc: "Import a CSV or add jobs manually from the finder." },
     { num: "02", title: "Track progress", desc: "Drag cards through stages as you hear back." },
     { num: "03", title: "Land the role", desc: "Follow up on time, see your funnel, close the loop." },
   ];
+
+  // Stagger: dot1=0s, line1=0.3s, dot2=0.6s, line2=0.9s, dot3=1.2s
+  // Text fades up 0.1s after its dot
+  const dotDelay = (i: number) => i * 0.6;
+  const lineDelay = (i: number) => 0.3 + i * 0.6;
+  const textDelay = (i: number) => dotDelay(i) + 0.1;
+
   return (
     <section ref={sectionRef} id="how-it-works" className="section-blend relative">
       <div className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
@@ -989,37 +902,51 @@ function HowItWorks() {
           <h2 className="mt-3" style={{ fontFamily: F.display, fontSize: "clamp(1.75rem, 3vw, 2.25rem)", color: C.white, letterSpacing: "-0.02em", fontWeight: 700 }}>Three steps. That's it.</h2>
         </Reveal>
         <div ref={stepAreaRef} className="relative mt-10">
-          {/* Connecting line with gradient + square step markers */}
+          {/* Connecting dots and lines */}
           <div className="absolute left-0 right-0 top-[11px] hidden h-[2px] w-full sm:block" aria-hidden>
-            <svg className="h-full w-full" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="stepLine" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor={C.accent} stopOpacity="0.5" />
-                  <stop offset="100%" stopColor="rgba(255,255,255,0.15)" />
-                </linearGradient>
-              </defs>
-              <motion.line x1="0" y1="1" x2="100%" y2="1" stroke="url(#stepLine)" strokeWidth={1} style={{ pathLength: linePathLength }} />
-            </svg>
-            {[
-              { left: "0%", threshold: 0.05 },
-              { left: "50%", threshold: 0.45 },
-              { left: "100%", threshold: 0.85 },
-            ].map((dot, i) => (
-              <StepDot key={i} left={dot.left} threshold={dot.threshold} linePathLength={linePathLength} />
+            {/* Dots */}
+            {["0%", "50%", "100%"].map((left, i) => (
+              <motion.div
+                key={`dot-${i}`}
+                className="absolute top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                style={{ left, background: C.accent }}
+                initial={{ scale: 0 }}
+                animate={triggered ? { scale: 1 } : { scale: 0 }}
+                transition={{ duration: 0.4, delay: dotDelay(i), ease: [0.34, 1.56, 0.64, 1] }}
+              />
+            ))}
+            {/* Lines between dots */}
+            {[0, 1].map((i) => (
+              <svg key={`line-${i}`} className="absolute top-0 h-full" style={{ left: i === 0 ? "0%" : "50%", width: "50%" }} preserveAspectRatio="none">
+                <motion.line
+                  x1="0" y1="1" x2="100%" y2="1"
+                  stroke={C.accent}
+                  strokeOpacity={0.35}
+                  strokeWidth={1}
+                  strokeDasharray="1000"
+                  initial={{ strokeDashoffset: 1000 }}
+                  animate={triggered ? { strokeDashoffset: 0 } : { strokeDashoffset: 1000 }}
+                  transition={{ duration: 0.35, delay: lineDelay(i), ease: "easeOut" }}
+                />
+              </svg>
             ))}
           </div>
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-6">
             {steps.map((s, i) => (
-              <Reveal key={s.num} delay={i * 0.1}>
+              <motion.div
+                key={s.num}
+                initial={{ opacity: 0, y: 8 }}
+                animate={triggered ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
+                transition={{ duration: 0.4, delay: textDelay(i), ease: "easeOut" }}
+              >
                 <div className="relative pl-10 sm:pl-0">
-                  {/* Square step indicator */}
                   <span className="absolute left-0 top-0 z-10 flex h-6 w-6 items-center justify-center rounded-[4px] text-[10px] font-bold sm:relative sm:mb-4" style={{ background: C.bgCard, color: C.accent, fontFamily: F.mono, border: `1px solid ${C.accent}35` }}>
-                    <StepNumber target={s.num} inView={isStepInView} />
+                    {s.num}
                   </span>
                   <h3 className="text-base font-semibold sm:mt-0" style={{ fontFamily: F.body, color: C.white }}>{s.title}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed" style={{ fontFamily: F.body, color: C.muted }}>{s.desc}</p>
                 </div>
-              </Reveal>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -1038,14 +965,14 @@ function CTA({ isSignedIn }: { isSignedIn: boolean }) {
   return (
     <section className="relative overflow-hidden">
       {/* Full-bleed gradient top border */}
-      <div className="absolute inset-x-0 top-0 h-px" style={{ background: "linear-gradient(90deg, transparent 0%, rgba(72,222,148,0.15) 30%, rgba(72,222,148,0.25) 50%, rgba(72,222,148,0.15) 70%, transparent 100%)" }} aria-hidden />
+      <div className="absolute inset-x-0 top-0 h-px" style={{ background: "linear-gradient(90deg, transparent 0%, rgba(96,165,250,0.15) 30%, rgba(96,165,250,0.25) 50%, rgba(96,165,250,0.15) 70%, transparent 100%)" }} aria-hidden />
       {/* Warm background tint — extends to bottom so it blends into footer */}
       <div className="pointer-events-none absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 0%, rgba(20,16,12,0.2) 40%, rgba(16,14,12,0.15) 100%)" }} aria-hidden />
       <div ref={ctaRef} className="relative mx-auto max-w-4xl px-6 py-16 text-center sm:py-24">
         <Reveal>
           {/* 8a: Scale entrance */}
-          <motion.h2 style={{ fontFamily: F.display, fontSize: "clamp(2.25rem, 5.5vw, 4rem)", color: C.white, letterSpacing: "-0.03em", lineHeight: 1.1, fontWeight: 700, scale: headlineScale }}>
-            Built by a job seeker, {/* 8b: Accent shimmer */}<span className="accent-shimmer">for job seekers.</span>
+          <motion.h2 style={{ fontFamily: F.display, fontSize: 44, color: C.white, letterSpacing: "-0.02em", lineHeight: 1.1, fontWeight: 600, scale: headlineScale }}>
+            Built by a job seeker, <span style={{ background: "linear-gradient(135deg, #93b5e1, #a78bfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>for job seekers.</span>
           </motion.h2>
           <p className="mx-auto mt-4 max-w-md" style={{ fontFamily: F.body, color: C.muted, fontSize: "1.05rem", lineHeight: 1.6 }}>Free forever. No premium tiers, no usage limits, no credit card.</p>
           <div className="mt-7">
@@ -1056,7 +983,7 @@ function CTA({ isSignedIn }: { isSignedIn: boolean }) {
               transition={{ type: "spring", stiffness: 200, damping: 12 }}
               style={{ display: "inline-block" }}
             >
-              <Link to={isSignedIn ? "/dashboard" : "/sign-up"} className="group inline-flex items-center gap-2 rounded-lg px-8 py-3.5 text-sm font-semibold transition-all duration-300 hover:brightness-110" style={{ background: C.accent, fontFamily: F.body, color: "#052e16" }}>
+              <Link to={isSignedIn ? "/dashboard" : "/sign-up"} className="group inline-flex items-center gap-2 rounded-lg border px-8 py-3.5 text-sm font-semibold transition-all duration-300 hover:bg-[rgba(96,165,250,0.3)]" style={{ background: "rgba(96,165,250,0.2)", color: "#93b5e1", border: "1px solid rgba(96,165,250,0.25)", fontFamily: F.body }}>
                 Get started free<svg className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
               </Link>
             </motion.div>
@@ -1071,18 +998,13 @@ function CTA({ isSignedIn }: { isSignedIn: boolean }) {
 
 function Footer() {
   return (
-    <footer className="relative py-8">
-      {/* Gradient top border that blends with CTA */}
-      <div className="absolute inset-x-0 top-0 h-px" style={{ background: "linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.06) 40%, rgba(255,255,255,0.06) 60%, transparent 90%)" }} />
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row" style={{ fontFamily: F.body }}>
-        <div className="flex items-center gap-5"><img src={logo} alt="trackr" className="h-5" /><span className="text-xs" style={{ color: C.muted }}>Built with React, TypeScript, Node.js, and PostgreSQL</span></div>
-        <div className="flex items-center gap-5">
-          {[{ label: "GitHub", href: "https://github.com/UlissesMolina/Trackr" }, { label: "Report a bug", href: "https://github.com/UlissesMolina/Trackr/issues" }].map((l) => (
-            <a key={l.label} href={l.href} target="_blank" rel="noopener noreferrer" className="text-xs transition-colors hover:text-white" style={{ color: C.muted }}>{l.label}</a>
-          ))}
-        </div>
+    <footer className="py-8">
+      <div className="mx-auto max-w-6xl px-6 text-center" style={{ fontFamily: F.body, fontSize: 12, color: "#555" }}>
+        &copy; {new Date().getFullYear()} Trackr{" · "}
+        <a href="https://github.com/UlissesMolina/Trackr" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-[#888]" style={{ color: "#555" }}>GitHub</a>
+        {" · "}
+        <a href="https://github.com/UlissesMolina/Trackr/issues" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-[#888]" style={{ color: "#555" }}>Report a bug</a>
       </div>
-      <div className="mx-auto mt-6 max-w-6xl px-6"><div className="relative pt-5 text-center"><div className="absolute inset-x-0 top-0 h-px" style={{ background: "linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0.05) 60%, transparent 90%)" }} /><span className="text-xs" style={{ color: "rgba(255,255,255,0.18)", fontFamily: F.body }}>&copy; {new Date().getFullYear()} Trackr</span></div></div>
     </footer>
   );
 }

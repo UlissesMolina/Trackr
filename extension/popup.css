@@ -1,0 +1,142 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 360px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #0f1117;
+  color: #e1e4ea;
+  font-size: 13px;
+}
+
+.container {
+  padding: 16px;
+}
+
+header {
+  margin-bottom: 14px;
+}
+
+header h1 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: #8b8fa3;
+  margin-top: 2px;
+}
+
+.field {
+  margin-bottom: 10px;
+}
+
+.field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: #8b8fa3;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #2a2d3a;
+  border-radius: 6px;
+  background: #1a1d27;
+  color: #e1e4ea;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  border-color: #6366f1;
+}
+
+.field input[readonly] {
+  color: #8b8fa3;
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.field select {
+  cursor: pointer;
+}
+
+button[type="submit"] {
+  width: 100%;
+  padding: 9px;
+  border: none;
+  border-radius: 6px;
+  background: #6366f1;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-top: 4px;
+}
+
+button[type="submit"]:hover {
+  background: #5558e6;
+}
+
+button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.message {
+  text-align: center;
+  padding: 20px 10px;
+}
+
+.message p {
+  font-size: 13px;
+}
+
+.message .hint {
+  font-size: 11px;
+  color: #8b8fa3;
+  margin-top: 6px;
+}
+
+.message.success p {
+  color: #34d399;
+}
+
+.message.error p {
+  color: #f87171;
+}
+
+footer {
+  margin-top: 14px;
+  text-align: center;
+}
+
+footer a {
+  font-size: 11px;
+  color: #6366f1;
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}

@@ -73,73 +73,94 @@ const FLOW_LABELS: Record<string, string> = {
 };
 
 const FLOW_NODE_COLORS: Record<string, string> = {
-  APPLIED: "#10b981",
+  APPLIED: "#5b8dd9",
   REJECTED: "#ef4444",
   GHOSTED_WAITING: "#94a3b8",
   INTERVIEW: "#f59e0b",
-  OFFER: "#10b981",
+  OFFER: "#5b8dd9",
 };
 
 const FLOW_ORDER = ["APPLIED", "GHOSTED_WAITING", "INTERVIEW", "OFFER", "REJECTED"];
 
-// Rank determines allowed flow direction — links may only go from lower to higher rank.
-// Equal-rank links are dropped to prevent cycles.
-const FLOW_RANK: Record<string, number> = {
-  APPLIED: 0,
-  GHOSTED_WAITING: 1,
-  INTERVIEW: 1,
-  OFFER: 2,
-  REJECTED: 2,
-};
-
+/**
+ * Builds Sankey data from current application statuses.
+ *
+ * Every application is counted exactly once, flowing from "Applied" to its
+ * current terminal status. This ensures all apps on the board appear in the
+ * diagram — no dependency on StatusChange history.
+ *
+ * Flow logic per app (based on current status):
+ *   SAVED              → excluded (not yet applied)
+ *   APPLIED/UNDER_REVIEW → Applied → Ghosted / Waiting
+ *   INTERVIEW          → Applied → Interview
+ *   OFFER              → Applied → Interview → Offer
+ *   REJECTED           → we check StatusChange to see if they got an interview:
+ *                           yes → Applied → Interview → Rejected
+ *                           no  → Applied → Rejected
+ */
 export async function getSankeyData(clerkUserId: string) {
-  // Get actual status transitions from history
-  const changes = await prisma.statusChange.findMany({
-    where: { application: { clerkUserId } },
-    select: { applicationId: true, fromStatus: true, toStatus: true },
-  });
-
-  // Get current status of all apps to identify "ghosted" ones
   const apps = await prisma.application.findMany({
     where: { clerkUserId },
     select: { id: true, status: true },
   });
 
-  // Normalize status to Sankey label key
-  const toKey = (status: string): string | null => {
-    if (status === "SAVED") return null;
-    if (status === "APPLIED" || status === "UNDER_REVIEW") return "APPLIED";
-    return status; // INTERVIEW, OFFER, REJECTED
-  };
+  // For REJECTED apps, check if they ever reached INTERVIEW to determine the path
+  const rejectedIds = apps.filter((a) => a.status === "REJECTED").map((a) => a.id);
+  const interviewedRejectedIds = new Set<string>();
 
-  // Aggregate transitions into link counts — only forward transitions allowed
-  const linkCounts = new Map<string, number>();
-  for (const { fromStatus, toStatus } of changes) {
-    const from = toKey(fromStatus);
-    const to = toKey(toStatus);
-    if (!from || !to || from === to) continue;
-    // Skip backward transitions that would create cycles in the Sankey diagram
-    if ((FLOW_RANK[from] ?? 0) >= (FLOW_RANK[to] ?? 0)) continue;
-    const key = `${FLOW_LABELS[from]}||${FLOW_LABELS[to]}`;
-    linkCounts.set(key, (linkCounts.get(key) || 0) + 1);
+  if (rejectedIds.length > 0) {
+    const changes = await prisma.statusChange.findMany({
+      where: {
+        applicationId: { in: rejectedIds },
+        toStatus: "INTERVIEW",
+      },
+      select: { applicationId: true },
+      distinct: ["applicationId"],
+    });
+    for (const c of changes) interviewedRejectedIds.add(c.applicationId);
   }
 
-  // Find apps that have outgoing transitions from Applied
-  const appsWithOutgoingIds = new Set(
-    changes
-      .filter((c) => toKey(c.fromStatus) === "APPLIED" && toKey(c.toStatus) !== null && toKey(c.toStatus) !== "APPLIED")
-      .map((c) => c.applicationId)
-  );
+  // Tally links
+  const linkCounts = new Map<string, number>();
+  const addLink = (from: string, to: string) => {
+    const key = `${FLOW_LABELS[from]}||${FLOW_LABELS[to]}`;
+    linkCounts.set(key, (linkCounts.get(key) || 0) + 1);
+  };
 
-  const ghostedCount = apps.filter(
-    (a) =>
-      (a.status === "APPLIED" || a.status === "UNDER_REVIEW") &&
-      !appsWithOutgoingIds.has(a.id)
-  ).length;
+  for (const app of apps) {
+    switch (app.status) {
+      case "SAVED":
+        // Not yet applied — exclude from funnel
+        break;
 
-  if (ghostedCount > 0) {
-    const key = `${FLOW_LABELS.APPLIED}||${FLOW_LABELS.GHOSTED_WAITING}`;
-    linkCounts.set(key, (linkCounts.get(key) || 0) + ghostedCount);
+      case "APPLIED":
+      case "UNDER_REVIEW":
+        // Still waiting — Applied → Ghosted / Waiting
+        addLink("APPLIED", "GHOSTED_WAITING");
+        break;
+
+      case "INTERVIEW":
+        // In interview process — Applied → Interview
+        addLink("APPLIED", "INTERVIEW");
+        break;
+
+      case "OFFER":
+        // Got an offer — Applied → Interview → Offer
+        addLink("APPLIED", "INTERVIEW");
+        addLink("INTERVIEW", "OFFER");
+        break;
+
+      case "REJECTED":
+        if (interviewedRejectedIds.has(app.id)) {
+          // Rejected after interview — Applied → Interview → Rejected
+          addLink("APPLIED", "INTERVIEW");
+          addLink("INTERVIEW", "REJECTED");
+        } else {
+          // Rejected without interview — Applied → Rejected
+          addLink("APPLIED", "REJECTED");
+        }
+        break;
+    }
   }
 
   // Build links array

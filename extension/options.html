@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trackr Extension Settings</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f1117;
+      color: #e1e4ea;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .container { width: 100%; max-width: 480px; }
+    h1 { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 24px; }
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block; font-size: 12px; font-weight: 500;
+      color: #8b8fa3; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .field input {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid #2a2d3a; border-radius: 8px;
+      background: #1a1d27; color: #e1e4ea;
+      font-size: 14px; font-family: inherit; outline: none;
+    }
+    .field input:focus { border-color: #6366f1; }
+    .field .hint { font-size: 11px; color: #6b7080; margin-top: 4px; }
+    button {
+      padding: 10px 20px; border: none; border-radius: 8px;
+      background: #6366f1; color: #fff;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+    }
+    button:hover { background: #5558e6; }
+    .saved-notice {
+      display: inline-block; margin-left: 12px;
+      font-size: 13px; color: #34d399; opacity: 0; transition: opacity 0.3s;
+    }
+    .saved-notice.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Trackr Extension Settings</h1>
+    <div class="field">
+      <label for="api-key">API Key</label>
+      <input type="password" id="api-key" placeholder="trk_...">
+      <p class="hint">Generate an API key from Trackr Settings page.</p>
+    </div>
+    <div class="field">
+      <label for="server-url">Server URL</label>
+      <input type="text" id="server-url" placeholder="http://localhost:3001">
+      <p class="hint">Leave blank to use the default (http://localhost:3001).</p>
+    </div>
+    <button id="save-btn">Save Settings</button>
+    <span class="saved-notice" id="saved-notice">Saved!</span>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

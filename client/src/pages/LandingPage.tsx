@@ -163,7 +163,7 @@ function KanbanPreview() {
       { company: "Meta", role: "Product Eng", daysAgo: "5d", id: "m" },
       { company: "Figma", role: "Frontend", daysAgo: "1w", id: "f" },
     ]},
-    { label: "Interview", color: "#a855f7", cards: [
+    { label: "Interview", color: "#6b9bd2", cards: [
       { company: "Stripe", role: "Full Stack", daysAgo: "3d", id: "s" },
       { company: "Linear", role: "SWE Intern", daysAgo: "6d", id: "l" },
     ]},
@@ -455,7 +455,7 @@ function ResumePreview() {
 function TagsPreview() {
   const allTags = [
     { label: "Remote", color: "#3b82f6" },
-    { label: "Frontend", color: "#a855f7" },
+    { label: "Frontend", color: "#6b9bd2" },
     { label: "Startup", color: "#f59e0b" },
     { label: "NYC", color: "#ef4444" },
     { label: "Intern", color: "#06b6d4" },
@@ -532,7 +532,7 @@ function TagsPreview() {
 const FEATURES: { title: string; desc: string; visual: ReactNode; accent: string; layout: "visual-first" | "default" | "horizontal" | "compact" }[] = [
   { title: "AI Cover Letters", desc: "Paste a job description, get a tailored cover letter in under 30 seconds.", visual: <CoverLetterPreview />, accent: "#93b5e1", layout: "visual-first" },
   { title: "Job Finder", desc: "Search thousands of listings from a live database. Filter, review, add to your board.", visual: <JobFinderPreview />, accent: "#3b82f6", layout: "default" },
-  { title: "Resume Manager", desc: "Store multiple resumes. The AI cover letter generator pulls from whichever you choose.", visual: <ResumePreview />, accent: "#a855f7", layout: "horizontal" },
+  { title: "Resume Manager", desc: "Store multiple resumes. The AI cover letter generator pulls from whichever you choose.", visual: <ResumePreview />, accent: "#6b9bd2", layout: "horizontal" },
   { title: "Tags & Notes", desc: "Organize with custom tags and attach notes to any application for quick context.", visual: <TagsPreview />, accent: "#f59e0b", layout: "compact" },
 ];
 
@@ -779,8 +779,8 @@ function FullBleedSankey() {
       <div className="relative mx-auto max-w-6xl px-6 mb-14">
         <Reveal>
           <div className="flex items-center gap-2.5">
-            <span className="h-1 w-1 rounded-full" style={{ background: "#a855f7" }} />
-            <span className="text-xs font-medium uppercase tracking-[0.2em]" style={{ color: "#a855f7", fontFamily: F.mono }}>Analytics</span>
+            <span className="h-1 w-1 rounded-full" style={{ background: "#6b9bd2" }} />
+            <span className="text-xs font-medium uppercase tracking-[0.2em]" style={{ color: "#6b9bd2", fontFamily: F.mono }}>Analytics</span>
           </div>
           <h2 className="mt-4 max-w-2xl" style={{ fontFamily: F.display, fontSize: "clamp(2.5rem, 5.5vw, 4.5rem)", color: C.white, letterSpacing: "-0.03em", lineHeight: 1.05, fontWeight: 700 }}>Your pipeline, visualized</h2>
           <p className="mt-4 max-w-lg" style={{ fontFamily: F.body, color: C.muted, fontSize: "1.1rem", lineHeight: 1.6 }}>See exactly where applications drop off with an interactive flow diagram.</p>
@@ -803,14 +803,14 @@ function FullBleedSankey() {
           <defs>
             <linearGradient id="skFull1" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#a855f7" stopOpacity="0.28" />
+              <stop offset="100%" stopColor="#6b9bd2" stopOpacity="0.28" />
             </linearGradient>
             <linearGradient id="skFull2" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#a855f7" stopOpacity="0.28" />
+              <stop offset="0%" stopColor="#6b9bd2" stopOpacity="0.28" />
               <stop offset="100%" stopColor="#93b5e1" stopOpacity="0.35" />
             </linearGradient>
             <linearGradient id="skFull3" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#a855f7" stopOpacity="0.25" />
+              <stop offset="0%" stopColor="#6b9bd2" stopOpacity="0.25" />
               <stop offset="100%" stopColor="#ef4444" stopOpacity="0.22" />
             </linearGradient>
           </defs>

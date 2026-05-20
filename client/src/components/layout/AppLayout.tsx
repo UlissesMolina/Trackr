@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { UserButton } from "@clerk/clerk-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuthToken } from "../../hooks/useAuthToken";
-import { LayoutDashboard, LayoutGrid, Briefcase, GitBranch, FileText, FileEdit, PanelLeftClose, PanelLeft, Search, Bell, Settings } from "lucide-react";
+import { LayoutDashboard, LayoutGrid, Briefcase, GitBranch, FileText, FileEdit, PanelLeftClose, PanelLeft, Search, Settings } from "lucide-react";
 
 const NAV_ITEMS = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -94,12 +94,6 @@ export default function AppLayout() {
 
         {/* Right: Icons + avatar */}
         <div className="flex items-center gap-4">
-          <button
-            className="rounded-md p-1 text-text-tertiary transition-colors hover:bg-surface-elevated"
-            title="Notifications"
-          >
-            <Bell className="h-[18px] w-[18px]" />
-          </button>
           <UserButton
             afterSignOutUrl="/"
             appearance={{ elements: { avatarBox: "h-8 w-8" } }}

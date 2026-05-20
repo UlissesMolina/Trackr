@@ -3,11 +3,11 @@
 /* ── Design tokens (light mode defaults) ─────────────────────────────────── */
 @theme {
   --color-surface-primary: #f5f5f0;
-  --color-surface-secondary: #ffffff;
-  --color-surface-tertiary: #f9f9f8;
-  --color-surface-elevated: #ffffff;
-  --color-border-default: #f0f0f0;
-  --color-border-subtle: #f5f5f5;
+  --color-surface-secondary: #f9f9f6;
+  --color-surface-tertiary: #f3f3ee;
+  --color-surface-elevated: #f0f0eb;
+  --color-border-default: #e2e2dc;
+  --color-border-subtle: #eaeae4;
   --color-text-primary: #111827;
   --color-text-secondary: #6b7280;
   --color-text-tertiary: #9ca3af;
@@ -17,14 +17,14 @@
 
 /* ── Layout-specific vars (not Tailwind utilities, used via var()) ──────── */
 :root {
-  --color-header-bg: rgba(255,255,255,0.85);
-  --color-header-border: rgba(0,0,0,0.08);
-  --color-sidebar-bg: rgba(0,0,0,0.02);
-  --color-sidebar-border: rgba(0,0,0,0.06);
+  --color-header-bg: rgba(245,245,240,0.88);
+  --color-header-border: rgba(0,0,0,0.1);
+  --color-sidebar-bg: rgba(0,0,0,0.03);
+  --color-sidebar-border: rgba(0,0,0,0.08);
   --color-nav-hover: rgba(0,0,0,0.05);
   --color-nav-active: rgba(0,0,0,0.07);
-  --color-icon-muted: #9ca3af;
-  --color-icon-active: #6b7280;
+  --color-icon-muted: #6b7280;
+  --color-icon-active: #374151;
   --color-tooltip-bg: #ffffff;
   --color-tooltip-border: #e5e7eb;
   --color-chart-tick: #9ca3af;

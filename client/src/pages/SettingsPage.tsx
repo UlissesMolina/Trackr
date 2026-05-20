@@ -24,9 +24,14 @@ export default function SettingsPage() {
   const [exporting, setExporting] = useState(false);
 
   async function fetchKeys() {
-    const { data } = await api.get("/api-keys");
-    setKeys(data);
-    setLoading(false);
+    try {
+      const { data } = await api.get("/api-keys");
+      setKeys(data);
+    } catch {
+      setKeys([]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { fetchKeys(); }, []);

@@ -23,3 +23,6 @@ server/prisma/migrations/
 # Logs
 *.log
 npm-debug.log*
+
+# Local Netlify folder
+.netlify

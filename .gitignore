@@ -19,7 +19,11 @@ server/prisma/migrations/
 
 # Claude
 .claude/
+<<<<<<< HEAD
 docs/superpowers/
+=======
+.docs/
+>>>>>>> 7eed7c00061a93d3dbf83572b7de9b043f6b37ef
 
 # Logs
 *.log

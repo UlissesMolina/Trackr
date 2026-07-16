@@ -19,6 +19,7 @@ server/prisma/migrations/
 
 # Claude
 .claude/
+.docs/
 
 # Logs
 *.log

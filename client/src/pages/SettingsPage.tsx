@@ -109,7 +109,7 @@ export default function SettingsPage() {
   async function handleOpenClearModal() {
     try {
       const { data } = await api.get("/dashboard/stats");
-      setClearCount(data.total ?? 0);
+      setClearCount(data.totalApplications ?? 0);
     } catch {
       setClearCount(0);
     }

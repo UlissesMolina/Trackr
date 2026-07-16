@@ -180,9 +180,10 @@ function ResumeIcon() {
 
 export default function DashboardPage() {
   const { user } = useUser();
-  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useDashboardStats();
   const { data: chartData, isLoading: chartLoading } = useDashboardChart();
-  const { data: applications = [], isLoading: appsLoading } = useApplications();
+  const { data: applications = [], isLoading: appsLoading, isError: appsError, refetch: refetchApps } = useApplications();
+  const hasError = statsError || appsError;
 
   const firstName = user?.firstName ?? user?.username ?? "there";
   const greeting = getGreeting();
@@ -201,6 +202,17 @@ export default function DashboardPage() {
 
   return (
     <div>
+      {hasError && (
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3">
+          <p className="text-sm text-red-400">Failed to load some data. The database may be waking up.</p>
+          <button
+            onClick={() => { refetchStats(); refetchApps(); }}
+            className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent/90"
+          >
+            Retry
+          </button>
+        </div>
+      )}
       {/* ─── Greeting header (full width) ─────────────────────── */}
       <div className="mb-7">
         <h1 className="text-[26px] font-semibold text-text-primary">

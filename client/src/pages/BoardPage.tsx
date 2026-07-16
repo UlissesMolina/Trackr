@@ -39,7 +39,7 @@ const INPUT_STYLE: React.CSSProperties = {
 };
 
 export default function BoardPage() {
-  const { data: applications = [], isLoading } = useApplications();
+  const { data: applications = [], isLoading, isError, refetch } = useApplications();
   const createMutation = useCreateApplication();
   const statusMutation = useUpdateApplicationStatus();
   const [viewMode, setViewMode] = useState<"kanban" | "table">(() => {
@@ -172,6 +172,20 @@ export default function BoardPage() {
     return (
       <div className="flex h-64 items-center justify-center">
         <p className="text-text-secondary">Loading applications...</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex h-64 flex-col items-center justify-center gap-3">
+        <p className="text-text-secondary">Failed to load applications. The database may be waking up.</p>
+        <button
+          onClick={() => refetch()}
+          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent/90"
+        >
+          Try again
+        </button>
       </div>
     );
   }

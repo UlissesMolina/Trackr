@@ -37,6 +37,17 @@ console.log("ENV check:", {
 });
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
+app.get("/health/db", async (_req, res) => {
+  try {
+    const { pool } = await import("./lib/prisma");
+    const start = Date.now();
+    await pool.query("SELECT 1");
+    res.json({ status: "ok", latency: `${Date.now() - start}ms` });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    res.status(503).json({ status: "error", error: message });
+  }
+});
 app.get("/", (_req, res) => res.json({ status: "ok", message: "Trackr API" }));
 app.get("/favicon.ico", (_req, res) => res.status(204).end());
 

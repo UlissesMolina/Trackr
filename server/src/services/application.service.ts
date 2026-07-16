@@ -9,7 +9,6 @@ function toPriority(v: unknown): ApplicationPriority | null {
 
 const APPLICATION_INCLUDE = {
   notes: true,
-  statusChanges: true,
   interviews: { orderBy: { scheduledAt: "asc" as const } },
   tags: { include: { tag: true } },
 };
@@ -165,6 +164,13 @@ export function bulkCreateApplications(
   }));
 
   return prisma.application.createMany({ data });
+}
+
+export async function clearAllApplications(clerkUserId: string) {
+  const result = await prisma.application.deleteMany({
+    where: { clerkUserId },
+  });
+  return result.count;
 }
 
 export async function deleteApplication(id: string, clerkUserId: string) {

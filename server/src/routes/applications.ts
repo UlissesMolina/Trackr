@@ -17,6 +17,12 @@ router.get("/", async (req: Request, res: Response) => {
   res.json(apps);
 });
 
+router.delete("/clear-all", async (req: Request, res: Response) => {
+  const userId = getUserId(req);
+  const deleted = await appService.clearAllApplications(userId);
+  res.json({ deleted });
+});
+
 router.get("/:id", async (req: Request, res: Response) => {
   const userId = getUserId(req);
   const app = await appService.getApplication(paramId(req), userId);

@@ -32,12 +32,12 @@
 
 /* ── Dark mode overrides ─────────────────────────────────────────────────── */
 html.dark {
-  --color-surface-primary: #0a0a0b;
-  --color-surface-secondary: #131316;
-  --color-surface-tertiary: #1a1a1f;
-  --color-surface-elevated: #252529;
-  --color-border-default: #2e2e35;
-  --color-border-subtle: #232329;
+  --color-surface-primary: #09090b;
+  --color-surface-secondary: #18181b;
+  --color-surface-tertiary: #1e1e22;
+  --color-surface-elevated: #27272a;
+  --color-border-default: #27272a;
+  --color-border-subtle: #1e1e22;
   --color-text-primary: #ededef;
   --color-text-secondary: #8a8a96;
   --color-text-tertiary: #5c5c69;

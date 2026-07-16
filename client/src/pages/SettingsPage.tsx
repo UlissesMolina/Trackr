@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Key, Trash2, Copy, Check, Plus, Sun, Moon, Download, RefreshCw, User, LogOut, Github } from "lucide-react";
+import { Key, Trash2, Copy, Check, Plus, Sun, Moon, Download, RefreshCw, User, LogOut, Github, AlertTriangle } from "lucide-react";
+import Modal from "../components/ui/Modal";
 import { useClerk } from "@clerk/clerk-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTheme } from "../hooks/useTheme";
@@ -22,6 +23,9 @@ export default function SettingsPage() {
   const [newRawKey, setNewRawKey] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [showClearModal, setShowClearModal] = useState(false);
+  const [clearCount, setClearCount] = useState<number | null>(null);
+  const [clearing, setClearing] = useState(false);
 
   async function fetchKeys() {
     try {
@@ -102,7 +106,29 @@ export default function SettingsPage() {
     }
   }
 
-  const cardCls = "rounded-lg border border-border-default bg-surface-secondary p-5";
+  async function handleOpenClearModal() {
+    try {
+      const { data } = await api.get("/dashboard/stats");
+      setClearCount(data.total ?? 0);
+    } catch {
+      setClearCount(0);
+    }
+    setShowClearModal(true);
+  }
+
+  async function handleClearAll() {
+    setClearing(true);
+    try {
+      await api.delete("/applications/clear-all");
+      qc.invalidateQueries();
+      setShowClearModal(false);
+      setClearCount(null);
+    } finally {
+      setClearing(false);
+    }
+  }
+
+  const cardCls = "rounded-xl border border-border-default bg-surface-secondary p-6";
   const btnCls = "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-text-primary transition-colors hover:bg-surface-elevated";
 
   return (
@@ -115,7 +141,7 @@ export default function SettingsPage() {
       {/* Appearance */}
       <div className={`mt-8 ${cardCls}`}>
         <h2 className="text-base font-medium text-text-primary">Appearance</h2>
-        <div className="mt-3">
+        <div className="mt-4">
           <button onClick={toggleTheme} className={btnCls}>
             {theme === "dark" ? <Sun className="h-4 w-4 text-text-tertiary" /> : <Moon className="h-4 w-4 text-text-tertiary" />}
             {theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
@@ -126,7 +152,7 @@ export default function SettingsPage() {
       {/* Account */}
       <div className={`mt-4 ${cardCls}`}>
         <h2 className="text-base font-medium text-text-primary">Account</h2>
-        <div className="mt-3 flex flex-col gap-0.5">
+        <div className="mt-4 flex flex-col gap-1">
           <button onClick={() => openUserProfile()} className={btnCls}>
             <User className="h-4 w-4 text-text-tertiary" />
             Manage account
@@ -141,7 +167,7 @@ export default function SettingsPage() {
       {/* Data */}
       <div className={`mt-4 ${cardCls}`}>
         <h2 className="text-base font-medium text-text-primary">Data</h2>
-        <div className="mt-3 flex flex-col gap-0.5">
+        <div className="mt-4 flex flex-col gap-1">
           <button onClick={handleExportCsv} disabled={exporting} className={`${btnCls} disabled:opacity-50`}>
             <Download className="h-4 w-4 text-text-tertiary" />
             {exporting ? "Exporting..." : "Export as CSV"}
@@ -150,8 +176,52 @@ export default function SettingsPage() {
             <RefreshCw className="h-4 w-4 text-text-tertiary" />
             Refresh data
           </button>
+          <div className="mt-3 border-t border-border-subtle pt-3">
+            <button
+              onClick={handleOpenClearModal}
+              className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-red-400 transition-colors hover:bg-red-500/10"
+            >
+              <Trash2 className="h-4 w-4" />
+              Clear all applications
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Clear All Confirmation Modal */}
+      <Modal open={showClearModal} onClose={() => !clearing && setShowClearModal(false)} title="Clear all applications">
+        <div className="flex gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-500/10">
+            <AlertTriangle className="h-5 w-5 text-red-400" />
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-text-primary">Are you sure?</p>
+            <p className="text-sm leading-relaxed text-text-secondary">
+              This will permanently delete{" "}
+              <span className="font-semibold text-text-primary">
+                {clearCount} {clearCount === 1 ? "application" : "applications"}
+              </span>{" "}
+              and all related notes, interviews, and status history. This action cannot be undone.
+            </p>
+          </div>
+        </div>
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            onClick={() => setShowClearModal(false)}
+            disabled={clearing}
+            className="h-9 rounded-md border border-border-default px-4 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-elevated disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleClearAll}
+            disabled={clearing || clearCount === 0}
+            className="h-9 rounded-md bg-red-600 px-4 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+          >
+            {clearing ? "Deleting..." : "Delete all"}
+          </button>
+        </div>
+      </Modal>
 
       {/* API Keys */}
       <div className={`mt-4 ${cardCls}`}>
@@ -159,7 +229,7 @@ export default function SettingsPage() {
           <Key className="h-4 w-4" />
           API Keys
         </h2>
-        <p className="mt-1 text-sm text-text-tertiary">
+        <p className="mt-2 text-sm text-text-tertiary">
           Create API keys to authenticate the Chrome extension with your Trackr account.
         </p>
 
@@ -169,12 +239,12 @@ export default function SettingsPage() {
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             placeholder="Key label (e.g. 'My laptop')"
-            className="flex-1 rounded-md border border-border-default bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder-text-tertiary outline-none focus:border-accent"
+            className="h-10 flex-1 rounded-md border border-border-default bg-surface-tertiary px-3 text-sm text-text-primary placeholder-text-tertiary outline-none transition-colors focus:border-transparent focus:ring-2 focus:ring-accent"
           />
           <button
             type="submit"
             disabled={creating || !label.trim()}
-            className="flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent/90 disabled:opacity-50"
+            className="flex h-10 items-center gap-1.5 rounded-md bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
           >
             <Plus className="h-3.5 w-3.5" />
             Generate
@@ -239,7 +309,7 @@ export default function SettingsPage() {
       {/* Extension instructions */}
       <div className={`mt-4 ${cardCls}`}>
         <h2 className="text-base font-medium text-text-primary">Chrome Extension Setup</h2>
-        <ol className="mt-3 list-inside list-decimal space-y-2 text-sm text-text-secondary">
+        <ol className="mt-4 list-inside list-decimal space-y-2 text-sm text-text-secondary">
           <li>Generate an API key above</li>
           <li>Load the extension from the <code className="rounded bg-surface-primary px-1.5 py-0.5 text-xs">extension/</code> folder in <code className="rounded bg-surface-primary px-1.5 py-0.5 text-xs">chrome://extensions</code> (enable Developer mode)</li>
           <li>Click the extension icon, then "Settings"</li>
@@ -251,7 +321,7 @@ export default function SettingsPage() {
       {/* Links */}
       <div className={`mt-4 mb-8 ${cardCls}`}>
         <h2 className="text-base font-medium text-text-primary">Links</h2>
-        <div className="mt-3">
+        <div className="mt-4">
           <a
             href="https://github.com/UlissesMolina/Trackr"
             target="_blank"

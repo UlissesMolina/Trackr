@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 interface ModalProps {
   open: boolean;
@@ -18,23 +19,27 @@ export default function Modal({ open, onClose, title, children }: ModalProps) {
 
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-start sm:justify-center sm:pt-10 sm:px-6 sm:pb-6">
-      <div className="animate-modal-backdrop absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="animate-modal-panel relative w-full rounded-t-xl border border-border-default bg-surface-secondary shadow-2xl sm:max-w-lg sm:rounded-xl">
-        <div className="flex items-center justify-between border-b border-border-default px-5 py-4 sm:px-6">
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <div
+        className="animate-modal-backdrop absolute inset-0 bg-black/80"
+        onClick={onClose}
+      />
+      <div className="animate-modal-panel relative w-full max-w-lg rounded-xl border border-border-default bg-surface-secondary shadow-2xl">
+        <div className="flex items-center justify-between px-6 pt-6 pb-0">
           <h2 className="text-lg font-semibold text-text-primary">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-text-tertiary hover:bg-surface-elevated hover:text-text-secondary"
+            className="-mr-1 rounded-md p-1.5 text-text-tertiary transition-colors hover:bg-surface-elevated hover:text-text-secondary"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
-        <div className="max-h-[75vh] overflow-y-auto px-5 py-4 sm:px-6">{children}</div>
+        <div className="max-h-[75vh] overflow-y-auto px-6 pt-4 pb-6">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

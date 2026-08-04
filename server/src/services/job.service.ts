@@ -1,5 +1,5 @@
 const LISTINGS_URL =
-  "https://raw.githubusercontent.com/SimplifyJobs/Summer2026-Internships/dev/.github/scripts/listings.json";
+  "https://raw.githubusercontent.com/SimplifyJobs/Summer2027-Internships/dev/.github/scripts/listings.json";
 
 export interface JobListing {
   id: string;
@@ -35,8 +35,8 @@ async function fetchListings(): Promise<JobListing[]> {
   return cachedListings;
 }
 
-function isSummer2026(listing: JobListing): boolean {
-  return listing.terms?.some((t) => t.includes("Summer 2026")) ?? false;
+function isSummer2027(listing: JobListing): boolean {
+  return listing.terms?.some((t) => t.includes("Summer 2027")) ?? false;
 }
 
 export interface GroupedJob {
@@ -194,7 +194,7 @@ export async function searchJobs(options: {
     (l) =>
       l.active &&
       l.is_visible !== false &&
-      isSummer2026(l)
+      isSummer2027(l)
   );
 
   if (category) {
@@ -238,7 +238,7 @@ export async function getJobsForExport(days: number): Promise<GroupedJob[]> {
     (l) =>
       l.active &&
       l.is_visible !== false &&
-      isSummer2026(l)
+      isSummer2027(l)
   );
 
   let grouped = groupByCompanyAndTitle(filtered);

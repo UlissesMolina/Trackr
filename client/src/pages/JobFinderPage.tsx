@@ -279,14 +279,14 @@ export default function JobFinderPage() {
             Job Finder
           </h1>
           <p className="mt-1 text-sm text-text-secondary">
-            Summer 2026 tech internships from{" "}
+            Summer 2027 tech internships from{" "}
             <a
-              href="https://github.com/SimplifyJobs/Summer2026-Internships"
+              href="https://github.com/SimplifyJobs/Summer2027-Internships"
               target="_blank"
               rel="noopener noreferrer"
               className="text-accent hover:underline"
             >
-              SimplifyJobs/Summer2026-Internships
+              SimplifyJobs/Summer2027-Internships
             </a>
           </p>
         </div>

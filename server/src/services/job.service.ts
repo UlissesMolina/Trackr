@@ -24,7 +24,9 @@ async function fetchListings(): Promise<JobListing[]> {
   if (cachedListings && Date.now() - cacheTime < CACHE_TTL_MS) {
     return cachedListings;
   }
-  const res = await fetch(LISTINGS_URL);
+  const res = await fetch(`${LISTINGS_URL}?_=${Date.now()}`, {
+    headers: { "Cache-Control": "no-cache" },
+  });
   if (!res.ok) throw new Error(`Failed to fetch listings: ${res.status}`);
   const data = await res.json();
   if (!Array.isArray(data)) {

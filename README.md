@@ -1,6 +1,10 @@
 # Trackr — Your job search, organized.
 
-A full-stack job application tracker with an AI cover letter generator.
+A full-stack job application tracker. Good luck on recruiting season ;) 
+
+
+<img width="1905" height="907" alt="image" src="https://github.com/user-attachments/assets/7e94c359-70b5-4156-ac8d-7661882c1995" />
+
 
 ## Tech Stack
 
@@ -10,7 +14,6 @@ A full-stack job application tracker with an AI cover letter generator.
 | Backend | Node.js, Express, TypeScript |
 | Database | PostgreSQL, Prisma ORM |
 | Auth | Clerk |
-| AI | OpenAI API |
 
 ## Getting Started
 

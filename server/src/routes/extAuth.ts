@@ -15,6 +15,17 @@ router.get("/login", (_req: Request, res: Response) => {
     return;
   }
 
+  // Extract the Frontend API URL from the publishable key
+  // pk_test_xxxx or pk_live_xxxx — the base64 part decodes to the FAPI domain
+  let fapiUrl = "";
+  try {
+    const base64Part = publishableKey.replace(/^pk_(test|live)_/, "");
+    fapiUrl = Buffer.from(base64Part, "base64").toString("utf-8").replace(/\$$/, "");
+  } catch {
+    res.status(500).send("Invalid CLERK_PUBLISHABLE_KEY format");
+    return;
+  }
+
   const html = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>Sign in to Trackr</title>
 <style>
@@ -23,36 +34,51 @@ router.get("/login", (_req: Request, res: Response) => {
   .msg { text-align: center; }
   .msg p { margin-top: 8px; font-size: 14px; color: #8b8fa3; }
 </style></head><body>
-<div class="msg">
-  <h2>Signing in to Trackr...</h2>
-  <p id="status">Loading...</p>
+<div id="app">
+  <div class="msg">
+    <h2>Signing in to Trackr...</h2>
+    <p id="status">Loading...</p>
+  </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js"></script>
+<script
+  defer
+  crossorigin="anonymous"
+  src="https://${fapiUrl}/npm/@clerk/ui@1/dist/ui.browser.js"
+  type="text/javascript"
+></script>
+<script
+  defer
+  crossorigin="anonymous"
+  data-clerk-publishable-key="${publishableKey}"
+  src="https://${fapiUrl}/npm/@clerk/clerk-js@6/dist/clerk.browser.js"
+  type="text/javascript"
+></script>
 <script>
-(async () => {
+window.addEventListener("load", async function () {
   const status = document.getElementById("status");
   try {
-    const clerk = new window.Clerk("${publishableKey}");
-    await clerk.load();
+    await Clerk.load({
+      ui: { ClerkUI: window.__internal_ClerkUICtor },
+    });
 
-    if (clerk.session) {
-      const token = await clerk.session.getToken();
+    if (Clerk.session) {
+      status.textContent = "Redirecting...";
+      const token = await Clerk.session.getToken();
       window.location.href = "/api/ext/auth/callback?session_token=" + encodeURIComponent(token);
       return;
     }
 
-    status.textContent = "Redirecting to sign in...";
-    const container = document.createElement("div");
-    document.body.innerHTML = "";
-    document.body.appendChild(container);
-    clerk.mountSignIn(container, {
+    // Mount sign-in component
+    const app = document.getElementById("app");
+    app.innerHTML = '<div id="sign-in"></div>';
+    Clerk.mountSignIn(document.getElementById("sign-in"), {
       afterSignInUrl: window.location.href,
       afterSignUpUrl: window.location.href,
     });
   } catch (err) {
     status.textContent = "Error: " + err.message;
   }
-})();
+});
 </script>
 </body></html>`;
 

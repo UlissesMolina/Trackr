@@ -1,18 +1,82 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const form = document.getElementById("job-form");
-  const noData = document.getElementById("no-data");
   const statusMsg = document.getElementById("status-msg");
+  const authSection = document.getElementById("auth-section");
+  const noData = document.getElementById("no-data");
+  const form = document.getElementById("job-form");
   const successMsg = document.getElementById("success-msg");
   const errorMsg = document.getElementById("error-msg");
   const errorText = document.getElementById("error-text");
   const saveBtn = document.getElementById("save-btn");
+  const signInBtn = document.getElementById("sign-in-btn");
+  const signOutLink = document.getElementById("sign-out-link");
+  const signedInFooter = document.getElementById("signed-in-footer");
+  const toggleServerUrl = document.getElementById("toggle-server-url");
+  const serverUrlField = document.getElementById("server-url-field");
+  const serverUrlInput = document.getElementById("server-url");
+  const saveServerUrlBtn = document.getElementById("save-server-url");
 
-  document.getElementById("open-options").addEventListener("click", (e) => {
-    e.preventDefault();
-    chrome.runtime.openOptionsPage();
+  const { token, serverUrl } = await chrome.storage.sync.get(["token", "serverUrl"]);
+  const base = serverUrl || "http://localhost:3001";
+
+  if (serverUrlInput && serverUrl) {
+    serverUrlInput.value = serverUrl;
+  }
+
+  // Server URL toggle
+  toggleServerUrl.addEventListener("click", () => {
+    serverUrlField.style.display = serverUrlField.style.display === "none" ? "block" : "none";
   });
 
-  // Ask the content script to scrape job data
+  saveServerUrlBtn.addEventListener("click", async () => {
+    await chrome.storage.sync.set({ serverUrl: serverUrlInput.value.trim() || "" });
+    serverUrlField.style.display = "none";
+  });
+
+  // Not authenticated
+  if (!token) {
+    statusMsg.textContent = "Not signed in";
+    authSection.style.display = "block";
+
+    signInBtn.addEventListener("click", () => {
+      const extId = chrome.runtime.id;
+      const loginUrl = `${base}/api/ext/auth/login?ext_id=${extId}`;
+      chrome.identity.launchWebAuthFlow(
+        { url: loginUrl, interactive: true },
+        async (redirectUrl) => {
+          if (chrome.runtime.lastError || !redirectUrl) {
+            errorText.textContent = chrome.runtime.lastError?.message || "Sign in was cancelled.";
+            errorMsg.style.display = "block";
+            return;
+          }
+          try {
+            const url = new URL(redirectUrl);
+            const newToken = url.searchParams.get("token");
+            if (!newToken) {
+              errorText.textContent = "No token received. Please try again.";
+              errorMsg.style.display = "block";
+              return;
+            }
+            await chrome.storage.sync.set({ token: newToken });
+            window.location.reload();
+          } catch (err) {
+            errorText.textContent = "Sign in failed: " + err.message;
+            errorMsg.style.display = "block";
+          }
+        }
+      );
+    });
+    return;
+  }
+
+  // Authenticated — sign out handler
+  signedInFooter.style.display = "block";
+  signOutLink.addEventListener("click", async (e) => {
+    e.preventDefault();
+    await chrome.storage.sync.remove("token");
+    window.location.reload();
+  });
+
+  // Scrape job data from the active tab
   let jobData = null;
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -43,16 +107,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     saveBtn.textContent = "Saving...";
     errorMsg.style.display = "none";
 
-    const { apiKey, serverUrl } = await chrome.storage.sync.get(["apiKey", "serverUrl"]);
-    if (!apiKey) {
-      errorText.textContent = "No API key configured. Open Settings to add one.";
-      errorMsg.style.display = "block";
-      saveBtn.disabled = false;
-      saveBtn.textContent = "Save to Trackr";
-      return;
-    }
-
-    const base = serverUrl || "http://localhost:3001";
     const payload = {
       title: document.getElementById("title").value,
       company: document.getElementById("company").value,
@@ -67,13 +121,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-API-Key": apiKey,
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          await chrome.storage.sync.remove("token");
+          errorText.textContent = "Session expired. Please sign in again.";
+          errorMsg.style.display = "block";
+          setTimeout(() => window.location.reload(), 1500);
+          return;
+        }
         throw new Error(body.error || `Server returned ${res.status}`);
       }
 

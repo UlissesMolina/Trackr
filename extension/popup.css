@@ -140,3 +140,54 @@ footer a {
 footer a:hover {
   text-decoration: underline;
 }
+
+.primary-btn {
+  width: 100%;
+  padding: 9px;
+  border: none;
+  border-radius: 6px;
+  background: #6366f1;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.primary-btn:hover {
+  background: #5558e6;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #6366f1;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
+
+.small-btn {
+  margin-top: 6px;
+  padding: 5px 12px;
+  border: none;
+  border-radius: 4px;
+  background: #2a2d3a;
+  color: #e1e4ea;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.small-btn:hover {
+  background: #3a3d4a;
+}
+
+.server-url-section {
+  margin-top: 12px;
+  text-align: center;
+}

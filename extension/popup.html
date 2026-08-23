@@ -10,14 +10,32 @@
   <div class="container">
     <header>
       <h1>Trackr</h1>
-      <p class="subtitle" id="status-msg">Scanning page...</p>
+      <p class="subtitle" id="status-msg">Loading...</p>
     </header>
 
+    <!-- Not signed in -->
+    <div id="auth-section" style="display:none;">
+      <div class="message">
+        <p>Sign in to save jobs to Trackr.</p>
+      </div>
+      <button type="button" id="sign-in-btn" class="primary-btn">Sign in with Trackr</button>
+      <div class="server-url-section">
+        <button type="button" id="toggle-server-url" class="link-btn">Server settings</button>
+        <div id="server-url-field" class="field" style="display:none;margin-top:8px;">
+          <label for="server-url">Server URL</label>
+          <input type="text" id="server-url" placeholder="http://localhost:3001">
+          <button type="button" id="save-server-url" class="small-btn">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- No job data -->
     <div id="no-data" class="message" style="display:none;">
       <p>No job data found on this page.</p>
       <p class="hint">Navigate to a LinkedIn or Greenhouse job posting and try again.</p>
     </div>
 
+    <!-- Job form -->
     <form id="job-form" style="display:none;">
       <div class="field">
         <label for="title">Job Title</label>
@@ -57,8 +75,8 @@
       <p id="error-text">Something went wrong.</p>
     </div>
 
-    <footer>
-      <a href="#" id="open-options">Settings</a>
+    <footer id="signed-in-footer" style="display:none;">
+      <a href="#" id="sign-out-link">Sign out</a>
     </footer>
   </div>
 

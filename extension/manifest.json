@@ -3,8 +3,12 @@
   "name": "Trackr - Job Application Saver",
   "version": "1.0.0",
   "description": "Save job applications to Trackr directly from job board pages.",
-  "permissions": ["activeTab", "storage"],
-  "host_permissions": ["https://www.linkedin.com/*", "https://boards.greenhouse.io/*"],
+  "permissions": ["activeTab", "storage", "identity"],
+  "host_permissions": [
+    "https://www.linkedin.com/*",
+    "https://boards.greenhouse.io/*",
+    "http://localhost:3001/*"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -27,10 +31,6 @@
   ],
   "background": {
     "service_worker": "background.js"
-  },
-  "options_ui": {
-    "page": "options.html",
-    "open_in_tab": true
   },
   "icons": {
     "16": "icons/icon16.png",

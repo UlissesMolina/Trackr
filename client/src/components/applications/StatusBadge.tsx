@@ -7,6 +7,7 @@ interface StatusBadgeProps {
 const BADGE_CLS: Record<ApplicationStatus, string> = {
   SAVED: "bg-surface-elevated text-text-tertiary",
   APPLIED: "bg-surface-elevated text-text-tertiary",
+  OA: "bg-purple-500/12 text-purple-400",
   UNDER_REVIEW: "bg-surface-elevated text-text-tertiary",
   INTERVIEW: "bg-blue-500/12 text-blue-400",
   OFFER: "bg-green-500/12 text-green-400",

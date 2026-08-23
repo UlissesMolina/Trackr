@@ -10,6 +10,7 @@ datasource db {
 enum ApplicationStatus {
   SAVED
   APPLIED
+  OA
   UNDER_REVIEW
   INTERVIEW
   OFFER

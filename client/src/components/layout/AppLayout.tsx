@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { UserButton } from "@clerk/clerk-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuthToken } from "../../hooks/useAuthToken";
-import { LayoutDashboard, LayoutGrid, Briefcase, GitBranch, FileText, FileEdit, PanelLeftClose, PanelLeft, Search, Settings } from "lucide-react";
+import { LayoutDashboard, LayoutGrid, Briefcase, GitBranch, FileText, FileEdit, PanelLeftClose, PanelLeft, Settings } from "lucide-react";
 
 const NAV_ITEMS = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -80,16 +80,6 @@ export default function AppLayout() {
           <Link to="/" className="text-base font-semibold text-text-primary">
             Trackr
           </Link>
-        </div>
-
-        {/* Center-left: Search bar */}
-        <div className="hidden h-[34px] w-[280px] items-center rounded-lg border border-border-default bg-surface-tertiary px-3 md:flex">
-          <Search className="h-3.5 w-3.5 shrink-0 text-text-tertiary" />
-          <input
-            type="text"
-            placeholder="Search applications..."
-            className="ml-2 w-full border-none bg-transparent text-[13px] text-text-primary placeholder-text-tertiary outline-none"
-          />
         </div>
 
         {/* Right: Icons + avatar */}

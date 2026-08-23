@@ -129,12 +129,25 @@ button[type="submit"]:disabled {
 footer {
   margin-top: 14px;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user-email {
+  font-size: 11px;
+  color: #8b8fa3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
 }
 
 footer a {
   font-size: 11px;
   color: #6366f1;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 footer a:hover {

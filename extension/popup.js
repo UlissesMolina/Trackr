@@ -46,8 +46,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // Authenticated — sign out handler
+  // Authenticated — show user info and sign out handler
   signedInFooter.style.display = "block";
+  try {
+    const parts = token.split(".");
+    if (parts.length === 3) {
+      const payload = JSON.parse(atob(parts[1]));
+      if (payload.email) {
+        document.getElementById("user-email").textContent = payload.email;
+      }
+    }
+  } catch {
+    // Non-critical — just won't show email
+  }
   signOutLink.addEventListener("click", async (e) => {
     e.preventDefault();
     await chrome.storage.sync.remove("token");

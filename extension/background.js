@@ -36,9 +36,9 @@ async function handleAuth(loginUrl) {
       // ignore parse errors
     }
 
-    // Clean up: remove listener and close the tab
+    // Clean up listener — leave the tab open for the user to close
     chrome.tabs.onUpdated.removeListener(onUpdated);
-    chrome.tabs.remove(tabId).catch(() => {});
+    chrome.tabs.onRemoved.removeListener(onRemoved);
   }
 
   // Also clean up if the user closes the tab manually

@@ -12,8 +12,8 @@ import dashboardRouter from "./routes/dashboard";
 import aiRouter from "./routes/ai";
 import resumeRouter from "./routes/resume";
 import jobsRouter from "./routes/jobs";
-import apiKeysRouter from "./routes/apiKeys";
-import { apiKeyAuth, getUserId } from "./middleware/auth";
+import extAuthRouter from "./routes/extAuth";
+import { extTokenAuth, getUserId } from "./middleware/auth";
 import * as appService from "./services/application.service";
 
 process.on("uncaughtException", (err) => {
@@ -84,10 +84,9 @@ app.use("/api/dashboard", dashboardRouter);
 app.use("/api/ai", aiLimiter, aiRouter);
 app.use("/api/resume", resumeRouter);
 app.use("/api/jobs", jobsRouter);
-app.use("/api/api-keys", apiKeysRouter);
+app.use("/api/ext/auth", extAuthRouter);
 
-// Extension endpoint — uses API key auth instead of Clerk
-app.post("/api/ext/applications", apiKeyAuth, async (req, res) => {
+app.post("/api/ext/applications", extTokenAuth, async (req, res) => {
   const userId = getUserId(req);
   const app = await appService.createApplication(userId, req.body);
   res.status(201).json(app);

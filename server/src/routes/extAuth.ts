@@ -37,9 +37,7 @@ router.get("/login", (_req: Request, res: Response) => {
 
     if (clerk.session) {
       const token = await clerk.session.getToken();
-      const params = new URLSearchParams(window.location.search);
-      const extId = params.get("ext_id") || "";
-      window.location.href = "/api/ext/auth/callback?session_token=" + encodeURIComponent(token) + "&ext_id=" + encodeURIComponent(extId);
+      window.location.href = "/api/ext/auth/callback?session_token=" + encodeURIComponent(token);
       return;
     }
 
@@ -84,12 +82,32 @@ router.get("/callback", async (req: Request, res: Response) => {
       expiresIn: "90d",
     });
 
-    const redirectUrl = `https://${req.query.ext_id || "unknown"}.chromiumapp.org/?token=${encodeURIComponent(extToken)}`;
-    res.redirect(redirectUrl);
+    // Redirect to the done page — the extension's background script watches for this URL
+    res.redirect(`/api/ext/auth/done?token=${encodeURIComponent(extToken)}`);
   } catch (err) {
     console.error("Extension auth callback error:", err);
     res.status(401).send("Authentication failed. Please try again.");
   }
+});
+
+// Success page — shown briefly before the extension closes the tab
+router.get("/done", (_req: Request, res: Response) => {
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Trackr</title>
+<style>
+  body { font-family: -apple-system, sans-serif; background: #0f1117; color: #e1e4ea;
+    display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+  .msg { text-align: center; }
+  .msg p { margin-top: 8px; font-size: 14px; color: #8b8fa3; }
+  .msg .check { font-size: 48px; margin-bottom: 12px; }
+</style></head><body>
+<div class="msg">
+  <div class="check">&#10003;</div>
+  <h2>Signed in to Trackr!</h2>
+  <p>This tab will close automatically...</p>
+</div>
+</body></html>`;
+  res.type("html").send(html);
 });
 
 export default router;

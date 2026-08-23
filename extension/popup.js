@@ -38,32 +38,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     authSection.style.display = "block";
 
     signInBtn.addEventListener("click", () => {
-      const extId = chrome.runtime.id;
-      const loginUrl = `${base}/api/ext/auth/login?ext_id=${extId}`;
-      chrome.identity.launchWebAuthFlow(
-        { url: loginUrl, interactive: true },
-        async (redirectUrl) => {
-          if (chrome.runtime.lastError || !redirectUrl) {
-            errorText.textContent = chrome.runtime.lastError?.message || "Sign in was cancelled.";
-            errorMsg.style.display = "block";
-            return;
-          }
-          try {
-            const url = new URL(redirectUrl);
-            const newToken = url.searchParams.get("token");
-            if (!newToken) {
-              errorText.textContent = "No token received. Please try again.";
-              errorMsg.style.display = "block";
-              return;
-            }
-            await chrome.storage.sync.set({ token: newToken });
-            window.location.reload();
-          } catch (err) {
-            errorText.textContent = "Sign in failed: " + err.message;
-            errorMsg.style.display = "block";
-          }
-        }
-      );
+      const loginUrl = `${base}/api/ext/auth/login`;
+      chrome.runtime.sendMessage({ type: "START_AUTH", loginUrl });
+      // Popup will close when user switches to the login tab.
+      // Next time they open the popup, the token will be stored.
     });
     return;
   }

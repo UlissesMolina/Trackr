@@ -7,6 +7,7 @@ import { generalLimiter, aiLimiter } from "./middleware/rateLimit";
 import applicationsRouter from "./routes/applications";
 import notesRouter from "./routes/notes";
 import interviewsRouter from "./routes/interviews";
+import oaRouter from "./routes/oa";
 import tagsRouter from "./routes/tags";
 import dashboardRouter from "./routes/dashboard";
 import aiRouter from "./routes/ai";
@@ -79,6 +80,7 @@ app.use(clerkMiddleware({
 app.use("/api/applications", applicationsRouter);
 app.use("/api/applications", notesRouter);
 app.use("/api/applications", interviewsRouter);
+app.use("/api/applications", oaRouter);
 app.use("/api/tags", tagsRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/ai", aiLimiter, aiRouter);

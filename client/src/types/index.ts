@@ -22,6 +22,7 @@ export interface Application {
   statusChanges?: StatusChange[];
   interviews?: Interview[];
   tags?: ApplicationTag[];
+  onlineAssessment?: OnlineAssessment | null;
 }
 
 export interface Note {
@@ -62,6 +63,21 @@ export interface ApplicationTag {
   applicationId: string;
   tagId: string;
   tag: Tag;
+}
+
+export type OAStatus = "PENDING" | "COMPLETED";
+
+export interface OnlineAssessment {
+  id: string;
+  applicationId: string;
+  platform: string | null;
+  dueDate: string | null;
+  status: OAStatus;
+  completedAt: string | null;
+  link: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface DashboardStats {

@@ -11,6 +11,7 @@ const APPLICATION_INCLUDE = {
   notes: true,
   interviews: { orderBy: { scheduledAt: "asc" as const } },
   tags: { include: { tag: true } },
+  onlineAssessment: true,
 };
 
 export function listApplications(clerkUserId: string) {
@@ -29,6 +30,7 @@ export function getApplication(id: string, clerkUserId: string) {
       statusChanges: { orderBy: { changedAt: "desc" } },
       interviews: { orderBy: { scheduledAt: "asc" } },
       tags: { include: { tag: true } },
+      onlineAssessment: true,
     },
   });
 }

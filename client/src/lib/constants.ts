@@ -1,7 +1,6 @@
 export const APPLICATION_STATUSES = [
   "SAVED",
   "APPLIED",
-  "OA",
   "UNDER_REVIEW",
   "INTERVIEW",
   "OFFER",
@@ -21,7 +20,7 @@ export const BOARD_STATUSES = [
 export type BoardStatus = (typeof BOARD_STATUSES)[number];
 
 export function boardStatus(status: ApplicationStatus): BoardStatus {
-  return status === "UNDER_REVIEW" || status === "OA"
+  return status === "UNDER_REVIEW"
     ? "APPLIED"
     : (status as BoardStatus);
 }
@@ -29,7 +28,6 @@ export function boardStatus(status: ApplicationStatus): BoardStatus {
 export const STATUS_COLORS: Record<ApplicationStatus, string> = {
   SAVED: "bg-gray-100 text-gray-600",
   APPLIED: "bg-gray-100 text-gray-600",
-  OA: "bg-purple-50 text-purple-700",
   UNDER_REVIEW: "bg-amber-50 text-amber-700",
   INTERVIEW: "bg-blue-50 text-blue-700",
   OFFER: "bg-emerald-50 text-emerald-700",
@@ -39,7 +37,6 @@ export const STATUS_COLORS: Record<ApplicationStatus, string> = {
 export const STATUS_DOT_COLORS: Record<string, string> = {
   SAVED: "bg-white/30",
   APPLIED: "bg-blue-400/60",
-  OA: "bg-purple-400/60",
   UNDER_REVIEW: "bg-blue-400/60",
   INTERVIEW: "bg-amber-400/60",
   OFFER: "bg-green-400/60",
@@ -49,7 +46,6 @@ export const STATUS_DOT_COLORS: Record<string, string> = {
 export const STATUS_LABELS: Record<string, string> = {
   SAVED: "Saved",
   APPLIED: "Applied",
-  OA: "Online Assessment",
   UNDER_REVIEW: "Under Review",
   INTERVIEW: "Interview",
   OFFER: "Offer",
@@ -59,7 +55,6 @@ export const STATUS_LABELS: Record<string, string> = {
 export const STATUS_BORDER_COLORS: Record<string, string> = {
   SAVED: "border-l-zinc-500",
   APPLIED: "border-l-emerald-500",
-  OA: "border-l-purple-500",
   UNDER_REVIEW: "border-l-emerald-500",
   INTERVIEW: "border-l-amber-500",
   OFFER: "border-l-emerald-500",

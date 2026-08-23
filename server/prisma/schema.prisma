@@ -123,13 +123,3 @@ model Resume {
 
   @@index([clerkUserId])
 }
-
-model ApiKey {
-  id          String   @id @default(cuid())
-  key         String   @unique
-  label       String
-  clerkUserId String
-  createdAt   DateTime @default(now())
-
-  @@index([clerkUserId])
-}

@@ -171,6 +171,15 @@ footer a:hover {
   background: #5558e6;
 }
 
+.primary-btn.secondary {
+  background: #2a2d3a;
+  margin-top: 8px;
+}
+
+.primary-btn.secondary:hover {
+  background: #3a3d4a;
+}
+
 .link-btn {
   background: none;
   border: none;

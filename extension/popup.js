@@ -65,30 +65,59 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.location.reload();
   });
 
-  // Scrape job data from the active tab
-  let jobData = null;
-  try {
+  // Helper: try to scrape from the active tab
+  async function scrapeTab(type) {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab?.id) {
-      jobData = await chrome.tabs.sendMessage(tab.id, { type: "SCRAPE_JOB" });
+    if (!tab?.id) return null;
+
+    // Try sending to existing content script first
+    try {
+      return await chrome.tabs.sendMessage(tab.id, { type });
+    } catch {
+      // Content script not injected — inject it on demand
     }
-  } catch {
-    // Content script not injected on this page
+
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ["content.js"],
+      });
+      return await chrome.tabs.sendMessage(tab.id, { type });
+    } catch {
+      return null;
+    }
   }
+
+  function fillForm(data) {
+    document.getElementById("title").value = data.title || "";
+    document.getElementById("company").value = data.company || "";
+    document.getElementById("location").value = data.location || "";
+    document.getElementById("url").value = data.url || "";
+    document.getElementById("description").value = (data.description || "").slice(0, 5000);
+    form.style.display = "block";
+  }
+
+  // Auto-detect job data
+  const jobData = await scrapeTab("SCRAPE_JOB");
 
   if (!jobData || (!jobData.title && !jobData.company)) {
     statusMsg.textContent = "No job detected";
     noData.style.display = "block";
+
+    // Manual save fallback
+    document.getElementById("manual-save-btn").addEventListener("click", async () => {
+      const manual = await scrapeTab("SCRAPE_MANUAL");
+      if (manual) {
+        noData.style.display = "none";
+        statusMsg.textContent = "Saving manually";
+        fillForm(manual);
+      }
+    });
     return;
   }
 
   statusMsg.textContent = `Found job on ${jobData.source || "page"}`;
-  document.getElementById("title").value = jobData.title || "";
-  document.getElementById("company").value = jobData.company || "";
-  document.getElementById("location").value = jobData.location || "";
-  document.getElementById("url").value = jobData.url || "";
-  document.getElementById("description").value = (jobData.description || "").slice(0, 5000);
-  form.style.display = "block";
+  fillForm(jobData);
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();

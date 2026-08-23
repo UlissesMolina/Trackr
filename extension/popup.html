@@ -29,10 +29,13 @@
       </div>
     </div>
 
-    <!-- No job data -->
-    <div id="no-data" class="message" style="display:none;">
-      <p>No job data found on this page.</p>
-      <p class="hint">Navigate to a LinkedIn or Greenhouse job posting and try again.</p>
+    <!-- No job data — offer manual save -->
+    <div id="no-data" style="display:none;">
+      <div class="message">
+        <p>No job detected on this page.</p>
+        <p class="hint">If this is a job posting, you can still save it manually.</p>
+      </div>
+      <button type="button" id="manual-save-btn" class="primary-btn secondary">Save this page as a job</button>
     </div>
 
     <!-- Job form -->

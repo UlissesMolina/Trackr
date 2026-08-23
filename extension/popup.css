@@ -1,74 +1,231 @@
+/* ── Reset & Base ──────────────────────────────────────────────────────── */
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes checkDraw {
+  from { stroke-dashoffset: 30; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
 body {
   width: 360px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #0f1117;
-  color: #e1e4ea;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  background: #09090b;
+  color: #ededef;
   font-size: 13px;
+  -webkit-font-smoothing: antialiased;
 }
 
 .container {
   padding: 16px;
+  animation: fadeUp 0.3s ease-out;
 }
+
+/* ── Header ───────────────────────────────────────────────────────────── */
 
 header {
-  margin-bottom: 14px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-header h1 {
-  font-size: 16px;
-  font-weight: 600;
-  color: #fff;
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.logo-text {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #f8fafc;
 }
 
 .subtitle {
-  font-size: 12px;
-  color: #8b8fa3;
-  margin-top: 2px;
+  font-size: 11px;
+  color: #8a8a96;
+  animation: pulse 1.5s ease-in-out infinite;
 }
+
+.subtitle:not(:empty) {
+  animation: none;
+}
+
+/* ── Sections (animated entry) ────────────────────────────────────────── */
+
+.section {
+  animation: fadeUp 0.35s ease-out;
+}
+
+/* ── Cards ────────────────────────────────────────────────────────────── */
+
+.card {
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 12px;
+  padding: 24px 20px;
+  text-align: center;
+  animation: scaleIn 0.3s ease-out;
+}
+
+.card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(147, 181, 225, 0.1);
+  color: #93b5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+}
+
+.card-icon.muted {
+  background: rgba(138, 138, 150, 0.1);
+  color: #8a8a96;
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ededef;
+  margin-bottom: 4px;
+}
+
+.card-desc {
+  font-size: 12px;
+  color: #8a8a96;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────── */
+
+.btn {
+  width: 100%;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: #93b5e1;
+  color: #09090b;
+}
+
+.btn-primary:hover {
+  background: #a3c2ea;
+  box-shadow: 0 0 20px rgba(147, 181, 225, 0.15);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-ghost {
+  background: #27272a;
+  color: #ededef;
+}
+
+.btn-ghost:hover {
+  background: #3f3f46;
+}
+
+.btn-sm {
+  width: auto;
+  padding: 5px 14px;
+  font-size: 11px;
+  border-radius: 6px;
+  margin-top: 6px;
+}
+
+/* ── Form Fields ──────────────────────────────────────────────────────── */
 
 .field {
   margin-bottom: 10px;
+  animation: slideDown 0.25s ease-out both;
 }
+
+.field:nth-child(1) { animation-delay: 0.03s; }
+.field:nth-child(2) { animation-delay: 0.06s; }
+.field:nth-child(3) { animation-delay: 0.09s; }
+.field:nth-child(4) { animation-delay: 0.12s; }
+.field:nth-child(5) { animation-delay: 0.15s; }
+.field:nth-child(6) { animation-delay: 0.18s; }
 
 .field label {
   display: block;
   font-size: 11px;
   font-weight: 500;
-  color: #8b8fa3;
+  color: #8a8a96;
   margin-bottom: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.4px;
 }
 
 .field input,
 .field textarea,
 .field select {
   width: 100%;
-  padding: 7px 10px;
-  border: 1px solid #2a2d3a;
-  border-radius: 6px;
-  background: #1a1d27;
-  color: #e1e4ea;
+  padding: 8px 10px;
+  border: 1px solid #27272a;
+  border-radius: 8px;
+  background: #18181b;
+  color: #ededef;
   font-size: 13px;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .field input:focus,
 .field textarea:focus,
 .field select:focus {
-  border-color: #6366f1;
+  border-color: #93b5e1;
+  box-shadow: 0 0 0 2px rgba(147, 181, 225, 0.1);
 }
 
 .field input[readonly] {
-  color: #8b8fa3;
+  color: #8a8a96;
 }
 
 .field textarea {
@@ -78,57 +235,48 @@ header h1 {
 
 .field select {
   cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238a8a96' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
 }
 
-button[type="submit"] {
-  width: 100%;
-  padding: 9px;
-  border: none;
-  border-radius: 6px;
-  background: #6366f1;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s;
-  margin-top: 4px;
-}
+/* ── Success State ────────────────────────────────────────────────────── */
 
-button[type="submit"]:hover {
-  background: #5558e6;
-}
-
-button[type="submit"]:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.message {
-  text-align: center;
-  padding: 20px 10px;
-}
-
-.message p {
-  font-size: 13px;
-}
-
-.message .hint {
-  font-size: 11px;
-  color: #8b8fa3;
-  margin-top: 6px;
-}
-
-.message.success p {
+.success-check {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(52, 211, 153, 0.1);
   color: #34d399;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  animation: scaleIn 0.4s ease-out;
 }
 
-.message.error p {
-  color: #f87171;
+.success-check svg {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: checkDraw 0.5s ease-out 0.3s forwards;
 }
+
+/* ── Error State ──────────────────────────────────────────────────────── */
+
+.error-text {
+  font-size: 13px;
+  color: #f87171;
+  text-align: center;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────── */
 
 footer {
-  margin-top: 14px;
-  text-align: center;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #27272a;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -136,80 +284,44 @@ footer {
 
 .user-email {
   font-size: 11px;
-  color: #8b8fa3;
+  color: #8a8a96;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 200px;
+  max-width: 220px;
 }
 
 footer a {
   font-size: 11px;
-  color: #6366f1;
+  color: #93b5e1;
   text-decoration: none;
   flex-shrink: 0;
+  transition: color 0.15s ease;
 }
 
 footer a:hover {
-  text-decoration: underline;
+  color: #a3c2ea;
 }
 
-.primary-btn {
-  width: 100%;
-  padding: 9px;
-  border: none;
-  border-radius: 6px;
-  background: #6366f1;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.primary-btn:hover {
-  background: #5558e6;
-}
-
-.primary-btn.secondary {
-  background: #2a2d3a;
-  margin-top: 8px;
-}
-
-.primary-btn.secondary:hover {
-  background: #3a3d4a;
-}
+/* ── Utility ──────────────────────────────────────────────────────────── */
 
 .link-btn {
   background: none;
   border: none;
-  color: #6366f1;
+  color: #8a8a96;
   font-size: 11px;
+  font-family: inherit;
   cursor: pointer;
   padding: 0;
-  margin-top: 10px;
+  margin-top: 12px;
+  transition: color 0.15s ease;
 }
 
 .link-btn:hover {
-  text-decoration: underline;
-}
-
-.small-btn {
-  margin-top: 6px;
-  padding: 5px 12px;
-  border: none;
-  border-radius: 4px;
-  background: #2a2d3a;
-  color: #e1e4ea;
-  font-size: 11px;
-  cursor: pointer;
-}
-
-.small-btn:hover {
-  background: #3a3d4a;
+  color: #93b5e1;
 }
 
 .server-url-section {
-  margin-top: 12px;
+  margin-top: 4px;
   text-align: center;
 }

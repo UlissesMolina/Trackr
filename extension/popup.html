@@ -9,37 +9,60 @@
 <body>
   <div class="container">
     <header>
-      <h1>Trackr</h1>
+      <div class="logo">
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="6" y1="13" x2="26" y2="13" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="6" cy="13" r="2.5" fill="#475569"/>
+          <circle cx="13" cy="13" r="2.5" fill="#475569"/>
+          <circle cx="20" cy="13" r="2.5" fill="#64748b"/>
+          <circle cx="26" cy="13" r="2.5" fill="#93b5e1"/>
+          <line x1="20" y1="13" x2="20" y2="26" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="logo-text">trackr</span>
+      </div>
       <p class="subtitle" id="status-msg">Loading...</p>
     </header>
 
     <!-- Not signed in -->
-    <div id="auth-section" style="display:none;">
-      <div class="message">
-        <p>Sign in to save jobs to Trackr.</p>
+    <div id="auth-section" class="section" style="display:none;">
+      <div class="card">
+        <div class="card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <p class="card-title">Sign in to Trackr</p>
+        <p class="card-desc">Connect your account to start saving jobs from any page.</p>
+        <button type="button" id="sign-in-btn" class="btn btn-primary">Sign in</button>
       </div>
-      <button type="button" id="sign-in-btn" class="primary-btn">Sign in with Trackr</button>
       <div class="server-url-section">
         <button type="button" id="toggle-server-url" class="link-btn">Server settings</button>
         <div id="server-url-field" class="field" style="display:none;margin-top:8px;">
           <label for="server-url">Server URL</label>
           <input type="text" id="server-url" placeholder="http://localhost:3001">
-          <button type="button" id="save-server-url" class="small-btn">Save</button>
+          <button type="button" id="save-server-url" class="btn btn-ghost btn-sm">Save</button>
         </div>
       </div>
     </div>
 
     <!-- No job data — offer manual save -->
-    <div id="no-data" style="display:none;">
-      <div class="message">
-        <p>No job detected on this page.</p>
-        <p class="hint">If this is a job posting, you can still save it manually.</p>
+    <div id="no-data" class="section" style="display:none;">
+      <div class="card">
+        <div class="card-icon muted">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.3-4.3"/>
+          </svg>
+        </div>
+        <p class="card-title">No job detected</p>
+        <p class="card-desc">If this is a job posting, you can still save it manually.</p>
+        <button type="button" id="manual-save-btn" class="btn btn-ghost">Save this page as a job</button>
       </div>
-      <button type="button" id="manual-save-btn" class="primary-btn secondary">Save this page as a job</button>
     </div>
 
     <!-- Job form -->
-    <form id="job-form" style="display:none;">
+    <form id="job-form" class="section" style="display:none;">
       <div class="field">
         <label for="title">Job Title</label>
         <input type="text" id="title" required>
@@ -67,15 +90,26 @@
         <label for="description">Description</label>
         <textarea id="description" rows="4"></textarea>
       </div>
-      <button type="submit" id="save-btn">Save to Trackr</button>
+      <button type="submit" id="save-btn" class="btn btn-primary">Save to Trackr</button>
     </form>
 
-    <div id="success-msg" class="message success" style="display:none;">
-      <p>Application saved!</p>
+    <!-- Success -->
+    <div id="success-msg" class="section" style="display:none;">
+      <div class="card">
+        <div class="success-check">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <p class="card-title">Application saved!</p>
+      </div>
     </div>
 
-    <div id="error-msg" class="message error" style="display:none;">
-      <p id="error-text">Something went wrong.</p>
+    <!-- Error -->
+    <div id="error-msg" class="section" style="display:none;">
+      <div class="card">
+        <p class="error-text" id="error-text">Something went wrong.</p>
+      </div>
     </div>
 
     <footer id="signed-in-footer" style="display:none;">

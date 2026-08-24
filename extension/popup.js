@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const saveServerUrlBtn = document.getElementById("save-server-url");
 
   const { token, serverUrl } = await chrome.storage.sync.get(["token", "serverUrl"]);
-  const base = serverUrl || "http://localhost:3001";
+  const base = serverUrl || "https://trackr-production-4189.up.railway.app";
 
   if (serverUrlInput && serverUrl) {
     serverUrlInput.value = serverUrl;

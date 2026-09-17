@@ -4,23 +4,29 @@ const api = axios.create({
   baseURL: "/api",
 });
 
-/**
- * Install a request interceptor that fetches a fresh Clerk token
- * for every outgoing request. Returns a cleanup function that
- * ejects the interceptor.
- */
-export function setAuthInterceptor(
-  getToken: () => Promise<string | null>
-): () => void {
-  const id = api.interceptors.request.use(async (config) => {
-    const token = await getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  });
+let tokenGetter: (() => Promise<string | null>) | null = null;
+let markTokenGetterReady: () => void;
+const tokenGetterReady = new Promise<void>((resolve) => {
+  markTokenGetterReady = resolve;
+});
 
-  return () => api.interceptors.request.eject(id);
+/**
+ * Register the function used to fetch a fresh Clerk token for each request.
+ * Requests made before this is called wait for it instead of going out
+ * unauthenticated (child components can query before the layout's effect runs).
+ */
+export function setTokenGetter(getter: () => Promise<string | null>) {
+  tokenGetter = getter;
+  markTokenGetterReady();
 }
+
+api.interceptors.request.use(async (config) => {
+  await tokenGetterReady;
+  const token = await tokenGetter?.();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export default api;

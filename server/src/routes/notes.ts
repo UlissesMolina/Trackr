@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { requireAuth, getUserId } from "../middleware/auth";
 import * as noteService from "../services/note.service";
+import { validateBody, createNoteSchema } from "../lib/validation";
 
 const router = Router();
 
@@ -21,7 +22,7 @@ router.get("/:applicationId/notes", async (req: Request, res: Response) => {
   res.json(notes);
 });
 
-router.post("/:applicationId/notes", async (req: Request, res: Response) => {
+router.post("/:applicationId/notes", validateBody(createNoteSchema), async (req: Request, res: Response) => {
   const userId = getUserId(req);
   const { content } = req.body;
   const note = await noteService.createNote(param(req, "applicationId"), userId, content);

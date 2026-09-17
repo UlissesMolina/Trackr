@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { requireAuth, getUserId } from "../middleware/auth";
 import * as interviewService from "../services/interview.service";
+import { validateBody, createInterviewSchema, updateInterviewSchema } from "../lib/validation";
 
 const router = Router();
 
@@ -21,7 +22,7 @@ router.get("/:applicationId/interviews", async (req: Request, res: Response) => 
   res.json(interviews);
 });
 
-router.post("/:applicationId/interviews", async (req: Request, res: Response) => {
+router.post("/:applicationId/interviews", validateBody(createInterviewSchema), async (req: Request, res: Response) => {
   const userId = getUserId(req);
   const interview = await interviewService.createInterview(param(req, "applicationId"), userId, req.body);
   if (!interview) {
@@ -31,7 +32,7 @@ router.post("/:applicationId/interviews", async (req: Request, res: Response) =>
   res.status(201).json(interview);
 });
 
-router.patch("/:applicationId/interviews/:interviewId", async (req: Request, res: Response) => {
+router.patch("/:applicationId/interviews/:interviewId", validateBody(updateInterviewSchema), async (req: Request, res: Response) => {
   const userId = getUserId(req);
   const updated = await interviewService.updateInterview(param(req, "interviewId"), userId, req.body);
   if (!updated) {

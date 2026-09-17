@@ -182,8 +182,10 @@ export default function DashboardPage() {
   const { user } = useUser();
   const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useDashboardStats();
   const { data: chartData, isLoading: chartLoading } = useDashboardChart();
-  const { data: applications = [], isLoading: appsLoading, isError: appsError, refetch: refetchApps } = useApplications();
-  const hasError = statsError || appsError;
+  const { data: appsData, isLoading: appsLoading, isError: appsError, refetch: refetchApps } = useApplications();
+  const applications = useMemo(() => appsData ?? [], [appsData]);
+  // Only surface errors when there's nothing cached to show
+  const hasError = (statsError && !stats) || (appsError && !appsData);
 
   const firstName = user?.firstName ?? user?.username ?? "there";
   const greeting = getGreeting();
@@ -204,7 +206,7 @@ export default function DashboardPage() {
     <div>
       {hasError && (
         <div className="mb-4 flex items-center justify-between rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3">
-          <p className="text-sm text-red-400">Failed to load some data. The database may be waking up.</p>
+          <p className="text-sm text-red-400">Couldn't load some of your data. The server may be starting up. Try again in a moment.</p>
           <button
             onClick={() => { refetchStats(); refetchApps(); }}
             className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent/90"

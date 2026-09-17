@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import api from "../lib/api";
@@ -28,21 +28,28 @@ export default function CoverLetterPage() {
   const [result, setResult] = useState("");
   const [useSavedResume, setUseSavedResume] = useState(true);
 
-  useEffect(() => {
+  // These sync form fields when their source changes. Adjusting state during
+  // render (instead of in an effect) avoids an extra render pass.
+  const [prevPreselectedId, setPrevPreselectedId] = useState(preselectedId);
+  if (preselectedId !== prevPreselectedId) {
+    setPrevPreselectedId(preselectedId);
     if (preselectedId) setApplicationId(preselectedId);
-  }, [preselectedId]);
+  }
 
   // Auto-fill job description from the selected application
-  useEffect(() => {
-    const selected = applications.find((a) => a.id === applicationId);
-    if (selected?.jobDescription) setJobDescription(selected.jobDescription);
-  }, [applicationId, applications]);
+  const selectedJobDescription = applications.find((a) => a.id === applicationId)?.jobDescription;
+  const [prevJobDescription, setPrevJobDescription] = useState<string | null | undefined>(undefined);
+  if (selectedJobDescription !== prevJobDescription) {
+    setPrevJobDescription(selectedJobDescription);
+    if (selectedJobDescription) setJobDescription(selectedJobDescription);
+  }
 
-  useEffect(() => {
-    if (resume?.content && useSavedResume) {
-      setResumeText(resume.content);
-    }
-  }, [resume, useSavedResume]);
+  const savedResumeText = useSavedResume ? resume?.content : undefined;
+  const [prevSavedResumeText, setPrevSavedResumeText] = useState<string | undefined>(undefined);
+  if (savedResumeText !== prevSavedResumeText) {
+    setPrevSavedResumeText(savedResumeText);
+    if (savedResumeText) setResumeText(savedResumeText);
+  }
 
   const mutation = useMutation({
     mutationFn: async () => {

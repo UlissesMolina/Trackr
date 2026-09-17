@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { requireAuth, getUserId } from "../middleware/auth";
 import * as tagService from "../services/tag.service";
+import { validateBody, createTagSchema, addTagSchema } from "../lib/validation";
 
 const router = Router();
 
@@ -17,7 +18,7 @@ router.get("/", async (req: Request, res: Response) => {
   res.json(tags);
 });
 
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", validateBody(createTagSchema), async (req: Request, res: Response) => {
   const userId = getUserId(req);
   const tag = await tagService.createTag(userId, req.body);
   res.status(201).json(tag);
@@ -33,7 +34,7 @@ router.delete("/:tagId", async (req: Request, res: Response) => {
   res.status(204).send();
 });
 
-router.post("/applications/:applicationId", async (req: Request, res: Response) => {
+router.post("/applications/:applicationId", validateBody(addTagSchema), async (req: Request, res: Response) => {
   const userId = getUserId(req);
   const { tagId } = req.body;
   const result = await tagService.addTagToApplication(param(req, "applicationId"), tagId, userId);

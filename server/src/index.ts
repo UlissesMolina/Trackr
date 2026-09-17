@@ -16,6 +16,7 @@ import jobsRouter from "./routes/jobs";
 import extAuthRouter from "./routes/extAuth";
 import { extTokenAuth, getUserId } from "./middleware/auth";
 import * as appService from "./services/application.service";
+import { validateBody, createApplicationSchema } from "./lib/validation";
 
 process.on("uncaughtException", (err) => {
   console.error("UNCAUGHT EXCEPTION:", err);
@@ -52,6 +53,9 @@ app.get("/health/db", async (_req, res) => {
 app.get("/", (_req, res) => res.json({ status: "ok", message: "Trackr API" }));
 app.get("/favicon.ico", (_req, res) => res.status(204).end());
 
+// Extension sign-in pages are same-origin and never called cross-origin, so they sit before CORS.
+app.use("/api/ext/auth", extAuthRouter);
+
 app.use(cors({
   origin: (origin, callback) => {
     const allowed = [
@@ -69,6 +73,15 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(generalLimiter);
+
+// Extension routes use their own JWT, so they skip Clerk's middleware.
+
+app.post("/api/ext/applications", extTokenAuth, validateBody(createApplicationSchema), async (req, res) => {
+  const userId = getUserId(req);
+  const app = await appService.createApplication(userId, req.body);
+  res.status(201).json(app);
+});
+
 app.use(clerkMiddleware({
   authorizedParties: [
     "https://usetrackr.netlify.app",
@@ -86,13 +99,6 @@ app.use("/api/dashboard", dashboardRouter);
 app.use("/api/ai", aiLimiter, aiRouter);
 app.use("/api/resume", resumeRouter);
 app.use("/api/jobs", jobsRouter);
-app.use("/api/ext/auth", extAuthRouter);
-
-app.post("/api/ext/applications", extTokenAuth, async (req, res) => {
-  const userId = getUserId(req);
-  const app = await appService.createApplication(userId, req.body);
-  res.status(201).json(app);
-});
 
 app.use(errorHandler);
 

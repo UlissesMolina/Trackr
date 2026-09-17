@@ -1,53 +1,91 @@
 // Service worker — handles auth flow and message passing
+//
+// Sign-in: the popup asks us to open the server's login page. That page gets an
+// extension token from the server and posts it to itself with window.postMessage;
+// we inject a listener into that tab only, so the token never appears in a URL.
+//
+// MV3 service workers are killed after ~30s idle (sign-in often takes longer),
+// so the pending auth tab lives in chrome.storage.session and listeners are
+// registered at the top level, where Chrome re-attaches them on wake.
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log("Trackr extension installed");
 });
 
-// Listen for auth requests from the popup
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "START_AUTH") {
-    handleAuth(msg.loginUrl);
+    startAuth(msg.loginUrl);
     sendResponse({ ok: true });
+    return;
   }
-  return true;
+
+  if (msg.type === "AUTH_TOKEN") {
+    receiveToken(msg.token, sender).then(sendResponse);
+    return true; // async response
+  }
 });
 
-async function handleAuth(loginUrl) {
-  // Open login page in a new tab
+async function startAuth(loginUrl) {
   const tab = await chrome.tabs.create({ url: loginUrl });
-  const tabId = tab.id;
+  await chrome.storage.session.set({
+    authTabId: tab.id,
+    authLoginUrl: new URL(loginUrl).origin + new URL(loginUrl).pathname,
+  });
+}
 
-  // Watch for the callback URL containing the token
-  function onUpdated(updatedTabId, changeInfo) {
-    if (updatedTabId !== tabId || !changeInfo.url) return;
+async function receiveToken(token, sender) {
+  const { authTabId } = await chrome.storage.session.get("authTabId");
+  // Only accept a token from the login tab we opened
+  if (!sender.tab || sender.tab.id !== authTabId || typeof token !== "string" || !token) {
+    return { ok: false };
+  }
+  await chrome.storage.sync.set({ token });
+  await chrome.storage.session.remove(["authTabId", "authLoginUrl"]);
+  return { ok: true };
+}
 
-    const url = changeInfo.url;
-    if (!url.includes("/api/ext/auth/done")) return;
+// Each time the login tab finishes loading the login page (including after
+// Clerk's sign-in redirects), inject the token listener.
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  if (changeInfo.status !== "complete" || !tab.url) return;
 
-    // Extract token from URL
-    try {
-      const parsed = new URL(url);
-      const token = parsed.searchParams.get("token");
-      if (token) {
-        chrome.storage.sync.set({ token });
+  const { authTabId, authLoginUrl } = await chrome.storage.session.get(["authTabId", "authLoginUrl"]);
+  if (tabId !== authTabId || !tab.url.startsWith(authLoginUrl)) return;
+
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      func: listenForToken,
+    });
+  } catch (err) {
+    console.warn("Could not inject auth listener:", err);
+  }
+});
+
+chrome.tabs.onRemoved.addListener(async (tabId) => {
+  const { authTabId } = await chrome.storage.session.get("authTabId");
+  if (tabId === authTabId) {
+    await chrome.storage.session.remove(["authTabId", "authLoginUrl"]);
+  }
+});
+
+// Runs inside the login page (isolated world)
+function listenForToken() {
+  if (window.__trackrAuthListener) return;
+  window.__trackrAuthListener = true;
+
+  let delivered = false;
+  window.addEventListener("message", (event) => {
+    if (event.source !== window || event.origin !== window.location.origin) return;
+    if (!event.data || event.data.type !== "TRACKR_EXT_TOKEN" || delivered) return;
+
+    delivered = true;
+    chrome.runtime.sendMessage({ type: "AUTH_TOKEN", token: event.data.token }, (res) => {
+      if (res && res.ok) {
+        window.postMessage({ type: "TRACKR_EXT_TOKEN_ACK" }, window.location.origin);
+      } else {
+        delivered = false;
       }
-    } catch {
-      // ignore parse errors
-    }
-
-    // Clean up listener — leave the tab open for the user to close
-    chrome.tabs.onUpdated.removeListener(onUpdated);
-    chrome.tabs.onRemoved.removeListener(onRemoved);
-  }
-
-  // Also clean up if the user closes the tab manually
-  function onRemoved(removedTabId) {
-    if (removedTabId !== tabId) return;
-    chrome.tabs.onUpdated.removeListener(onUpdated);
-    chrome.tabs.onRemoved.removeListener(onRemoved);
-  }
-
-  chrome.tabs.onUpdated.addListener(onUpdated);
-  chrome.tabs.onRemoved.addListener(onRemoved);
+    });
+  });
 }

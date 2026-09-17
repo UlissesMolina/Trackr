@@ -3,12 +3,13 @@ import { requireAuth, getUserId } from "../middleware/auth";
 import { generateCoverLetter, extractFromEmails } from "../services/ai.service";
 import { getResume } from "../services/resume.service";
 import prisma from "../lib/prisma";
+import { validateBody, coverLetterSchema, extractEmailSchema, AI_LIMITS } from "../lib/validation";
 
 const router = Router();
 
 router.use(requireAuth());
 
-router.post("/cover-letter", async (req: Request, res: Response) => {
+router.post("/cover-letter", validateBody(coverLetterSchema), async (req: Request, res: Response) => {
   const userId = getUserId(req);
   const { jobTitle, company, applicationId } = req.body;
   let { jobDescription, resumeText } = req.body;
@@ -19,12 +20,12 @@ router.post("/cover-letter", async (req: Request, res: Response) => {
       where: { id: applicationId, clerkUserId: userId },
       select: { jobDescription: true },
     });
-    if (app?.jobDescription) jobDescription = app.jobDescription;
+    if (app?.jobDescription) jobDescription = app.jobDescription.slice(0, AI_LIMITS.jobDescription);
   }
 
   if (!resumeText) {
     const saved = await getResume(userId);
-    if (saved) resumeText = saved.content;
+    if (saved) resumeText = saved.content.slice(0, AI_LIMITS.resumeText);
   }
 
   if (!jobDescription || !resumeText) {
@@ -52,13 +53,8 @@ router.post("/cover-letter", async (req: Request, res: Response) => {
   res.json({ coverLetter });
 });
 
-router.post("/extract-from-email", async (req: Request, res: Response) => {
+router.post("/extract-from-email", validateBody(extractEmailSchema), async (req: Request, res: Response) => {
   const { emailText } = req.body;
-
-  if (!emailText || typeof emailText !== "string" || emailText.trim().length < 10) {
-    res.status(400).json({ error: "Please paste your email text (at least 10 characters)." });
-    return;
-  }
 
   try {
     const applications = await extractFromEmails(emailText);

@@ -28,7 +28,32 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   saveServerUrlBtn.addEventListener("click", async () => {
-    await chrome.storage.sync.set({ serverUrl: serverUrlInput.value.trim() || "" });
+    const raw = serverUrlInput.value.trim();
+    if (!raw) {
+      await chrome.storage.sync.set({ serverUrl: "" });
+      serverUrlField.style.display = "none";
+      return;
+    }
+
+    let origin;
+    try {
+      const parsed = new URL(raw);
+      if (parsed.protocol !== "https:" && parsed.protocol !== "http:") throw new Error();
+      origin = parsed.origin;
+    } catch {
+      serverUrlInput.setCustomValidity("Enter a full URL, e.g. https://example.com");
+      serverUrlInput.reportValidity();
+      return;
+    }
+    serverUrlInput.setCustomValidity("");
+
+    // Only the default server is pre-approved in the manifest; sign-in on a
+    // custom server needs access to its pages.
+    const granted = await chrome.permissions.request({ origins: [`${origin}/*`] });
+    if (!granted) return;
+
+    await chrome.storage.sync.set({ serverUrl: origin });
+    serverUrlInput.value = origin;
     serverUrlField.style.display = "none";
   });
 
@@ -134,15 +159,30 @@ document.addEventListener("DOMContentLoaded", async () => {
       status: document.getElementById("job-status").value,
     };
 
+    // Retry network failures and 5xx (cold server / dropped DB connection)
+    // so the user doesn't have to click Save repeatedly.
+    async function postWithRetry(attempts = 4) {
+      for (let attempt = 1; ; attempt++) {
+        try {
+          const res = await fetch(`${base}/api/ext/applications`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+          });
+          if (res.status < 500 || attempt >= attempts) return res;
+        } catch (err) {
+          if (attempt >= attempts) throw err;
+        }
+        saveBtn.textContent = "Retrying...";
+        await new Promise((r) => setTimeout(r, 1000 * attempt));
+      }
+    }
+
     try {
-      const res = await fetch(`${base}/api/ext/applications`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const res = await postWithRetry();
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));

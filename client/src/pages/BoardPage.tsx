@@ -57,7 +57,6 @@ export default function BoardPage() {
 
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<"all" | "7" | "30">("all");
-  const [stageJump, setStageJump] = useState<BoardStatus | "ALL">("ALL");
 
   const [drag, setDrag] = useState<DragState | null>(null);
   const [hoverStatus, setHoverStatus] = useState<BoardStatus | null>(null);
@@ -83,12 +82,11 @@ export default function BoardPage() {
     });
   }, [applications, search, dateFilter]);
 
-  useEffect(() => {
-    if (stageJump === "ALL") return;
-    const col = columnRefs.current.get(stageJump);
-    if (col) col.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-    setStageJump("ALL");
-  }, [stageJump]);
+  // The stage picker is a jump menu: scroll to the column, then snap back to "All Stages"
+  function jumpToStage(status: BoardStatus | "ALL") {
+    if (status === "ALL") return;
+    columnRefs.current.get(status)?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }
 
   function handleCreate(form: ApplicationFormData) {
     createMutation.mutate(
@@ -176,10 +174,11 @@ export default function BoardPage() {
     );
   }
 
-  if (isError) {
+  // Keep showing cached applications if only a background refetch failed
+  if (isError && applications.length === 0) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-3">
-        <p className="text-text-secondary">Failed to load applications. The database may be waking up.</p>
+        <p className="text-text-secondary">Couldn't load your applications. The server may be starting up. Try again in a moment.</p>
         <button
           onClick={() => refetch()}
           className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent/90"
@@ -269,8 +268,8 @@ export default function BoardPage() {
           />
         </div>
         <select
-          value={stageJump}
-          onChange={(e) => setStageJump(e.target.value as BoardStatus | "ALL")}
+          value="ALL"
+          onChange={(e) => jumpToStage(e.target.value as BoardStatus | "ALL")}
           className={`${INPUT} cursor-pointer`}
           style={INPUT_STYLE}
         >

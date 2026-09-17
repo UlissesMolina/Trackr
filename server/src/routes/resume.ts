@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import multer from "multer";
 import { requireAuth, getUserId } from "../middleware/auth";
 import { getResume, upsertResume, deleteResume } from "../services/resume.service";
+import { validateBody, saveResumeSchema } from "../lib/validation";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
@@ -14,16 +15,10 @@ router.get("/", async (req: Request, res: Response) => {
   res.json(resume);
 });
 
-router.put("/", async (req: Request, res: Response) => {
+router.put("/", validateBody(saveResumeSchema), async (req: Request, res: Response) => {
   const userId = getUserId(req);
   const { content } = req.body;
-
-  if (!content || !content.trim()) {
-    res.status(400).json({ error: "Resume content is required" });
-    return;
-  }
-
-  const resume = await upsertResume(userId, content.trim());
+  const resume = await upsertResume(userId, content);
   res.json(resume);
 });
 

@@ -3,9 +3,18 @@
   "name": "Trackr - Job Application Saver",
   "version": "1.0.0",
   "description": "Save job applications to Trackr directly from job board pages.",
-  "permissions": ["activeTab", "storage", "tabs", "scripting"],
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
   "host_permissions": [
-    "*://*/*"
+    "https://trackr-production-4189.up.railway.app/*",
+    "http://localhost:3001/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://*/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -15,13 +24,6 @@
       "128": "icons/icon128.png"
     }
   },
-  "content_scripts": [
-    {
-      "matches": ["*://*/*"],
-      "js": ["content.js"],
-      "run_at": "document_idle"
-    }
-  ],
   "background": {
     "service_worker": "background.js"
   },

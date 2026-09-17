@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type FormEvent, type DragEvent } from "react";
+import { useState, useRef, type FormEvent, type DragEvent } from "react";
 import { useResume, useSaveResume, useUploadResume, useDeleteResume } from "../hooks/useResume";
 
 const INPUT =
@@ -15,11 +15,13 @@ export default function ResumePage() {
   const [saved, setSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (resume?.content && !content) {
-      setContent(resume.content);
-    }
-  }, [resume, content]);
+  // Load the saved resume into the editor when it arrives (without
+  // refilling it if the user clears the textarea themselves)
+  const [prevResumeContent, setPrevResumeContent] = useState<string | undefined>(undefined);
+  if (resume?.content !== prevResumeContent) {
+    setPrevResumeContent(resume?.content);
+    if (resume?.content && !content) setContent(resume.content);
+  }
 
   function handleSave(e: FormEvent) {
     e.preventDefault();

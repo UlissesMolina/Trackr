@@ -1,4 +1,5 @@
-import { Router, Request, Response } from "express";
+import express, { Router, Request, Response } from "express";
+import { authLimiter } from "../middleware/rateLimit";
 import jwt from "jsonwebtoken";
 
 const router = Router();
@@ -33,6 +34,12 @@ router.get("/login", (_req: Request, res: Response) => {
     display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
   .msg { text-align: center; }
   .msg p { margin-top: 8px; font-size: 14px; color: #8b8fa3; }
+  .card { text-align: center; max-width: 400px; padding: 40px; }
+  .check { width: 56px; height: 56px; border-radius: 50%; background: rgba(52, 211, 153, 0.15);
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+  .check svg { width: 28px; height: 28px; color: #34d399; }
+  .card h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .card p { font-size: 14px; color: #8b8fa3; line-height: 1.5; }
 </style></head><body>
 <div id="app">
   <div class="msg">
@@ -54,6 +61,33 @@ router.get("/login", (_req: Request, res: Response) => {
   type="text/javascript"
 ></script>
 <script>
+const DONE_HTML =
+  '<div class="card"><div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>' +
+  "<h2>You're signed in!</h2>" +
+  "<p>The Trackr extension is now connected to your account. You can close this tab and start saving jobs.</p></div>";
+
+// Hand the token to the extension without putting it in a URL. The extension
+// injects a listener into this tab (only the tab it opened) and acks receipt.
+function deliverToExtension(token) {
+  const status = document.getElementById("status");
+  let acked = false;
+  window.addEventListener("message", function (event) {
+    if (event.source !== window || !event.data || event.data.type !== "TRACKR_EXT_TOKEN_ACK") return;
+    acked = true;
+    document.getElementById("app").innerHTML = DONE_HTML;
+  });
+  let tries = 0;
+  (function send() {
+    if (acked) return;
+    if (tries++ >= 40) {
+      if (status) status.textContent = "Couldn't reach the Trackr extension. Close this tab and click Sign in from the extension again.";
+      return;
+    }
+    window.postMessage({ type: "TRACKR_EXT_TOKEN", token: token }, window.location.origin);
+    setTimeout(send, 250);
+  })();
+}
+
 window.addEventListener("load", async function () {
   const status = document.getElementById("status");
   try {
@@ -62,9 +96,16 @@ window.addEventListener("load", async function () {
     });
 
     if (Clerk.session) {
-      status.textContent = "Redirecting...";
-      const token = await Clerk.session.getToken();
-      window.location.href = "/api/ext/auth/callback?session_token=" + encodeURIComponent(token);
+      status.textContent = "Connecting the extension...";
+      const sessionToken = await Clerk.session.getToken();
+      const res = await fetch("/api/ext/auth/exchange", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionToken }),
+      });
+      if (!res.ok) throw new Error("Sign-in failed (" + res.status + "). Please try again.");
+      const { token } = await res.json();
+      deliverToExtension(token);
       return;
     }
 
@@ -85,11 +126,13 @@ window.addEventListener("load", async function () {
   res.type("html").send(html);
 });
 
-router.get("/callback", async (req: Request, res: Response) => {
-  const sessionToken = req.query.session_token as string | undefined;
+// Swap a short-lived Clerk session token for a long-lived extension token.
+// Tokens travel in request/response bodies, never in URLs (history, logs).
+router.post("/exchange", authLimiter, express.json(), async (req: Request, res: Response) => {
+  const sessionToken = req.body?.sessionToken;
 
-  if (!sessionToken) {
-    res.status(400).send("Missing session_token parameter");
+  if (typeof sessionToken !== "string" || !sessionToken) {
+    res.status(400).json({ error: "Missing sessionToken" });
     return;
   }
 
@@ -100,7 +143,7 @@ router.get("/callback", async (req: Request, res: Response) => {
     });
 
     if (!payload.sub) {
-      res.status(401).send("Invalid session: no user ID");
+      res.status(401).json({ error: "Invalid session" });
       return;
     }
 
@@ -119,40 +162,11 @@ router.get("/callback", async (req: Request, res: Response) => {
       expiresIn: "90d",
     });
 
-    // Redirect to the done page — the extension's background script watches for this URL
-    res.redirect(`/api/ext/auth/done?token=${encodeURIComponent(extToken)}`);
+    res.set("Cache-Control", "no-store").json({ token: extToken });
   } catch (err) {
-    console.error("Extension auth callback error:", err);
-    res.status(401).send("Authentication failed. Please try again.");
+    console.error("Extension auth exchange error:", err);
+    res.status(401).json({ error: "Authentication failed" });
   }
-});
-
-// Success page — user closes this tab manually
-router.get("/done", (_req: Request, res: Response) => {
-  const html = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Trackr — Signed In</title>
-<style>
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: #0f1117; color: #e1e4ea;
-    display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
-  .card { text-align: center; max-width: 400px; padding: 40px; }
-  .check { width: 56px; height: 56px; border-radius: 50%; background: rgba(52, 211, 153, 0.15);
-    display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
-  .check svg { width: 28px; height: 28px; color: #34d399; }
-  h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
-  p { font-size: 14px; color: #8b8fa3; line-height: 1.5; }
-</style></head><body>
-<div class="card">
-  <div class="check">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="20 6 9 17 4 12"></polyline>
-    </svg>
-  </div>
-  <h2>You're signed in!</h2>
-  <p>The Trackr extension is now connected to your account. You can close this tab and start saving jobs.</p>
-</div>
-</body></html>`;
-  res.type("html").send(html);
 });
 
 export default router;

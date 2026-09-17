@@ -114,28 +114,40 @@ export async function updateApplicationStatus(
   clerkUserId: string,
   newStatus: ApplicationStatus
 ) {
-  const app = await prisma.application.findFirst({
-    where: { id, clerkUserId },
-  });
+  // Optimistic concurrency: only apply the change if the status is still what we
+  // read, so two quick moves can't both record the same "from" status.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const app = await prisma.application.findFirst({
+      where: { id, clerkUserId },
+      select: { status: true },
+    });
 
-  if (!app) return null;
+    if (!app) return null;
+    if (app.status === newStatus) {
+      return prisma.application.findFirst({ where: { id, clerkUserId }, include: APPLICATION_INCLUDE });
+    }
 
-  const [updated] = await prisma.$transaction([
-    prisma.application.update({
-      where: { id },
-      data: { status: newStatus },
-      include: APPLICATION_INCLUDE,
-    }),
-    prisma.statusChange.create({
-      data: {
-        applicationId: id,
-        fromStatus: app.status,
-        toStatus: newStatus,
-      },
-    }),
-  ]);
+    const applied = await prisma.$transaction(async (tx) => {
+      const { count } = await tx.application.updateMany({
+        where: { id, clerkUserId, status: app.status },
+        data: { status: newStatus },
+      });
+      if (count === 0) return false;
+      await tx.statusChange.create({
+        data: { applicationId: id, fromStatus: app.status, toStatus: newStatus },
+      });
+      return true;
+    });
 
-  return updated;
+    if (applied) {
+      return prisma.application.findFirst({
+        where: { id, clerkUserId },
+        include: APPLICATION_INCLUDE,
+      });
+    }
+  }
+
+  throw new Error("Status changed concurrently, please retry");
 }
 
 export function bulkCreateApplications(

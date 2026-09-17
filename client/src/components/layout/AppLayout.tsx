@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { UserButton } from "@clerk/clerk-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuthToken } from "../../hooks/useAuthToken";
@@ -25,34 +25,42 @@ function getSidebarCollapsed(): boolean {
 }
 
 export default function AppLayout() {
-  const authReady = useAuthToken();
+  useAuthToken();
   const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(getSidebarCollapsed);
   const navRef = useRef<HTMLElement>(null);
-  const [highlightStyle, setHighlightStyle] = useState({ y: 0, height: 0 });
+  const highlightRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed));
   }, [sidebarCollapsed]);
 
+  // Slide the nav highlight onto the active item. It's positioned from DOM
+  // measurements, so it's written straight to the element rather than via state.
   const updateHighlight = useCallback(() => {
-    if (!navRef.current) return;
+    const nav = navRef.current;
+    const highlight = highlightRef.current;
+    if (!nav || !highlight) return;
     const activePath = NAV_ITEMS.find((n) =>
       n.path === "/" ? pathname === "/" : pathname.startsWith(n.path)
     )?.path;
-    if (!activePath) { setHighlightStyle({ y: 0, height: 0 }); return; }
-    const el = navRef.current.querySelector<HTMLElement>(`[data-nav-path="${activePath}"]`);
-    if (!el) { setHighlightStyle({ y: 0, height: 0 }); return; }
-    const navRect = navRef.current.getBoundingClientRect();
+    const el = activePath
+      ? nav.querySelector<HTMLElement>(`[data-nav-path="${activePath}"]`)
+      : null;
+    if (!el) {
+      highlight.style.opacity = "0";
+      highlight.style.height = "0px";
+      return;
+    }
+    const navRect = nav.getBoundingClientRect();
     const elRect = el.getBoundingClientRect();
-    setHighlightStyle({
-      y: elRect.top - navRect.top,
-      height: elRect.height,
-    });
+    highlight.style.transform = `translateY(${elRect.top - navRect.top}px)`;
+    highlight.style.height = `${elRect.height}px`;
+    highlight.style.opacity = "1";
   }, [pathname]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     updateHighlight();
   }, [updateHighlight, sidebarCollapsed]);
 
@@ -135,13 +143,9 @@ export default function AppLayout() {
           <nav className="relative flex flex-1 flex-col gap-0.5 px-2" ref={navRef}>
             {/* Sliding highlight */}
             <div
+              ref={highlightRef}
               className="absolute left-2 right-2 rounded-lg transition-all duration-300 ease-in-out"
-              style={{
-                backgroundColor: "var(--color-nav-active)",
-                height: highlightStyle.height,
-                transform: `translateY(${highlightStyle.y}px)`,
-                opacity: highlightStyle.height > 0 ? 1 : 0,
-              }}
+              style={{ backgroundColor: "var(--color-nav-active)", height: 0, opacity: 0 }}
             />
             {NAV_ITEMS.map((item) => {
               const isActive =
@@ -181,11 +185,7 @@ export default function AppLayout() {
         <main className={`w-full flex-1 ${sidebarCollapsed ? "md:ml-16" : "md:ml-60"}`}>
           <div className="px-5 pb-8 pt-6 md:px-10 md:pt-8">
             <div key={pathname} className="animate-page-enter">
-              {authReady ? <Outlet /> : (
-                <div className="flex h-64 items-center justify-center">
-                  <p className="text-text-tertiary">Loading...</p>
-                </div>
-              )}
+              <Outlet />
             </div>
           </div>
         </main>

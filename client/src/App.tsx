@@ -20,10 +20,15 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000,
       refetchOnWindowFocus: false,
       retry: (failureCount, error) => {
-        // Don't retry auth errors
-        if (error && typeof error === "object" && "status" in error && (error as { status: number }).status === 401) return false;
-        return failureCount < 1;
+        // Network blips and 5xx (e.g. a dropped DB connection or a cold server)
+        // usually recover. A 401 gets one retry in case the Clerk token went
+        // stale while the tab was in the background; other 4xx won't fix themselves.
+        const status = (error as { response?: { status?: number } })?.response?.status;
+        if (status === 401) return failureCount < 1;
+        if (status && status >= 400 && status < 500) return false;
+        return failureCount < 3;
       },
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
     },
   },
 });

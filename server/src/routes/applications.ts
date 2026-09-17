@@ -1,6 +1,13 @@
 import { Router, Request, Response } from "express";
 import { requireAuth, getUserId } from "../middleware/auth";
 import * as appService from "../services/application.service";
+import {
+  validateBody,
+  createApplicationSchema,
+  updateApplicationSchema,
+  updateStatusSchema,
+  importApplicationsSchema,
+} from "../lib/validation";
 
 const router = Router();
 
@@ -33,24 +40,20 @@ router.get("/:id", async (req: Request, res: Response) => {
   res.json(app);
 });
 
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", validateBody(createApplicationSchema), async (req: Request, res: Response) => {
   const userId = getUserId(req);
   const app = await appService.createApplication(userId, req.body);
   res.status(201).json(app);
 });
 
-router.post("/import", async (req: Request, res: Response) => {
+router.post("/import", validateBody(importApplicationsSchema), async (req: Request, res: Response) => {
   const userId = getUserId(req);
   const { applications } = req.body;
-  if (!Array.isArray(applications) || applications.length === 0) {
-    res.status(400).json({ error: "applications array is required" });
-    return;
-  }
   const result = await appService.bulkCreateApplications(userId, applications);
   res.status(201).json({ imported: result.count });
 });
 
-router.patch("/:id", async (req: Request, res: Response) => {
+router.patch("/:id", validateBody(updateApplicationSchema), async (req: Request, res: Response) => {
   const userId = getUserId(req);
   const id = paramId(req);
   const result = await appService.updateApplication(id, userId, req.body);
@@ -62,7 +65,7 @@ router.patch("/:id", async (req: Request, res: Response) => {
   res.json(updated);
 });
 
-router.patch("/:id/status", async (req: Request, res: Response) => {
+router.patch("/:id/status", validateBody(updateStatusSchema), async (req: Request, res: Response) => {
   const userId = getUserId(req);
   const { status } = req.body;
   const updated = await appService.updateApplicationStatus(paramId(req), userId, status);

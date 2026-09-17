@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { requireAuth, getUserId } from "../middleware/auth";
 import * as oaService from "../services/oa.service";
+import { validateBody, upsertOASchema } from "../lib/validation";
 
 const router = Router();
 
@@ -21,7 +22,7 @@ router.get("/:applicationId/oa", async (req: Request, res: Response) => {
   res.json(oa);
 });
 
-router.put("/:applicationId/oa", async (req: Request, res: Response) => {
+router.put("/:applicationId/oa", validateBody(upsertOASchema), async (req: Request, res: Response) => {
   const userId = getUserId(req);
   const oa = await oaService.upsertOA(param(req, "applicationId"), userId, req.body);
   if (!oa) {

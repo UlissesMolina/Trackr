@@ -6,6 +6,13 @@ const DAY = 24 * 60 * 60 * 1000;
 const NOW = new Date("2026-10-11T12:00:00.000Z");
 const daysAgo = (n: number) => new Date(NOW.getTime() - n * DAY).toISOString();
 const daysFromNow = (n: number) => new Date(NOW.getTime() + n * DAY).toISOString();
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/** A follow-up date as the server stores it: the calendar day at UTC midnight. */
+function followUpOn(offsetDays: number): string {
+  const d = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() + offsetDays);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00:00.000Z`;
+}
 
 function makeApp(overrides: Partial<Application> = {}): Application {
   return {
@@ -97,12 +104,17 @@ describe("isStale", () => {
   });
 
   it("is snoozed by a future followUpDate", () => {
-    const app = makeApp({ statusChangedAt: daysAgo(30), createdAt: daysAgo(30), followUpDate: daysFromNow(3) });
+    const app = makeApp({ statusChangedAt: daysAgo(30), createdAt: daysAgo(30), followUpDate: followUpOn(3) });
+    expect(isStale(app, NOW, 21)).toBe(false);
+  });
+
+  it("is snoozed by a follow-up due today", () => {
+    const app = makeApp({ statusChangedAt: daysAgo(30), createdAt: daysAgo(30), followUpDate: followUpOn(0) });
     expect(isStale(app, NOW, 21)).toBe(false);
   });
 
   it("is not snoozed by a past followUpDate", () => {
-    const app = makeApp({ statusChangedAt: daysAgo(30), createdAt: daysAgo(30), followUpDate: daysAgo(1) });
+    const app = makeApp({ statusChangedAt: daysAgo(30), createdAt: daysAgo(30), followUpDate: followUpOn(-1) });
     expect(isStale(app, NOW, 21)).toBe(true);
   });
 
@@ -119,13 +131,25 @@ describe("getAttentionItems", () => {
   });
 
   it("flags an overdue follow-up with days overdue", () => {
-    const items = getAttentionItems([makeApp({ followUpDate: daysAgo(3) })], NOW, 21);
+    const items = getAttentionItems([makeApp({ followUpDate: followUpOn(-3) })], NOW, 21);
     expect(items).toHaveLength(1);
     expect(items[0]).toMatchObject({ kind: "FOLLOW_UP_OVERDUE", days: 3 });
   });
 
+  it("treats followUpDate as a local calendar day, not a UTC instant", () => {
+    const lateTonight = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate(), 23, 30);
+    const earlyThisMorning = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate(), 0, 30);
+    // Due tomorrow: never overdue today, whatever the timezone.
+    expect(getAttentionItems([makeApp({ followUpDate: followUpOn(1) })], lateTonight, 21)).toEqual([]);
+    // Due today: not overdue yet, even late in the evening.
+    expect(getAttentionItems([makeApp({ followUpDate: followUpOn(0) })], lateTonight, 21)).toEqual([]);
+    // Due yesterday: overdue by 1 day, even just after midnight.
+    const items = getAttentionItems([makeApp({ followUpDate: followUpOn(-1) })], earlyThisMorning, 21);
+    expect(items[0]).toMatchObject({ kind: "FOLLOW_UP_OVERDUE", days: 1 });
+  });
+
   it("ignores overdue follow-ups on OFFER applications", () => {
-    expect(getAttentionItems([makeApp({ status: "OFFER", followUpDate: daysAgo(3) })], NOW, 21)).toEqual([]);
+    expect(getAttentionItems([makeApp({ status: "OFFER", followUpDate: followUpOn(-3) })], NOW, 21)).toEqual([]);
   });
 
   it("flags a pending OA due within 3 days", () => {
@@ -170,7 +194,7 @@ describe("getAttentionItems", () => {
   it("returns nothing for REJECTED applications", () => {
     const app = makeApp({
       status: "REJECTED",
-      followUpDate: daysAgo(3),
+      followUpDate: followUpOn(-3),
       onlineAssessment: makeOA(),
       interviews: [makeInterview()],
     });
@@ -181,7 +205,7 @@ describe("getAttentionItems", () => {
     const app = makeApp({
       statusChangedAt: daysAgo(30),
       createdAt: daysAgo(30),
-      followUpDate: daysAgo(2),
+      followUpDate: followUpOn(-2),
       onlineAssessment: makeOA(),
     });
     const kinds = getAttentionItems([app], NOW, 21).map((i) => i.kind);
@@ -193,7 +217,7 @@ describe("getAttentionItems", () => {
       makeApp({ id: "stale-newer", statusChangedAt: daysAgo(25), createdAt: daysAgo(25) }),
       makeApp({ id: "stale-older", statusChangedAt: daysAgo(40), createdAt: daysAgo(40) }),
       makeApp({ id: "interview", status: "INTERVIEW", interviews: [makeInterview({ applicationId: "interview" })] }),
-      makeApp({ id: "followup", status: "INTERVIEW", followUpDate: daysAgo(1) }),
+      makeApp({ id: "followup", status: "INTERVIEW", followUpDate: followUpOn(-1) }),
     ];
     const ids = getAttentionItems(apps, NOW, 21).map((i) => i.application.id);
     expect(ids).toEqual(["followup", "interview", "stale-older", "stale-newer"]);

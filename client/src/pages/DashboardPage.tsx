@@ -178,7 +178,7 @@ export default function DashboardPage() {
       {/* ─── Two-column layout ────────────────────────────────── */}
       <div className="grid items-start gap-6 lg:grid-cols-[1.4fr_1fr]">
 
-        {/* ═══ LEFT COLUMN: Activity + Upcoming ═══ */}
+        {/* ═══ LEFT COLUMN: Activity + Needs attention ═══ */}
         <div>
           {/* ── Recent activity ── */}
           <div>
@@ -264,7 +264,7 @@ export default function DashboardPage() {
 
           {/* ── Needs attention ── */}
           <div className="mt-8">
-            <NeedsAttentionPanel applications={applications} />
+            <NeedsAttentionPanel applications={applications} loading={appsLoading} />
           </div>
         </div>
 

@@ -15,7 +15,7 @@ const AMBER = "bg-yellow-500/12 text-yellow-400";
 function describe(item: AttentionItem): { label: string; tone: string } {
   switch (item.kind) {
     case "FOLLOW_UP_OVERDUE":
-      return { label: item.days === 0 ? "Follow-up due" : `Follow-up ${item.days}d overdue`, tone: RED };
+      return { label: `Follow-up ${item.days}d overdue`, tone: RED };
     case "OA_DUE_SOON":
       if (item.days < 0) return { label: `OA ${-item.days}d overdue`, tone: RED };
       return { label: item.days === 0 ? "OA due today" : `OA due in ${item.days}d`, tone: AMBER };
@@ -30,9 +30,10 @@ function describe(item: AttentionItem): { label: string; tone: string } {
 
 interface NeedsAttentionPanelProps {
   applications: Application[];
+  loading?: boolean;
 }
 
-export default function NeedsAttentionPanel({ applications }: NeedsAttentionPanelProps) {
+export default function NeedsAttentionPanel({ applications, loading = false }: NeedsAttentionPanelProps) {
   const [showAll, setShowAll] = useState(false);
   const items = useMemo(
     () => getAttentionItems(applications, new Date(), getStaleDays()),
@@ -47,7 +48,13 @@ export default function NeedsAttentionPanel({ applications }: NeedsAttentionPane
         {items.length > 0 && <span className="ml-1.5 text-text-tertiary">{items.length}</span>}
       </p>
 
-      {items.length === 0 ? (
+      {loading ? (
+        <div className="space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-10 animate-pulse rounded-lg bg-surface-tertiary" />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
         <div className="rounded-[10px] bg-surface-tertiary p-5 text-center">
           <p className="text-sm text-text-tertiary">You&apos;re all caught up</p>
           <p className="mt-1 text-xs text-text-tertiary">

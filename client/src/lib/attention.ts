@@ -41,12 +41,25 @@ export function daysSinceActivity(app: Application, now: Date): number {
 }
 
 /**
+ * followUpDate is a calendar day the server stores as UTC midnight. Read it back as
+ * that same day at local midnight so "tomorrow" never looks overdue west of UTC.
+ */
+function followUpDay(followUpDate: string): Date {
+  const [y, m, d] = followUpDate.slice(0, 10).split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+/**
  * An application is stale when it's waiting on the company (APPLIED / UNDER_REVIEW)
- * with no activity for more than `staleDays`. A future follow-up date snoozes it.
+ * with no activity for more than `staleDays`. A follow-up due today or later snoozes it.
  */
 export function isStale(app: Application, now: Date, staleDays: number): boolean {
   if (!STALE_STATUSES.has(app.status)) return false;
-  if (app.followUpDate && new Date(app.followUpDate) > now) return false;
+  if (app.followUpDate && followUpDay(app.followUpDate) >= startOfDay(now)) return false;
   return daysSinceActivity(app, now) > staleDays;
 }
 
@@ -58,14 +71,16 @@ export function getAttentionItems(apps: Application[], now: Date, staleDays: num
     if (app.status === "REJECTED") continue;
 
     if (app.followUpDate && app.status !== "OFFER") {
-      const due = new Date(app.followUpDate);
-      if (due < now) {
+      const due = followUpDay(app.followUpDate);
+      const today = startOfDay(now);
+      if (due < today) {
         items.push({
           kind: "FOLLOW_UP_OVERDUE",
           key: `followup-${app.id}`,
           application: app,
           date: due,
-          days: Math.floor((nowMs - due.getTime()) / DAY_MS),
+          // round, not floor: a DST change makes one calendar day 23 or 25 hours
+          days: Math.round((today.getTime() - due.getTime()) / DAY_MS),
         });
       }
     }

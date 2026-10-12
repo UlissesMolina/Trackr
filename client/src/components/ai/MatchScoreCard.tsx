@@ -9,8 +9,12 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 function ScoreRing({ score }: { score: number }) {
   return (
-    <div className={`relative h-16 w-16 shrink-0 ${scoreTone(score).text}`}>
-      <svg viewBox="0 0 64 64" className="h-16 w-16 -rotate-90">
+    <div
+      role="img"
+      aria-label={`Match score ${score} out of 100`}
+      className={`relative h-16 w-16 shrink-0 ${scoreTone(score).text}`}
+    >
+      <svg aria-hidden="true" viewBox="0 0 64 64" className="h-16 w-16 -rotate-90">
         <circle cx="32" cy="32" r={RADIUS} fill="none" stroke="currentColor" strokeOpacity={0.15} strokeWidth={6} />
         <circle
           cx="32"
@@ -24,7 +28,9 @@ function ScoreRing({ score }: { score: number }) {
           strokeDashoffset={CIRCUMFERENCE * (1 - score / 100)}
         />
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-base font-semibold">{score}</span>
+      <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center text-base font-semibold">
+        {score}
+      </span>
     </div>
   );
 }
@@ -35,8 +41,8 @@ function ChipList({ label, items, chipCls }: { label: string; items: string[]; c
     <div className="mt-4">
       <p className="mb-1.5 text-xs font-medium text-text-tertiary">{label}</p>
       <div className="flex flex-wrap gap-1.5">
-        {items.map((item) => (
-          <span key={item} className={`rounded-full px-2 py-0.5 text-xs ${chipCls}`}>
+        {items.map((item, i) => (
+          <span key={`${i}-${item}`} className={`rounded-full px-2 py-0.5 text-xs ${chipCls}`}>
             {item}
           </span>
         ))}
@@ -50,13 +56,15 @@ interface MatchScoreCardProps {
 }
 
 export default function MatchScoreCard({ application }: MatchScoreCardProps) {
-  const { data: resume } = useResume();
+  const { data: resume, isLoading: resumeLoading } = useResume();
   const analyze = useAnalyzeMatch();
   const analysis = application.matchAnalysis;
 
   const hasJobDescription = !!application.jobDescription?.trim();
   const hasResume = !!resume?.content?.trim();
-  const disabledReason = !hasJobDescription
+  const disabledReason = resumeLoading
+    ? null
+    : !hasJobDescription
     ? "Add a job description to this application first."
     : !hasResume
       ? "Save a resume on the Resume page first."
@@ -92,8 +100,8 @@ export default function MatchScoreCard({ application }: MatchScoreCardProps) {
             <div className="mt-4">
               <p className="mb-1.5 text-xs font-medium text-text-tertiary">Suggestions</p>
               <ul className="list-disc space-y-1 pl-4 text-sm text-text-primary">
-                {analysis.suggestions.map((s) => (
-                  <li key={s}>{s}</li>
+                {analysis.suggestions.map((s, i) => (
+                  <li key={`${i}-${s}`}>{s}</li>
                 ))}
               </ul>
             </div>
@@ -104,7 +112,7 @@ export default function MatchScoreCard({ application }: MatchScoreCardProps) {
       <div className={analysis ? "mt-5" : ""}>
         <button
           onClick={() => analyze.mutate(application.id)}
-          disabled={!!disabledReason || analyze.isPending}
+          disabled={resumeLoading || !!disabledReason || analyze.isPending}
           className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
         >
           {analyze.isPending ? "Analyzing…" : analysis ? "Re-analyze" : "Analyze match"}

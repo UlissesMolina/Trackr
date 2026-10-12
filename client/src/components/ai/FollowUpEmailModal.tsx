@@ -45,6 +45,7 @@ export default function FollowUpEmailModal({
         <p className="text-sm text-red-400">{error}</p>
       ) : (
         <textarea
+          aria-label="Follow-up email draft"
           readOnly
           value={email ?? ""}
           rows={12}

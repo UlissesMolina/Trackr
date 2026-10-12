@@ -26,7 +26,9 @@ export default function StaleActions({ application, size = "md" }: StaleActionsP
   function handleSnooze() {
     const until = new Date();
     until.setDate(until.getDate() + SNOOZE_DAYS);
-    updateMutation.mutate({ id: application.id, followUpDate: until.toISOString() });
+    // Send a calendar day, the same format the application form uses.
+    const day = `${until.getFullYear()}-${String(until.getMonth() + 1).padStart(2, "0")}-${String(until.getDate()).padStart(2, "0")}`;
+    updateMutation.mutate({ id: application.id, followUpDate: day });
   }
 
   function handleReject() {
@@ -38,24 +40,33 @@ export default function StaleActions({ application, size = "md" }: StaleActionsP
       ? "rounded-md px-2 py-1 text-xs font-medium"
       : "rounded-lg px-3 py-1.5 text-sm font-medium";
   const neutral = `${btn} border border-border-default text-text-secondary hover:bg-surface-elevated disabled:opacity-50`;
+  const actionError =
+    (updateMutation.isError && getApiError(updateMutation.error, "Couldn't snooze. Try again.")) ||
+    (statusMutation.isError && getApiError(statusMutation.error, "Couldn't update the status. Try again.")) ||
+    null;
 
   return (
     <>
       <div className="flex flex-wrap items-center gap-2">
-        <button onClick={handleDraft} className={`${btn} bg-accent/15 text-accent hover:bg-accent/25`}>
+        <button
+          onClick={handleDraft}
+          disabled={followUp.isPending}
+          className={`${btn} bg-accent/15 text-accent hover:bg-accent/25 disabled:opacity-50`}
+        >
           Draft follow-up
         </button>
         <button onClick={handleSnooze} disabled={updateMutation.isPending} className={neutral}>
-          Snooze {SNOOZE_DAYS}d
+          {updateMutation.isPending ? "Snoozing…" : `Snooze ${SNOOZE_DAYS}d`}
         </button>
         <button
           onClick={handleReject}
           disabled={statusMutation.isPending}
           className={`${btn} border border-red-500/30 text-red-400 hover:bg-red-500/10 disabled:opacity-50`}
         >
-          Mark rejected
+          {statusMutation.isPending ? "Rejecting…" : "Mark rejected"}
         </button>
       </div>
+      {actionError && <p className="mt-1.5 text-xs text-red-400">{actionError}</p>}
       <FollowUpEmailModal
         open={showEmail}
         onClose={() => setShowEmail(false)}

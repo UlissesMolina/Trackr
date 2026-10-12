@@ -8,9 +8,8 @@ import ApplicationsChart from "../components/dashboard/ApplicationsChart";
 import LocationChart from "../components/dashboard/LocationChart";
 import StatusBadge from "../components/applications/StatusBadge";
 import EmptyState from "../components/ui/EmptyState";
-import { formatRelativeDateTime } from "../lib/utils";
-import { INTERVIEW_TYPE_LABELS } from "../lib/constants";
-import type { Application, Interview } from "../types";
+import NeedsAttentionPanel from "../components/dashboard/NeedsAttentionPanel";
+import type { Application } from "../types";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -54,58 +53,6 @@ function getContextualSubtitle(
     return "Track your job search progress";
   }
   return "Add your first application to get started";
-}
-
-interface UpcomingItem {
-  type: "interview" | "follow-up";
-  date: Date;
-  label: string;
-  app: Application;
-  interview?: Interview;
-  isOverdue: boolean;
-  isApproaching?: boolean;
-}
-
-function getUpcomingItems(applications: Application[]): UpcomingItem[] {
-  const now = new Date();
-  const in7Days = new Date(now);
-  in7Days.setDate(now.getDate() + 7);
-  const items: UpcomingItem[] = [];
-
-  for (const app of applications) {
-    if (app.interviews) {
-      for (const int of app.interviews) {
-        const scheduled = new Date(int.scheduledAt);
-        if (scheduled >= now && scheduled <= in7Days) {
-          items.push({
-            type: "interview",
-            date: scheduled,
-            label: `${app.company} — ${INTERVIEW_TYPE_LABELS[int.type] ?? int.type} · ${formatRelativeDateTime(int.scheduledAt)}`,
-            app,
-            interview: int,
-            isOverdue: false,
-          });
-        }
-      }
-    }
-    if (app.followUpDate) {
-      const d = new Date(app.followUpDate);
-      if (d <= in7Days) {
-        const rel = d >= now ? formatRelativeDateTime(app.followUpDate) : "Overdue";
-        items.push({
-          type: "follow-up",
-          date: d,
-          label: `${app.company} — Follow up · ${rel}`,
-          app,
-          isOverdue: d < now,
-          isApproaching: d >= now && d.getTime() - now.getTime() < 3 * 24 * 60 * 60 * 1000,
-        });
-      }
-    }
-  }
-
-  items.sort((a, b) => a.date.getTime() - b.date.getTime());
-  return items.slice(0, 8);
 }
 
 /* ── Initials + color for activity feed ─────────────────────── */
@@ -199,8 +146,6 @@ export default function DashboardPage() {
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       .slice(0, 7);
   }, [applications]);
-
-  const upcomingItems = useMemo(() => getUpcomingItems(applications), [applications]);
 
   return (
     <div>
@@ -317,48 +262,9 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* ── Upcoming ── */}
+          {/* ── Needs attention ── */}
           <div className="mt-8">
-            <p className="mb-3 text-[13px] font-medium text-text-secondary">
-              Upcoming
-            </p>
-
-            {upcomingItems.length > 0 ? (
-              <div>
-                {upcomingItems.map((item) => (
-                  <Link
-                    key={
-                      item.type === "interview" && item.interview
-                        ? item.interview.id
-                        : `${item.app.id}-followup`
-                    }
-                    to={`/applications/${item.app.id}`}
-                    className="flex items-center justify-between gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-surface-tertiary"
-                  >
-                    <span className="min-w-0 truncate text-sm text-text-secondary">
-                      {item.label}
-                    </span>
-                    {item.isOverdue && (
-                      <span className="shrink-0 rounded-full bg-red-500/12 px-2.5 py-0.5 text-xs font-medium text-red-400">
-                        Overdue
-                      </span>
-                    )}
-                    {item.isApproaching && !item.isOverdue && (
-                      <span className="shrink-0 rounded-full bg-yellow-500/12 px-2.5 py-0.5 text-xs font-medium text-yellow-400">
-                        Due soon
-                      </span>
-                    )}
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-[10px] bg-surface-tertiary p-5 text-center">
-                <p className="text-sm text-text-tertiary">No upcoming interviews</p>
-                <p className="mt-1 text-xs text-text-tertiary">
-                  Add dates to your applications to see them here
-                </p>
-              </div>
-            )}
+            <NeedsAttentionPanel applications={applications} />
           </div>
         </div>
 

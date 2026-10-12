@@ -60,3 +60,9 @@ export function formatSalary(amount: number): string {
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
+/** Pull the server's `{ error }` message out of an axios error, with a fallback. */
+export function getApiError(err: unknown, fallback: string): string {
+  const message = (err as { response?: { data?: { error?: unknown } } } | null)?.response?.data?.error;
+  return typeof message === "string" && message ? message : fallback;
+}

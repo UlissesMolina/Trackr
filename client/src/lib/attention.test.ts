@@ -8,8 +8,8 @@ const daysAgo = (n: number) => new Date(NOW.getTime() - n * DAY).toISOString();
 const daysFromNow = (n: number) => new Date(NOW.getTime() + n * DAY).toISOString();
 const pad = (n: number) => String(n).padStart(2, "0");
 
-/** A follow-up date as the server stores it: the calendar day at UTC midnight. */
-function followUpOn(offsetDays: number): string {
+/** A follow-up / OA due date as the server stores it: the calendar day at UTC midnight. */
+function dayOn(offsetDays: number): string {
   const d = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() + offsetDays);
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00:00.000Z`;
 }
@@ -58,7 +58,7 @@ function makeOA(overrides: Partial<OnlineAssessment> = {}): OnlineAssessment {
     id: "oa-1",
     applicationId: "app-1",
     platform: "HackerRank",
-    dueDate: daysFromNow(2),
+    dueDate: dayOn(2),
     status: "PENDING",
     completedAt: null,
     link: null,
@@ -74,48 +74,56 @@ describe("getAttentionItems", () => {
     expect(getAttentionItems([makeApp()], NOW)).toEqual([]);
   });
 
-  it("flags an overdue follow-up with days overdue", () => {
-    const items = getAttentionItems([makeApp({ followUpDate: followUpOn(-3) })], NOW);
+  it("includes overdue follow-ups with negative days", () => {
+    const items = getAttentionItems([makeApp({ followUpDate: dayOn(-3) })], NOW);
     expect(items).toHaveLength(1);
-    expect(items[0]).toMatchObject({ kind: "FOLLOW_UP_OVERDUE", days: 3 });
+    expect(items[0]).toMatchObject({ kind: "FOLLOW_UP", days: -3 });
   });
 
-  it("treats followUpDate as a local calendar day, not a UTC instant", () => {
+  it("includes follow-ups due in the next 7 days, not later", () => {
+    expect(getAttentionItems([makeApp({ followUpDate: dayOn(7) })], NOW)[0]).toMatchObject({
+      kind: "FOLLOW_UP",
+      days: 7,
+    });
+    expect(getAttentionItems([makeApp({ followUpDate: dayOn(8) })], NOW)).toEqual([]);
+  });
+
+  it("treats due dates as local calendar days, not UTC instants", () => {
     const lateTonight = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate(), 23, 30);
     const earlyThisMorning = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate(), 0, 30);
-    // Due tomorrow: never overdue today, whatever the timezone.
-    expect(getAttentionItems([makeApp({ followUpDate: followUpOn(1) })], lateTonight)).toEqual([]);
-    // Due today: not overdue yet, even late in the evening.
-    expect(getAttentionItems([makeApp({ followUpDate: followUpOn(0) })], lateTonight)).toEqual([]);
-    // Due yesterday: overdue by 1 day, even just after midnight.
-    const items = getAttentionItems([makeApp({ followUpDate: followUpOn(-1) })], earlyThisMorning);
-    expect(items[0]).toMatchObject({ kind: "FOLLOW_UP_OVERDUE", days: 1 });
+    expect(getAttentionItems([makeApp({ followUpDate: dayOn(1) })], lateTonight)[0].days).toBe(1);
+    expect(getAttentionItems([makeApp({ followUpDate: dayOn(0) })], lateTonight)[0].days).toBe(0);
+    expect(getAttentionItems([makeApp({ followUpDate: dayOn(-1) })], earlyThisMorning)[0].days).toBe(-1);
+    const oa = makeApp({ onlineAssessment: makeOA({ dueDate: dayOn(1) }) });
+    expect(getAttentionItems([oa], lateTonight)[0].days).toBe(1);
   });
 
-  it("ignores overdue follow-ups on OFFER applications", () => {
-    expect(getAttentionItems([makeApp({ status: "OFFER", followUpDate: followUpOn(-3) })], NOW)).toEqual([]);
+  it("ignores follow-ups on OFFER applications", () => {
+    expect(getAttentionItems([makeApp({ status: "OFFER", followUpDate: dayOn(-3) })], NOW)).toEqual([]);
   });
 
-  it("flags a pending OA due within 3 days", () => {
-    const items = getAttentionItems([makeApp({ onlineAssessment: makeOA({ dueDate: daysFromNow(2) }) })], NOW);
-    expect(items[0]).toMatchObject({ kind: "OA_DUE_SOON", days: 2 });
-  });
-
-  it("flags a past-due pending OA with negative days", () => {
-    const items = getAttentionItems([makeApp({ onlineAssessment: makeOA({ dueDate: daysAgo(2) }) })], NOW);
-    expect(items[0]).toMatchObject({ kind: "OA_DUE_SOON", days: -2 });
-  });
-
-  it("ignores OAs due later than 3 days, completed, or without a due date", () => {
+  it("includes every pending OA: overdue, soon, later, and undated", () => {
     const apps = [
-      makeApp({ id: "a", onlineAssessment: makeOA({ dueDate: daysFromNow(4) }) }),
-      makeApp({ id: "b", onlineAssessment: makeOA({ status: "COMPLETED" }) }),
-      makeApp({ id: "c", onlineAssessment: makeOA({ dueDate: null }) }),
+      makeApp({ id: "overdue", onlineAssessment: makeOA({ dueDate: dayOn(-2) }) }),
+      makeApp({ id: "soon", onlineAssessment: makeOA({ dueDate: dayOn(2) }) }),
+      makeApp({ id: "later", onlineAssessment: makeOA({ dueDate: dayOn(20) }) }),
+      makeApp({ id: "undated", onlineAssessment: makeOA({ dueDate: null }) }),
     ];
-    expect(getAttentionItems(apps, NOW)).toEqual([]);
+    const items = getAttentionItems(apps, NOW);
+    expect(items.map((i) => [i.application.id, i.kind, i.days])).toEqual([
+      ["overdue", "OA", -2],
+      ["soon", "OA", 2],
+      ["later", "OA", 20],
+      ["undated", "OA", null],
+    ]);
+    expect(items[3].date).toBeNull();
   });
 
-  it("flags interviews in the next 7 days only", () => {
+  it("ignores completed OAs", () => {
+    expect(getAttentionItems([makeApp({ onlineAssessment: makeOA({ status: "COMPLETED" }) })], NOW)).toEqual([]);
+  });
+
+  it("includes interviews in the next 7 days only", () => {
     const app = makeApp({
       status: "INTERVIEW",
       interviews: [
@@ -126,46 +134,41 @@ describe("getAttentionItems", () => {
     });
     const items = getAttentionItems([app], NOW);
     expect(items).toHaveLength(1);
-    expect(items[0]).toMatchObject({ kind: "INTERVIEW_SOON", days: 3 });
+    expect(items[0]).toMatchObject({ kind: "INTERVIEW", days: 3 });
     expect(items[0].interview?.id).toBe("soon");
   });
 
   it("returns nothing for REJECTED applications", () => {
     const app = makeApp({
       status: "REJECTED",
-      followUpDate: followUpOn(-3),
+      followUpDate: dayOn(-3),
       onlineAssessment: makeOA(),
       interviews: [makeInterview()],
     });
     expect(getAttentionItems([app], NOW)).toEqual([]);
   });
 
-  it("can return multiple items for one application", () => {
-    const app = makeApp({
-      followUpDate: followUpOn(-2),
-      onlineAssessment: makeOA(),
-      interviews: [makeInterview()],
-    });
-    const kinds = getAttentionItems([app], NOW).map((i) => i.kind);
-    expect(kinds).toEqual(["FOLLOW_UP_OVERDUE", "OA_DUE_SOON", "INTERVIEW_SOON"]);
-  });
-
-  it("sorts by kind, then by date ascending within a kind", () => {
+  it("sorts by date, most urgent first, with undated OAs last", () => {
     const apps = [
-      makeApp({ id: "interview", status: "INTERVIEW", interviews: [makeInterview({ applicationId: "interview" })] }),
-      makeApp({ id: "followup-newer", followUpDate: followUpOn(-1) }),
-      makeApp({ id: "followup-older", followUpDate: followUpOn(-5) }),
+      makeApp({ id: "oa-undated", onlineAssessment: makeOA({ dueDate: null }) }),
+      makeApp({ id: "oa-later", onlineAssessment: makeOA({ dueDate: dayOn(4) }) }),
+      makeApp({ id: "interview", status: "INTERVIEW", interviews: [makeInterview({ scheduledAt: daysFromNow(2) })] }),
+      makeApp({ id: "followup-newer", followUpDate: dayOn(-1) }),
+      makeApp({ id: "followup-older", followUpDate: dayOn(-5) }),
     ];
     const ids = getAttentionItems(apps, NOW).map((i) => i.application.id);
-    expect(ids).toEqual(["followup-older", "followup-newer", "interview"]);
+    expect(ids).toEqual(["followup-older", "followup-newer", "interview", "oa-later", "oa-undated"]);
   });
 
   it("gives every item a unique key", () => {
     const app = makeApp({
       status: "INTERVIEW",
+      followUpDate: dayOn(1),
+      onlineAssessment: makeOA(),
       interviews: [makeInterview({ id: "i1" }), makeInterview({ id: "i2", scheduledAt: daysFromNow(4) })],
     });
     const keys = getAttentionItems([app], NOW).map((i) => i.key);
+    expect(keys).toHaveLength(4);
     expect(new Set(keys).size).toBe(keys.length);
   });
 });

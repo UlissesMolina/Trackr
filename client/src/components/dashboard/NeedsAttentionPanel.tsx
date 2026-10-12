@@ -10,16 +10,28 @@ const VISIBLE_LIMIT = 8;
 const RED = "bg-red-500/12 text-red-400";
 const AMBER = "bg-yellow-500/12 text-yellow-400";
 
+const NEUTRAL = "bg-surface-tertiary text-text-secondary";
+
+/** "Follow up 2d overdue" / "Follow up today" / "Follow up in 3d", toned by urgency. */
+function dueLabel(prefix: string, days: number): { label: string; tone: string } {
+  if (days < 0) return { label: `${prefix} ${-days}d overdue`, tone: RED };
+  if (days === 0) return { label: `${prefix} today`, tone: AMBER };
+  return { label: `${prefix} in ${days}d`, tone: days <= 2 ? AMBER : NEUTRAL };
+}
+
 function describe(item: AttentionItem): { label: string; tone: string } {
   switch (item.kind) {
-    case "FOLLOW_UP_OVERDUE":
-      return { label: `Follow-up ${item.days}d overdue`, tone: RED };
-    case "OA_DUE_SOON":
-      if (item.days < 0) return { label: `OA ${-item.days}d overdue`, tone: RED };
-      return { label: item.days === 0 ? "OA due today" : `OA due in ${item.days}d`, tone: AMBER };
-    case "INTERVIEW_SOON": {
+    case "FOLLOW_UP":
+      return dueLabel("Follow up", item.days ?? 0);
+    case "OA": {
+      const platform = item.application.onlineAssessment?.platform;
+      const name = platform ? `${platform} OA` : "OA";
+      return item.days === null ? { label: `${name} pending`, tone: NEUTRAL } : dueLabel(`${name} due`, item.days);
+    }
+    case "INTERVIEW": {
       const type = item.interview ? INTERVIEW_TYPE_LABELS[item.interview.type] : "Interview";
-      return { label: `${type} · ${formatRelativeDateTime(item.date)}`, tone: "bg-accent/15 text-accent" };
+      const when = item.date ? formatRelativeDateTime(item.date) : "";
+      return { label: `${type} · ${when}`, tone: "bg-accent/15 text-accent" };
     }
   }
 }
@@ -54,7 +66,7 @@ export default function NeedsAttentionPanel({ applications, loading = false }: N
         <div className="rounded-[10px] bg-surface-tertiary p-5 text-center">
           <p className="text-sm text-text-tertiary">You&apos;re all caught up</p>
           <p className="mt-1 text-xs text-text-tertiary">
-            Overdue follow-ups, OA deadlines, and upcoming interviews show up here
+            Follow-ups and interviews in the next week, and pending OAs, show up here
           </p>
         </div>
       ) : (

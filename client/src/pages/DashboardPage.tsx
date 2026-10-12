@@ -8,7 +8,6 @@ import ApplicationsChart from "../components/dashboard/ApplicationsChart";
 import LocationChart from "../components/dashboard/LocationChart";
 import StatusBadge from "../components/applications/StatusBadge";
 import EmptyState from "../components/ui/EmptyState";
-import NeedsAttentionPanel from "../components/dashboard/NeedsAttentionPanel";
 import type { Application } from "../types";
 
 function getGreeting(): string {
@@ -178,7 +177,7 @@ export default function DashboardPage() {
       {/* ─── Two-column layout ────────────────────────────────── */}
       <div className="grid items-start gap-6 lg:grid-cols-[1.4fr_1fr]">
 
-        {/* ═══ LEFT COLUMN: Activity + Needs attention ═══ */}
+        {/* ═══ LEFT COLUMN: Activity ═══ */}
         <div>
           {/* ── Recent activity ── */}
           <div>
@@ -260,11 +259,6 @@ export default function DashboardPage() {
                 </Link>
               </div>
             )}
-          </div>
-
-          {/* ── Needs attention ── */}
-          <div className="mt-8">
-            <NeedsAttentionPanel applications={applications} loading={appsLoading} />
           </div>
         </div>
 

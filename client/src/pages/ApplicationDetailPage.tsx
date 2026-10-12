@@ -11,6 +11,7 @@ import { boardStatus } from "../lib/constants";
 import StatusTimeline from "../components/applications/StatusTimeline";
 import NotesList from "../components/applications/NotesList";
 import InterviewList from "../components/applications/InterviewList";
+import OnlineAssessmentCard from "../components/applications/OnlineAssessmentCard";
 import TagSelect from "../components/applications/TagSelect";
 import PrioritySelect from "../components/applications/PrioritySelect";
 import ApplicationForm, {
@@ -210,6 +211,11 @@ export default function ApplicationDetailPage() {
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-primary">{app.jobDescription}</p>
             </div>
           )}
+
+          <div className="rounded-xl border border-border-default bg-surface-secondary p-6">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-text-secondary">Online Assessment</h2>
+            <OnlineAssessmentCard applicationId={app.id} />
+          </div>
 
           <div className="rounded-xl border border-border-default bg-surface-secondary p-6">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-text-secondary">Interviews</h2>

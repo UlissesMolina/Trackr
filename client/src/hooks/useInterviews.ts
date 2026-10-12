@@ -31,7 +31,7 @@ export function useCreateInterview() {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["interviews", variables.applicationId] });
-      queryClient.invalidateQueries({ queryKey: ["applications", variables.applicationId] });
+      queryClient.invalidateQueries({ queryKey: ["applications"] });
     },
   });
 }
@@ -60,7 +60,7 @@ export function useUpdateInterview() {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["interviews", variables.applicationId] });
-      queryClient.invalidateQueries({ queryKey: ["applications", variables.applicationId] });
+      queryClient.invalidateQueries({ queryKey: ["applications"] });
     },
   });
 }
@@ -80,7 +80,7 @@ export function useDeleteInterview() {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["interviews", variables.applicationId] });
-      queryClient.invalidateQueries({ queryKey: ["applications", variables.applicationId] });
+      queryClient.invalidateQueries({ queryKey: ["applications"] });
     },
   });
 }

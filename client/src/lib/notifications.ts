@@ -1,12 +1,12 @@
 import type { Application, Interview } from "../types";
 
-export type AttentionKind = "FOLLOW_UP" | "OA" | "INTERVIEW";
+export type NotificationKind = "OA" | "INTERVIEW";
 
-export interface AttentionItem {
-  kind: AttentionKind;
+export interface Notification {
+  kind: NotificationKind;
   key: string;
   application: Application;
-  /** Due day or scheduled time; null for an OA with no due date. */
+  /** OA due day or interview time; null for an OA with no due date. */
   date: Date | null;
   /** Calendar days until `date` (negative = overdue); null when there's no date. */
   days: number | null;
@@ -14,13 +14,11 @@ export interface AttentionItem {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const FOLLOW_UP_WINDOW_DAYS = 7;
 const INTERVIEW_WINDOW_DAYS = 7;
 
 /**
- * Follow-up and OA due dates are calendar days the server stores as UTC midnight.
- * Read them back as that same day at local midnight so "tomorrow" never looks
- * overdue west of UTC.
+ * OA due dates are calendar days the server stores as UTC midnight. Read them back
+ * as that same day at local midnight so "tomorrow" never looks overdue west of UTC.
  */
 function calendarDay(date: string): Date {
   const [y, m, d] = date.slice(0, 10).split("-").map(Number);
@@ -31,25 +29,13 @@ function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
-// round, not floor: a DST change makes one calendar day 23 or 25 hours
-function daysBetween(from: Date, to: Date): number {
-  return Math.round((to.getTime() - from.getTime()) / DAY_MS);
-}
-
-export function getAttentionItems(apps: Application[], now: Date): AttentionItem[] {
-  const items: AttentionItem[] = [];
+/** Pending OAs (any due date, or none) and interviews in the next week, most urgent first. */
+export function getNotifications(apps: Application[], now: Date): Notification[] {
+  const items: Notification[] = [];
   const today = startOfDay(now);
 
   for (const app of apps) {
     if (app.status === "REJECTED") continue;
-
-    if (app.followUpDate && app.status !== "OFFER") {
-      const due = calendarDay(app.followUpDate);
-      const days = daysBetween(today, due);
-      if (days <= FOLLOW_UP_WINDOW_DAYS) {
-        items.push({ kind: "FOLLOW_UP", key: `followup-${app.id}`, application: app, date: due, days });
-      }
-    }
 
     const oa = app.onlineAssessment;
     if (oa?.status === "PENDING") {
@@ -59,7 +45,8 @@ export function getAttentionItems(apps: Application[], now: Date): AttentionItem
         key: `oa-${app.id}`,
         application: app,
         date: due,
-        days: due ? daysBetween(today, due) : null,
+        // round, not floor: a DST change makes one calendar day 23 or 25 hours
+        days: due ? Math.round((due.getTime() - today.getTime()) / DAY_MS) : null,
       });
     }
 

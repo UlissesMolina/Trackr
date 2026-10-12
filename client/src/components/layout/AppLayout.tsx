@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react
 import { UserButton } from "@clerk/clerk-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuthToken } from "../../hooks/useAuthToken";
+import NotificationsBell from "./NotificationsBell";
 import { LayoutDashboard, LayoutGrid, Briefcase, GitBranch, FileText, FileEdit, PanelLeftClose, PanelLeft, Settings } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -92,6 +93,7 @@ export default function AppLayout() {
 
         {/* Right: Icons + avatar */}
         <div className="flex items-center gap-4">
+          <NotificationsBell />
           <UserButton
             afterSignOutUrl="/"
             appearance={{ elements: { avatarBox: "h-8 w-8" } }}

@@ -149,3 +149,5 @@ export const coverLetterSchema = z.object({
 export const extractEmailSchema = z.object({
   emailText: text(AI_LIMITS.emailText).min(10, "must be at least 10 characters"),
 });
+
+export const followUpEmailSchema = z.object({ applicationId: requiredText(100) });

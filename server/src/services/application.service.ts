@@ -165,9 +165,19 @@ export async function updateApplicationStatus(
   throw new Error("Status changed concurrently, please retry");
 }
 
-export async function saveMatchAnalysis(id: string, clerkUserId: string, analysis: MatchAnalysis) {
+/**
+ * Save an analysis only if the job description is still the one that was analyzed,
+ * so an edit made while the AI call was running isn't paired with a stale result.
+ * Returns null if the application is gone or its job description changed.
+ */
+export async function saveMatchAnalysis(
+  id: string,
+  clerkUserId: string,
+  analysis: MatchAnalysis,
+  analyzedJobDescription: string
+) {
   const { count } = await prisma.application.updateMany({
-    where: { id, clerkUserId },
+    where: { id, clerkUserId, jobDescription: analyzedJobDescription },
     data: { matchAnalysis: analysis, matchAnalyzedAt: new Date() },
   });
   if (count === 0) return null;

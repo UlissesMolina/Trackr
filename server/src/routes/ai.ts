@@ -116,9 +116,9 @@ router.post("/match/:applicationId", async (req: Request, res: Response) => {
     throw err;
   }
 
-  const updated = await saveMatchAnalysis(applicationId, userId, analysis);
+  const updated = await saveMatchAnalysis(applicationId, userId, analysis, app.jobDescription);
   if (!updated) {
-    res.status(404).json({ error: "Application not found" });
+    res.status(409).json({ error: "The job description changed while analyzing. Try again." });
     return;
   }
   res.json(updated);

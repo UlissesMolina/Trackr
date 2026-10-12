@@ -34,7 +34,7 @@ export function useUpsertOA() {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["oa", variables.applicationId] });
-      queryClient.invalidateQueries({ queryKey: ["applications", variables.applicationId] });
+      queryClient.invalidateQueries({ queryKey: ["applications"] });
     },
   });
 }
@@ -48,7 +48,7 @@ export function useDeleteOA() {
     },
     onSuccess: (_data, applicationId) => {
       queryClient.invalidateQueries({ queryKey: ["oa", applicationId] });
-      queryClient.invalidateQueries({ queryKey: ["applications", applicationId] });
+      queryClient.invalidateQueries({ queryKey: ["applications"] });
     },
   });
 }

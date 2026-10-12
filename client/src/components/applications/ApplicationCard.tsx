@@ -24,6 +24,7 @@ function getFollowUpIndicator(followUpDate: string | null) {
 export default function ApplicationCard({ application }: ApplicationCardProps) {
   const followUp = getFollowUpIndicator(application.followUpDate);
   const tags = Array.isArray(application.tags) ? application.tags : [];
+  const oa = application.onlineAssessment;
 
   return (
     <Link
@@ -36,8 +37,19 @@ export default function ApplicationCard({ application }: ApplicationCardProps) {
       onMouseEnter={(e) => { e.currentTarget.style.background = "var(--color-nav-active)"; }}
       onMouseLeave={(e) => { e.currentTarget.style.background = "var(--color-nav-hover)"; }}
     >
-      {tags.length > 0 && (
+      {(tags.length > 0 || oa) && (
         <div className="mb-1 flex flex-wrap gap-1">
+          {/* Automatic tag: derived from the OA, so it can't drift out of sync */}
+          {oa && (
+            <span
+              className={`rounded-full px-1.5 py-px text-[9px] font-medium text-white ${
+                oa.status === "COMPLETED" ? "bg-green-600" : "bg-purple-500"
+              }`}
+              title={oa.status === "COMPLETED" ? "Online assessment completed" : "Online assessment pending"}
+            >
+              {oa.status === "COMPLETED" ? "OA ✓" : "OA"}
+            </span>
+          )}
           {tags.map(({ tag, tagId }) => (
             <span
               key={tagId}

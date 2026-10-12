@@ -1,10 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAttentionItems, type AttentionItem } from "../../lib/attention";
-import { getStaleDays } from "../../lib/settings";
 import { formatRelativeDateTime } from "../../lib/utils";
 import { INTERVIEW_TYPE_LABELS } from "../../lib/constants";
-import StaleActions from "../applications/StaleActions";
 import type { Application } from "../../types";
 
 const VISIBLE_LIMIT = 8;
@@ -23,8 +21,6 @@ function describe(item: AttentionItem): { label: string; tone: string } {
       const type = item.interview ? INTERVIEW_TYPE_LABELS[item.interview.type] : "Interview";
       return { label: `${type} · ${formatRelativeDateTime(item.date)}`, tone: "bg-accent/15 text-accent" };
     }
-    case "STALE":
-      return { label: `No response in ${item.days}d`, tone: "bg-surface-tertiary text-text-tertiary" };
   }
 }
 
@@ -36,7 +32,7 @@ interface NeedsAttentionPanelProps {
 export default function NeedsAttentionPanel({ applications, loading = false }: NeedsAttentionPanelProps) {
   const [showAll, setShowAll] = useState(false);
   const items = useMemo(
-    () => getAttentionItems(applications, new Date(), getStaleDays()),
+    () => getAttentionItems(applications, new Date()),
     [applications]
   );
   const visible = showAll ? items : items.slice(0, VISIBLE_LIMIT);
@@ -58,7 +54,7 @@ export default function NeedsAttentionPanel({ applications, loading = false }: N
         <div className="rounded-[10px] bg-surface-tertiary p-5 text-center">
           <p className="text-sm text-text-tertiary">You&apos;re all caught up</p>
           <p className="mt-1 text-xs text-text-tertiary">
-            Overdue follow-ups, OA deadlines, upcoming interviews, and stale applications show up here
+            Overdue follow-ups, OA deadlines, and upcoming interviews show up here
           </p>
         </div>
       ) : (
@@ -80,11 +76,6 @@ export default function NeedsAttentionPanel({ applications, loading = false }: N
                     {label}
                   </span>
                 </div>
-                {item.kind === "STALE" && (
-                  <div className="mt-2">
-                    <StaleActions application={item.application} size="sm" />
-                  </div>
-                )}
               </div>
             );
           })}

@@ -1,12 +1,5 @@
 import type { ApplicationStatus, ApplicationPriority, InterviewType } from "../lib/constants";
 
-export interface MatchAnalysis {
-  score: number;
-  matchedSkills: string[];
-  missingKeywords: string[];
-  suggestions: string[];
-}
-
 export interface Application {
   id: string;
   clerkUserId: string;
@@ -23,9 +16,6 @@ export interface Application {
   rejectionDate: string | null;
   jobDescription: string | null;
   coverLetter: string | null;
-  statusChangedAt: string | null;
-  matchAnalysis: MatchAnalysis | null;
-  matchAnalyzedAt: string | null;
   createdAt: string;
   updatedAt: string;
   notes?: Note[];

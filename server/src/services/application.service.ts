@@ -1,7 +1,5 @@
 import prisma from "../lib/prisma";
 import { ApplicationStatus, ApplicationPriority } from "../../generated/prisma/enums";
-import { Prisma } from "../../generated/prisma/client";
-import type { MatchAnalysis } from "../lib/matchAnalysis";
 
 function toPriority(v: unknown): ApplicationPriority | null {
   if (v === null || v === undefined) return null;
@@ -69,13 +67,12 @@ export function createApplication(
       dateApplied: data.dateApplied ? new Date(data.dateApplied) : null,
       followUpDate: data.followUpDate ? new Date(data.followUpDate) : null,
       rejectionDate: data.rejectionDate ? new Date(data.rejectionDate) : null,
-      statusChangedAt: new Date(),
     },
     include: APPLICATION_INCLUDE,
   });
 }
 
-export async function updateApplication(
+export function updateApplication(
   id: string,
   clerkUserId: string,
   data: {
@@ -94,22 +91,10 @@ export async function updateApplication(
   }
 ) {
   const { priority, dateApplied, followUpDate, rejectionDate, ...rest } = data;
-
-  // A match analysis is only valid for the job description it was run against.
-  let clearMatch = false;
-  if (data.jobDescription !== undefined) {
-    const current = await prisma.application.findFirst({
-      where: { id, clerkUserId },
-      select: { jobDescription: true },
-    });
-    clearMatch = !!current && (current.jobDescription || null) !== (data.jobDescription || null);
-  }
-
   return prisma.application.updateMany({
     where: { id, clerkUserId },
     data: {
       ...rest,
-      ...(clearMatch && { matchAnalysis: Prisma.DbNull, matchAnalyzedAt: null }),
       priority: priority !== undefined ? toPriority(priority) : undefined,
       dateApplied: dateApplied !== undefined
         ? dateApplied ? new Date(dateApplied) : null
@@ -145,7 +130,7 @@ export async function updateApplicationStatus(
     const applied = await prisma.$transaction(async (tx) => {
       const { count } = await tx.application.updateMany({
         where: { id, clerkUserId, status: app.status },
-        data: { status: newStatus, statusChangedAt: new Date() },
+        data: { status: newStatus },
       });
       if (count === 0) return false;
       await tx.statusChange.create({
@@ -163,25 +148,6 @@ export async function updateApplicationStatus(
   }
 
   throw new Error("Status changed concurrently, please retry");
-}
-
-/**
- * Save an analysis only if the job description is still the one that was analyzed,
- * so an edit made while the AI call was running isn't paired with a stale result.
- * Returns null if the application is gone or its job description changed.
- */
-export async function saveMatchAnalysis(
-  id: string,
-  clerkUserId: string,
-  analysis: MatchAnalysis,
-  analyzedJobDescription: string
-) {
-  const { count } = await prisma.application.updateMany({
-    where: { id, clerkUserId, jobDescription: analyzedJobDescription },
-    data: { matchAnalysis: analysis, matchAnalyzedAt: new Date() },
-  });
-  if (count === 0) return null;
-  return getApplication(id, clerkUserId);
 }
 
 export function bulkCreateApplications(
@@ -209,7 +175,6 @@ export function bulkCreateApplications(
     status: row.status ?? ApplicationStatus.SAVED,
     priority: toPriority(row.priority),
     dateApplied: row.dateApplied ? new Date(row.dateApplied) : null,
-    statusChangedAt: new Date(),
   }));
 
   return prisma.application.createMany({ data });

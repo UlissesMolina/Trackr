@@ -96,9 +96,7 @@ export function useUpdateApplicationStatus() {
       await queryClient.cancelQueries({ queryKey: ["applications"] });
       const previous = queryClient.getQueryData<Application[]>(["applications"]);
       queryClient.setQueryData<Application[]>(["applications"], (old) =>
-        old?.map((app) =>
-          app.id === id ? { ...app, status, statusChangedAt: new Date().toISOString() } : app
-        )
+        old?.map((app) => (app.id === id ? { ...app, status } : app))
       );
       return { previous };
     },

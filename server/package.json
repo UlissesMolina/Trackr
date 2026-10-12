@@ -9,8 +9,7 @@
     "start": "node dist/src/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio",
-    "test": "vitest run"
+    "prisma:studio": "prisma studio"
   },
   "keywords": [],
   "author": "",
@@ -40,7 +39,6 @@
     "@types/pg": "^8.16.0",
     "prisma": "^7.4.0",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.9.3",
-    "vitest": "^5.0.3"
+    "typescript": "^5.9.3"
   }
 }

@@ -2,9 +2,6 @@ import { Link } from "react-router-dom";
 import type { Application } from "../../types";
 import { formatShortDate } from "../../lib/utils";
 import { PRIORITY_DOT_COLORS } from "../../lib/constants";
-import { isStale, daysSinceActivity } from "../../lib/attention";
-import { getStaleDays } from "../../lib/settings";
-import { scoreTone } from "../../lib/match";
 
 interface ApplicationCardProps {
   application: Application;
@@ -27,9 +24,6 @@ function getFollowUpIndicator(followUpDate: string | null) {
 export default function ApplicationCard({ application }: ApplicationCardProps) {
   const followUp = getFollowUpIndicator(application.followUpDate);
   const tags = Array.isArray(application.tags) ? application.tags : [];
-  const now = new Date();
-  const stale = isStale(application, now, getStaleDays());
-  const score = application.matchAnalysis?.score;
 
   return (
     <Link
@@ -90,22 +84,6 @@ export default function ApplicationCard({ application }: ApplicationCardProps) {
               if (days < 30) return `${days}d ago`;
               return formatShortDate(date);
             })()}
-          </span>
-        )}
-        {score !== undefined && (
-          <span
-            className={`ml-auto shrink-0 rounded px-1.5 py-px text-[10px] font-semibold ${scoreTone(score).text} ${scoreTone(score).bg}`}
-            title="Resume match score"
-          >
-            {score}%
-          </span>
-        )}
-        {stale && (
-          <span
-            className={`${score === undefined ? "ml-auto " : ""}shrink-0 rounded bg-surface-tertiary px-1.5 py-px text-[10px] font-medium text-text-tertiary`}
-            title="No response in a while"
-          >
-            Stale · {daysSinceActivity(application, now)}d
           </span>
         )}
       </p>

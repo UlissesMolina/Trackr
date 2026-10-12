@@ -1,16 +1,16 @@
 import type { Application, Interview } from "../types";
 
-export type AttentionKind = "FOLLOW_UP_OVERDUE" | "OA_DUE_SOON" | "INTERVIEW_SOON" | "STALE";
+export type AttentionKind = "FOLLOW_UP_OVERDUE" | "OA_DUE_SOON" | "INTERVIEW_SOON";
 
 export interface AttentionItem {
   kind: AttentionKind;
   key: string;
   application: Application;
-  /** Due date, scheduled time, or last activity (for STALE). */
+  /** Due date or scheduled time. */
   date: Date;
   /**
    * FOLLOW_UP_OVERDUE: days overdue. OA_DUE_SOON / INTERVIEW_SOON: days until
-   * (negative = past due). STALE: days since last activity.
+   * (negative = past due).
    */
   days: number;
   interview?: Interview;
@@ -24,21 +24,7 @@ const KIND_ORDER: Record<AttentionKind, number> = {
   FOLLOW_UP_OVERDUE: 0,
   OA_DUE_SOON: 1,
   INTERVIEW_SOON: 2,
-  STALE: 3,
 };
-
-const STALE_STATUSES = new Set(["APPLIED", "UNDER_REVIEW"]);
-
-function lastActivity(app: Application): Date {
-  const times = [app.statusChangedAt, app.dateApplied, app.createdAt]
-    .filter((d): d is string => !!d)
-    .map((d) => new Date(d).getTime());
-  return new Date(Math.max(...times));
-}
-
-export function daysSinceActivity(app: Application, now: Date): number {
-  return Math.floor((now.getTime() - lastActivity(app).getTime()) / DAY_MS);
-}
 
 /**
  * followUpDate is a calendar day the server stores as UTC midnight. Read it back as
@@ -53,17 +39,7 @@ function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
-/**
- * An application is stale when it's waiting on the company (APPLIED / UNDER_REVIEW)
- * with no activity for more than `staleDays`. A follow-up due today or later snoozes it.
- */
-export function isStale(app: Application, now: Date, staleDays: number): boolean {
-  if (!STALE_STATUSES.has(app.status)) return false;
-  if (app.followUpDate && followUpDay(app.followUpDate) >= startOfDay(now)) return false;
-  return daysSinceActivity(app, now) > staleDays;
-}
-
-export function getAttentionItems(apps: Application[], now: Date, staleDays: number): AttentionItem[] {
+export function getAttentionItems(apps: Application[], now: Date): AttentionItem[] {
   const items: AttentionItem[] = [];
   const nowMs = now.getTime();
 
@@ -107,16 +83,6 @@ export function getAttentionItems(apps: Application[], now: Date, staleDays: num
           interview,
         });
       }
-    }
-
-    if (isStale(app, now, staleDays)) {
-      items.push({
-        kind: "STALE",
-        key: `stale-${app.id}`,
-        application: app,
-        date: lastActivity(app),
-        days: daysSinceActivity(app, now),
-      });
     }
   }
 

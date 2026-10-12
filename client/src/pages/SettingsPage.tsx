@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Trash2, Sun, Moon, Download, RefreshCw, User, LogOut, Github, AlertTriangle, Clock } from "lucide-react";
-import { getStaleDays, setStaleDays } from "../lib/settings";
+import { Trash2, Sun, Moon, Download, RefreshCw, User, LogOut, Github, AlertTriangle } from "lucide-react";
 import Modal from "../components/ui/Modal";
 import { useClerk } from "@clerk/clerk-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -15,7 +14,6 @@ export default function SettingsPage() {
   const [showClearModal, setShowClearModal] = useState(false);
   const [clearCount, setClearCount] = useState<number | null>(null);
   const [clearing, setClearing] = useState(false);
-  const [staleDaysInput, setStaleDaysInput] = useState(() => String(getStaleDays()));
 
   async function handleExportCsv() {
     setExporting(true);
@@ -113,25 +111,6 @@ export default function SettingsPage() {
             Sign out
           </button>
         </div>
-      </div>
-
-      {/* Reminders */}
-      <div className={`mt-4 ${cardCls}`}>
-        <h2 className="text-base font-medium text-text-primary">Reminders</h2>
-        <label className="mt-4 flex items-center gap-2.5 px-3 text-sm text-text-primary">
-          <Clock className="h-4 w-4 text-text-tertiary" />
-          Mark applications stale after
-          <input
-            type="number"
-            min={1}
-            max={365}
-            value={staleDaysInput}
-            onChange={(e) => setStaleDaysInput(e.target.value)}
-            onBlur={() => setStaleDaysInput(String(setStaleDays(Number(staleDaysInput))))}
-            className="w-16 rounded-md border border-border-default bg-surface-primary px-2 py-1 text-sm text-text-primary"
-          />
-          days without a response
-        </label>
       </div>
 
       {/* Data */}

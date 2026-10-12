@@ -19,10 +19,6 @@ import ApplicationForm, {
 import Modal from "../components/ui/Modal";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
 import { formatDate, formatSalary } from "../lib/utils";
-import MatchScoreCard from "../components/ai/MatchScoreCard";
-import StaleActions from "../components/applications/StaleActions";
-import { isStale, daysSinceActivity } from "../lib/attention";
-import { getStaleDays } from "../lib/settings";
 
 export default function ApplicationDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -162,15 +158,6 @@ export default function ApplicationDetailPage() {
         </div>
       )}
 
-      {isStale(app, new Date(), getStaleDays()) && (
-        <div className="mb-6 flex flex-col gap-3 rounded-xl border border-border-default bg-surface-secondary px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-sm font-medium text-text-secondary">
-            No response in {daysSinceActivity(app, new Date())} days. This application looks stale.
-          </span>
-          <StaleActions application={app} />
-        </div>
-      )}
-
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <div className="rounded-xl border border-border-default bg-surface-secondary p-6">
@@ -257,8 +244,6 @@ export default function ApplicationDetailPage() {
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-secondary">Status</h2>
             <StatusBadge status={app.status} />
           </div>
-
-          <MatchScoreCard application={app} />
 
           <div className="rounded-xl border border-border-default bg-surface-secondary p-6">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-text-secondary">Timeline</h2>

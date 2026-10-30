@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { useDashboardStats, useDashboardChart } from "../hooks/useDashboard";
@@ -127,7 +127,8 @@ function ResumeIcon() {
 export default function DashboardPage() {
   const { user } = useUser();
   const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useDashboardStats();
-  const { data: chartData, isLoading: chartLoading } = useDashboardChart();
+  const [chartDays, setChartDays] = useState(7);
+  const { data: chartData, isLoading: chartLoading } = useDashboardChart(chartDays);
   const { data: appsData, isLoading: appsLoading, isError: appsError, refetch: refetchApps } = useApplications();
   const applications = useMemo(() => appsData ?? [], [appsData]);
   // Only surface errors when there's nothing cached to show
@@ -280,11 +281,12 @@ export default function DashboardPage() {
           {/* ── Charts ── */}
           <div>
             <div className="mb-5 border-t border-border-subtle pt-4">
-              {chartLoading ? (
-                <div className="h-[180px] animate-pulse rounded-lg bg-surface-tertiary" />
-              ) : (
-                <ApplicationsChart data={chartData ?? []} days={7} />
-              )}
+              <ApplicationsChart
+                data={chartData ?? []}
+                days={chartDays}
+                onDaysChange={setChartDays}
+                loading={chartLoading}
+              />
             </div>
             <div className="border-t border-border-subtle pt-4">
               <LocationChart applications={applications} />

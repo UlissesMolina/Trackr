@@ -1,3 +1,5 @@
+import { getCompanyPostedDate } from "./posted-date.service";
+
 const LISTINGS_URL =
   "https://raw.githubusercontent.com/SimplifyJobs/Summer2027-Internships/dev/.github/scripts/listings.json";
 
@@ -48,6 +50,7 @@ export interface GroupedJob {
   title: string;
   url: string;
   locations: string[];
+  // When SimplifyJobs added the listing (Unix seconds), not when the company posted it.
   date_posted: number;
   category?: string;
 }
@@ -233,6 +236,20 @@ export async function searchJobs(options: {
   return { jobs, total };
 }
 
+/** Maps each listing id to its company publish date (Unix seconds) or null. */
+export async function getPostedDates(ids: string[]): Promise<Record<string, number | null>> {
+  const all = await fetchListings();
+  const wanted = new Set(ids);
+  const urlById = new Map(all.filter((l) => wanted.has(l.id)).map((l) => [l.id, l.url]));
+  const entries = await Promise.all(
+    ids.map(async (id) => {
+      const url = urlById.get(id);
+      return [id, url ? await getCompanyPostedDate(url) : null] as const;
+    })
+  );
+  return Object.fromEntries(entries);
+}
+
 export async function getJobsForExport(days: number): Promise<GroupedJob[]> {
   const all = await fetchListings();
 
@@ -254,7 +271,7 @@ export async function getJobsForExport(days: number): Promise<GroupedJob[]> {
 }
 
 export function jobsToCsv(jobs: GroupedJob[]): string {
-  const headers = ["Company", "Title", "Locations", "Date Posted", "URL"];
+  const headers = ["Company", "Title", "Locations", "Date Added", "URL"];
   const rows = jobs.map((job) => [
     escapeCsvField(job.company_name ?? ""),
     escapeCsvField(job.title ?? ""),

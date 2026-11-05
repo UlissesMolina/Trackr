@@ -8,6 +8,7 @@ export interface JobListing {
   title: string;
   url: string;
   locations: string[];
+  // When SimplifyJobs added the listing (Unix seconds), not when the company posted it.
   date_posted: number;
   category?: string;
 }
@@ -36,5 +37,21 @@ export function useJobs(options: {
       return data as { jobs: JobListing[]; total: number };
     },
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Company publish dates (Unix seconds, or null if unknown) for the given
+ * listing ids. Loaded separately so the job list never waits on job boards.
+ */
+export function usePostedDates(ids: string[]) {
+  return useQuery({
+    queryKey: ["jobs", "posted-dates", ids],
+    queryFn: async () => {
+      const { data } = await api.get(`/jobs/posted-dates?ids=${encodeURIComponent(ids.join(","))}`);
+      return data.dates as Record<string, number | null>;
+    },
+    enabled: ids.length > 0,
+    staleTime: 60 * 60 * 1000,
   });
 }

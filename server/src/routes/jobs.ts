@@ -20,6 +20,21 @@ router.get("/export/csv", async (req: Request, res: Response) => {
   }
 });
 
+router.get("/posted-dates", async (req: Request, res: Response) => {
+  try {
+    const ids = String(req.query.ids ?? "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean)
+      .slice(0, 100);
+    const dates = await jobService.getPostedDates(ids);
+    res.json({ dates });
+  } catch (err) {
+    console.error("Posted dates fetch error:", err);
+    res.status(500).json({ error: "Failed to fetch posted dates" });
+  }
+});
+
 router.get("/", async (req: Request, res: Response) => {
   try {
     const category = req.query.category as string | undefined;

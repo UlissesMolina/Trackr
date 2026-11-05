@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useJobs, type JobListing } from "../hooks/useJobs";
+import { useJobs, usePostedDates, type JobListing } from "../hooks/useJobs";
 import { normalizeForDedup } from "../lib/utils";
 import { useCreateApplication, useApplications } from "../hooks/useApplications";
 import { useAuth } from "@clerk/clerk-react";
@@ -31,10 +31,10 @@ const ROLE_TYPES = [
 ];
 
 const POSTED_OPTIONS = [
-  { value: "7d", label: "Last 7 days" },
-  { value: "14d", label: "Last 14 days" },
-  { value: "30d", label: "Last 30 days" },
-  { value: "all", label: "All time" },
+  { value: "7d", label: "Added in last 7 days" },
+  { value: "14d", label: "Added in last 14 days" },
+  { value: "30d", label: "Added in last 30 days" },
+  { value: "all", label: "Added any time" },
 ];
 
 const PAGE_SIZE = 25;
@@ -63,16 +63,23 @@ function getCompanyColor(company: string) {
   return PALETTE[Math.abs(hash) % PALETTE.length];
 }
 
-function formatPostedAgo(datePosted: number): string {
-  if (!datePosted) return "";
+function formatAgo(timestamp: number): string {
+  if (!timestamp) return "";
   const now = Math.floor(Date.now() / 1000);
-  const diffSec = now - datePosted;
+  const diffSec = now - timestamp;
   const days = Math.floor(diffSec / 86400);
-  if (days === 0) return "Today";
-  if (days === 1) return "1d ago";
+  if (days <= 0) return "today";
   if (days < 7) return `${days}d ago`;
   if (days < 30) return `${Math.floor(days / 7)}w ago`;
   return `${Math.floor(days / 30)}mo ago`;
+}
+
+function formatFullDate(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 const INPUT_CLS =
@@ -80,11 +87,13 @@ const INPUT_CLS =
 
 function JobCard({
   job,
+  postedAt,
   onAdd,
   isAdding,
   isTracked,
 }: {
   job: JobListing;
+  postedAt: number | null | undefined;
   onAdd: () => void;
   isAdding: boolean;
   isTracked: boolean;
@@ -93,7 +102,7 @@ function JobCard({
     job.locations?.length > 1
       ? `${job.locations.length} locations`
       : job.locations?.[0] ?? null;
-  const postedAgo = formatPostedAgo(job.date_posted ?? 0);
+  const addedAt = job.date_posted ?? 0;
   const color = getCompanyColor(job.company_name);
   const initial = getInitial(job.company_name);
 
@@ -111,9 +120,20 @@ function JobCard({
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="truncate text-sm font-medium text-text-primary">{job.title}</h3>
-          {postedAgo && (
-            <span className="shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium bg-surface-elevated text-text-tertiary">
-              {postedAgo}
+          {!!postedAt && (
+            <span
+              title={`Posted by ${job.company_name} on ${formatFullDate(postedAt)}`}
+              className="shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium bg-surface-elevated text-text-secondary"
+            >
+              Posted {formatAgo(postedAt)}
+            </span>
+          )}
+          {addedAt > 0 && (
+            <span
+              title={`Added to the SimplifyJobs list on ${formatFullDate(addedAt)}`}
+              className="shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium bg-surface-elevated text-text-tertiary"
+            >
+              Added {formatAgo(addedAt)}
             </span>
           )}
         </div>
@@ -205,6 +225,8 @@ export default function JobFinderPage() {
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
   });
+  const pageIds = useMemo(() => data?.jobs.map((j) => j.id) ?? [], [data]);
+  const { data: postedDates } = usePostedDates(pageIds);
 
   const trackedKeys = useMemo(() => {
     const set = new Set<string>();
@@ -414,13 +436,14 @@ export default function JobFinderPage() {
       {data && data.jobs.length > 0 && (
         <>
           <p className="mb-4 text-sm text-text-tertiary">
-            {data.total} internship{data.total !== 1 ? "s" : ""} found · sorted by newest
+            {data.total} internship{data.total !== 1 ? "s" : ""} found · most recently added first
           </p>
           <div className="divide-y" style={{ borderColor: "var(--color-border-subtle)" }}>
             {data.jobs.map((job) => (
               <JobCard
                 key={job.id}
                 job={job}
+                postedAt={postedDates?.[job.id]}
                 onAdd={() => handleAdd(job)}
                 isAdding={addingJobId === job.id}
                 isTracked={isJobTracked(job)}

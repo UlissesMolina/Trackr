@@ -167,7 +167,7 @@ export default function AppLayout() {
                     sidebarCollapsed ? "justify-center" : ""
                   } ${
                     isActive
-                      ? "font-medium text-text-primary"
+                      ? "font-medium text-[var(--color-nav-active-text)]"
                       : "text-text-secondary hover:text-text-primary"
                   }`}
                   style={{

@@ -61,7 +61,7 @@ export default function LocationChart({ applications }: LocationChartProps) {
             formatter={(value: number | undefined) => [value ?? 0, "Applications"]}
             labelFormatter={(label) => label}
           />
-          <Bar dataKey="count" fill="rgba(96, 165, 250, 0.25)" radius={[0, 4, 4, 0]} name="Applications" />
+          <Bar dataKey="count" fill="var(--color-chart-bar)" radius={[0, 4, 4, 0]} name="Applications" />
         </BarChart>
       </ResponsiveContainer>
     </div>

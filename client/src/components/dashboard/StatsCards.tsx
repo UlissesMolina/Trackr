@@ -54,12 +54,12 @@ export default function StatsCards({ stats }: StatsCardsProps) {
         return (
           <div
             key={key}
-            className="rounded-[10px] bg-surface-tertiary p-4 transition-colors hover:bg-surface-elevated"
+            className="stat-tile rounded-[10px] bg-surface-tertiary p-4 transition-colors hover:bg-surface-elevated"
           >
-            <p className="text-[11px] font-medium uppercase tracking-wider text-text-tertiary">
+            <p className="stat-label text-[11px] font-medium uppercase tracking-wider text-text-tertiary">
               {label}
             </p>
-            <p className="mt-1 text-2xl font-semibold text-text-primary">{display}</p>
+            <p className="stat-number mt-1 font-display text-2xl font-semibold text-text-primary">{display}</p>
             {subtitle && (
               <p className="mt-0.5 text-xs text-text-tertiary">{subtitle}</p>
             )}

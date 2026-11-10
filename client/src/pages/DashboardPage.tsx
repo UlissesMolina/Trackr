@@ -162,8 +162,8 @@ export default function DashboardPage() {
       )}
       {/* ─── Greeting header (full width) ─────────────────────── */}
       <div className="mb-7">
-        <h1 className="text-[26px] font-semibold text-text-primary">
-          {greeting}, {firstName}
+        <h1 className="font-display text-[26px] font-semibold text-text-primary">
+          {greeting}, <span style={{ color: "var(--color-greeting-name)" }}>{firstName}</span>
         </h1>
         <p className="mt-1.5 text-[15px] text-text-secondary">
           Here&apos;s your application activity.
@@ -280,7 +280,7 @@ export default function DashboardPage() {
 
           {/* ── Charts ── */}
           <div>
-            <div className="mb-5 border-t border-border-subtle pt-4">
+            <div className="card-surface mb-5 border-t border-border-subtle pt-4">
               <ApplicationsChart
                 data={chartData ?? []}
                 days={chartDays}
@@ -288,7 +288,7 @@ export default function DashboardPage() {
                 loading={chartLoading}
               />
             </div>
-            <div className="border-t border-border-subtle pt-4">
+            <div className="card-surface border-t border-border-subtle pt-4">
               <LocationChart applications={applications} />
             </div>
           </div>

@@ -89,8 +89,8 @@ export default function ApplicationsChart({ data, days = 7, onDaysChange, loadin
         <AreaChart data={formatted}>
           <defs>
             <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="rgba(124, 138, 255, 0.25)" stopOpacity={1} />
-              <stop offset="95%" stopColor="rgba(124, 138, 255, 0.25)" stopOpacity={0} />
+              <stop offset="5%" style={{ stopColor: "var(--color-chart-fill)" }} stopOpacity={1} />
+              <stop offset="95%" style={{ stopColor: "var(--color-chart-fill)" }} stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
@@ -100,7 +100,7 @@ export default function ApplicationsChart({ data, days = 7, onDaysChange, loadin
             contentStyle={{ backgroundColor: "var(--color-tooltip-bg)", border: "1px solid var(--color-tooltip-border)", borderRadius: "8px", color: "var(--color-text-primary)", boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}
             labelStyle={{ color: "var(--color-text-tertiary)" }}
           />
-          <Area type="monotone" dataKey="count" stroke="rgba(124, 138, 255, 0.6)" strokeWidth={2} fill="url(#colorCount)" name={days > 30 ? "Applications (week)" : "Applications"} />
+          <Area type="monotone" dataKey="count" stroke="var(--color-chart-stroke)" strokeWidth={2} fill="url(#colorCount)" name={days > 30 ? "Applications (week)" : "Applications"} />
         </AreaChart>
       </ResponsiveContainer>
       )}

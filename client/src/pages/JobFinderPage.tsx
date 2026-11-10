@@ -4,6 +4,8 @@ import { normalizeForDedup } from "../lib/utils";
 import { useCreateApplication, useApplications } from "../hooks/useApplications";
 import { useAuth } from "@clerk/clerk-react";
 import EmptyState from "../components/ui/EmptyState";
+import { useTheme } from "../hooks/useTheme";
+import { getCompanyColor } from "../lib/companyColor";
 
 const CSV_DAY_OPTIONS = [
   { value: 1, label: "Last 1 day" },
@@ -40,27 +42,8 @@ const POSTED_OPTIONS = [
 const PAGE_SIZE = 25;
 
 /* ── Initials + color (same system as dashboard) ──────────────── */
-const PALETTE = [
-  { bg: "rgba(139, 92, 246, 0.12)", text: "#a78bfa" },
-  { bg: "rgba(96, 165, 250, 0.12)", text: "#93b5e1" },
-  { bg: "rgba(251, 191, 36, 0.12)", text: "#fbbf24" },
-  { bg: "rgba(244, 114, 182, 0.12)", text: "#f472b6" },
-  { bg: "rgba(74, 222, 128, 0.12)", text: "#6ee7a0" },
-  { bg: "rgba(248, 113, 113, 0.12)", text: "#f87171" },
-  { bg: "rgba(147, 181, 225, 0.12)", text: "#93b5e1" },
-  { bg: "rgba(167, 139, 250, 0.12)", text: "#a78bfa" },
-];
-
 function getInitial(company: string): string {
   return (company[0] ?? "?").toUpperCase();
-}
-
-function getCompanyColor(company: string) {
-  let hash = 0;
-  for (let i = 0; i < company.length; i++) {
-    hash = company.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return PALETTE[Math.abs(hash) % PALETTE.length];
 }
 
 function formatAgo(timestamp: number): string {
@@ -103,7 +86,8 @@ function JobCard({
       ? `${job.locations.length} locations`
       : job.locations?.[0] ?? null;
   const addedAt = job.date_posted ?? 0;
-  const color = getCompanyColor(job.company_name);
+  const { theme } = useTheme();
+  const color = getCompanyColor(job.company_name, theme);
   const initial = getInitial(job.company_name);
 
   return (

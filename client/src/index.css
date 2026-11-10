@@ -6,11 +6,11 @@
   --color-surface-secondary: #ffffff;
   --color-surface-tertiary: #f1f5f9;
   --color-surface-elevated: #eef2f7;
-  --color-border-default: #e5eaf2;
-  --color-border-subtle: #edf1f7;
+  --color-border-default: #d9e0ea;
+  --color-border-subtle: #e3e8f0;
   --color-text-primary: #0f172a;
-  --color-text-secondary: #64748b;
-  --color-text-tertiary: #94a3b8;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #64748b;
   --color-accent: #2563eb;
   --color-accent-hover: #1d4ed8;
   --font-display: "Fraunces", Georgia, serif;
@@ -19,17 +19,17 @@
 /* ── Layout-specific vars (not Tailwind utilities, used via var()) ──────── */
 :root {
   --color-header-bg: rgba(255,255,255,0.88);
-  --color-header-border: #e5eaf2;
+  --color-header-border: #d9e0ea;
   --color-sidebar-bg: #ffffff;
-  --color-sidebar-border: #e5eaf2;
+  --color-sidebar-border: #d9e0ea;
   --color-nav-hover: #f1f5f9;
   --color-nav-active: #eff4ff;
   --color-nav-active-text: #2563eb;
-  --color-icon-muted: #64748b;
+  --color-icon-muted: #475569;
   --color-icon-active: #2563eb;
   --color-tooltip-bg: #ffffff;
-  --color-tooltip-border: #e5eaf2;
-  --color-chart-tick: #94a3b8;
+  --color-tooltip-border: #d9e0ea;
+  --color-chart-tick: #64748b;
   --color-chart-stroke: #2563eb;
   --color-chart-fill: rgba(37, 99, 235, 0.18);
   --color-chart-bar: #2563eb;
@@ -73,6 +73,21 @@ html.dark {
   --font-display: "Inter", system-ui, sans-serif;
 }
 
+/* ── Light-mode status colors ───────────────────────────────────────────
+   Components use the 300/400 shades, which are tuned for dark backgrounds and
+   wash out on white. In light mode, point them at the 700/800 shades instead. */
+html:not(.dark) {
+  --color-red-300: oklch(44.4% 0.177 26.899);
+  --color-red-400: oklch(50.5% 0.213 27.518);
+  --color-amber-400: oklch(55.5% 0.163 48.998);
+  --color-yellow-400: oklch(55.4% 0.135 66.442);
+  --color-green-400: oklch(52.7% 0.154 150.069);
+  --color-emerald-400: oklch(50.8% 0.118 165.612);
+  --color-blue-400: oklch(48.8% 0.243 264.376);
+  --color-purple-300: oklch(43.8% 0.218 303.724);
+  --color-purple-400: oklch(49.6% 0.265 301.924);
+}
+
 /* ── Light-mode card styling (dark mode keeps its flat look) ─────────────── */
 html:not(.dark) .card-surface {
   background: #ffffff;
@@ -96,7 +111,7 @@ html:not(.dark) .stat-tile:hover {
 html:not(.dark) .stat-label {
   font-size: 11px;
   letter-spacing: .12em;
-  color: #94a3b8;
+  color: var(--color-text-tertiary);
 }
 html:not(.dark) .stat-label::before {
   content: "";

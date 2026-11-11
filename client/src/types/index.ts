@@ -81,13 +81,21 @@ export interface OnlineAssessment {
 }
 
 export interface DashboardStats {
+  /** Every application, including saved jobs. */
   totalApplications: number;
-  applicationsThisWeek?: number;
-  responseRate: number;
+  savedCount: number;
+  /** Denominator for every rate below. */
+  appliedCount: number;
+  applicationsThisWeek: number;
+  interviewedCount: number;
+  interviewRate: number;
+  rejectedCount: number;
   rejectionRate: number;
-  interviewConversion: number;
-  interviewsCount?: number;
-  offersCount?: number;
+  offersCount: number;
+  offerRate: number;
+  /** Currently in the INTERVIEW stage. */
+  interviewsCount: number;
+  waitingCount: number;
 }
 
 export interface Resume {

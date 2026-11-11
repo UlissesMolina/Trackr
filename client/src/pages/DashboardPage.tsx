@@ -21,7 +21,7 @@ function getGreeting(): string {
 
 function getContextualSubtitle(
   applications: Application[],
-  stats: { totalApplications: number; applicationsThisWeek?: number } | undefined
+  stats: { appliedCount: number; applicationsThisWeek: number } | undefined
 ): string {
   const now = new Date();
   const startOfWeek = new Date(now);
@@ -43,14 +43,12 @@ function getContextualSubtitle(
     return `You have ${followUpsDueThisWeek} follow-up${followUpsDueThisWeek === 1 ? "" : "s"} due this week`;
   }
   if (inFlight > 0) {
-    const total = stats?.totalApplications ?? inFlight;
-    const thisWeek = stats?.applicationsThisWeek;
-    if (thisWeek != null && total > 0) {
-      return `${total} total · ${thisWeek} this week · Keep going`;
+    if (stats && stats.appliedCount > 0) {
+      return `${stats.appliedCount} applied · ${stats.applicationsThisWeek} this week · Keep going`;
     }
     return `${inFlight} application${inFlight === 1 ? "" : "s"} · Keep going`;
   }
-  if (stats && stats.totalApplications > 0) {
+  if (stats && stats.appliedCount > 0) {
     return "Track your job search progress";
   }
   return "Add your first application to get started";

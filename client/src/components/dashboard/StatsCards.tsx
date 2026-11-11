@@ -5,55 +5,47 @@ interface StatsCardsProps {
 }
 
 const CARDS: Array<{
-  key: keyof DashboardStats;
   label: string;
-  suffix: string;
+  getValue: (stats: DashboardStats) => string;
   getSubtitle: (stats: DashboardStats) => string;
 }> = [
   {
-    key: "totalApplications",
-    label: "Total Apps",
-    suffix: "",
+    label: "Applied",
+    getValue: (s) => String(s.appliedCount),
     getSubtitle: (s) =>
-      s.applicationsThisWeek != null
-        ? `${s.applicationsThisWeek} this week`
-        : "",
+      [`${s.applicationsThisWeek} this week`, s.savedCount > 0 ? `${s.savedCount} saved` : null]
+        .filter(Boolean)
+        .join(" · "),
   },
   {
-    key: "responseRate",
-    label: "Response Rate",
-    suffix: "%",
-    getSubtitle: () => "Callbacks",
+    label: "Interview Rate",
+    getValue: (s) => `${s.interviewRate}%`,
+    getSubtitle: (s) => `${s.interviewedCount} of ${s.appliedCount} applied`,
   },
   {
-    key: "rejectionRate",
     label: "Rejection Rate",
-    suffix: "%",
-    getSubtitle: () => "Passed",
+    getValue: (s) => `${s.rejectionRate}%`,
+    getSubtitle: (s) => `${s.rejectedCount} of ${s.appliedCount} applied`,
   },
   {
-    key: "interviewConversion",
-    label: "Conversion",
-    suffix: "%",
-    getSubtitle: (s) => {
-      if (s.interviewsCount != null && s.offersCount != null && (s.interviewsCount > 0 || s.offersCount > 0)) {
-        return `${s.interviewsCount} int · ${s.offersCount} offers`;
-      }
-      return "No interviews";
-    },
+    label: "Offers",
+    getValue: (s) => String(s.offersCount),
+    getSubtitle: (s) =>
+      s.interviewedCount > 0
+        ? `${s.offersCount} of ${s.interviewedCount} interviewed`
+        : "No interviews yet",
   },
 ];
 
 export default function StatsCards({ stats }: StatsCardsProps) {
   return (
     <div className="grid grid-cols-2 gap-3">
-      {CARDS.map(({ key, label, suffix, getSubtitle }) => {
-        const value = stats[key] as number | undefined;
-        const display = `${value ?? 0}${suffix}`;
+      {CARDS.map(({ label, getValue, getSubtitle }) => {
+        const display = getValue(stats);
         const subtitle = getSubtitle(stats);
         return (
           <div
-            key={key}
+            key={label}
             className="stat-tile rounded-[10px] bg-surface-tertiary p-4 transition-colors hover:bg-surface-elevated"
           >
             <p className="stat-label text-[11px] font-medium uppercase tracking-wider text-text-tertiary">

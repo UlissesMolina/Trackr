@@ -1,40 +1,75 @@
 import prisma from "../lib/prisma";
 
+/** Apps that reached an interview at any point: currently interviewing, got an
+ *  offer, logged an INTERVIEW status change, or have an interview on record. */
+async function getInterviewedIds(
+  apps: Array<{ id: string; status: string; interviews: Array<{ id: string }> }>
+) {
+  const ids = new Set<string>();
+  for (const a of apps) {
+    if (a.status === "INTERVIEW" || a.status === "OFFER" || a.interviews.length > 0) ids.add(a.id);
+  }
+  const unresolved = apps.filter((a) => !ids.has(a.id)).map((a) => a.id);
+  if (unresolved.length > 0) {
+    const changes = await prisma.statusChange.findMany({
+      where: { applicationId: { in: unresolved }, toStatus: "INTERVIEW" },
+      select: { applicationId: true },
+      distinct: ["applicationId"],
+    });
+    for (const c of changes) ids.add(c.applicationId);
+  }
+  return ids;
+}
+
+function pct(numerator: number, denominator: number) {
+  return denominator > 0 ? Math.round((numerator / denominator) * 100) : 0;
+}
+
 export async function getStats(clerkUserId: string) {
   const apps = await prisma.application.findMany({
     where: { clerkUserId },
-    select: { status: true, createdAt: true, dateApplied: true },
+    select: {
+      id: true,
+      status: true,
+      createdAt: true,
+      dateApplied: true,
+      interviews: { select: { id: true }, take: 1 },
+    },
   });
 
-  const total = apps.length;
+  // Saved jobs haven't been applied to, so every rate uses applied as its denominator.
+  const applied = apps.filter((a) => a.status !== "SAVED");
+  const saved = apps.length - applied.length;
 
   const now = new Date();
   const sevenDaysAgo = new Date(now);
   sevenDaysAgo.setDate(now.getDate() - 7);
   sevenDaysAgo.setHours(0, 0, 0, 0);
 
-  const applicationsThisWeek = apps.filter((a) => {
+  const applicationsThisWeek = applied.filter((a) => {
     const d = a.dateApplied ?? a.createdAt;
     return new Date(d) >= sevenDaysAgo;
   }).length;
 
-  const rejected = apps.filter((a) => a.status === "REJECTED").length;
-  const interviews = apps.filter((a) => a.status === "INTERVIEW").length;
-  const offers = apps.filter((a) => a.status === "OFFER").length;
-
-  const responded = interviews + offers + rejected;
+  const interviewedIds = await getInterviewedIds(applied);
+  const rejected = applied.filter((a) => a.status === "REJECTED").length;
+  const offers = applied.filter((a) => a.status === "OFFER").length;
+  const interviewing = applied.filter((a) => a.status === "INTERVIEW").length;
+  const waiting = applied.filter((a) => a.status === "APPLIED" || a.status === "UNDER_REVIEW").length;
 
   return {
-    totalApplications: total,
+    totalApplications: apps.length,
+    savedCount: saved,
+    appliedCount: applied.length,
     applicationsThisWeek,
-    responseRate: total > 0 ? Math.round((responded / total) * 100) : 0,
-    rejectionRate: total > 0 ? Math.round((rejected / total) * 100) : 0,
-    interviewConversion:
-      responded > 0
-        ? Math.round(((interviews + offers) / responded) * 100)
-        : 0,
-    interviewsCount: interviews,
+    interviewedCount: interviewedIds.size,
+    interviewRate: pct(interviewedIds.size, applied.length),
+    rejectedCount: rejected,
+    rejectionRate: pct(rejected, applied.length),
     offersCount: offers,
+    offerRate: pct(offers, interviewedIds.size),
+    interviewsCount: interviewing,
+    waitingCount: waiting,
   };
 }
 

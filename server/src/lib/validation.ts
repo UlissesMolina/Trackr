@@ -149,3 +149,7 @@ export const coverLetterSchema = z.object({
 export const extractEmailSchema = z.object({
   emailText: text(AI_LIMITS.emailText).min(10, "must be at least 10 characters"),
 });
+
+// ── Gmail sync ─────────────────────────────────────────────
+
+export const gmailSettingsSchema = z.object({ syncEnabled: z.boolean() });

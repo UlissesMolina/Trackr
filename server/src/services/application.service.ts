@@ -1,5 +1,6 @@
 import prisma from "../lib/prisma";
 import { ApplicationStatus, ApplicationPriority } from "../../generated/prisma/enums";
+import { normalizeForDedup, normalizeUrl } from "../lib/dedup";
 
 function toPriority(v: unknown): ApplicationPriority | null {
   if (v === null || v === undefined) return null;
@@ -195,4 +196,27 @@ export async function deleteApplication(id: string, clerkUserId: string) {
   if (!app) return null;
 
   return prisma.application.delete({ where: { id } });
+}
+
+/** The application a job posting already corresponds to, by URL first, then company + title. */
+export async function findExistingApplication(
+  clerkUserId: string,
+  q: { url?: string; company?: string; title?: string }
+) {
+  const apps = await prisma.application.findMany({
+    where: { clerkUserId },
+    select: { id: true, title: true, company: true, status: true, url: true },
+    orderBy: { createdAt: "desc" },
+  });
+  const url = normalizeUrl(q.url);
+  if (url) {
+    const byUrl = apps.find((a) => normalizeUrl(a.url) === url);
+    if (byUrl) return byUrl;
+  }
+  if (q.company && q.title) {
+    const keys = new Set(normalizeForDedup(q.company, q.title));
+    const byTitle = apps.find((a) => normalizeForDedup(a.company, a.title).some((k) => keys.has(k)));
+    if (byTitle) return byTitle;
+  }
+  return null;
 }

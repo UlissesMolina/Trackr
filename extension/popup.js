@@ -113,13 +113,71 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  const STATUS_LABELS = {
+    SAVED: "Saved", APPLIED: "Applied", UNDER_REVIEW: "Under Review",
+    INTERVIEW: "Interview", OFFER: "Offer", REJECTED: "Rejected",
+  };
+
   function fillForm(data) {
     document.getElementById("title").value = data.title || "";
     document.getElementById("company").value = data.company || "";
     document.getElementById("location").value = data.location || "";
     document.getElementById("url").value = data.url || "";
     document.getElementById("description").value = (data.description || "").slice(0, 5000);
+    // A confirmation page means they've already applied
+    document.getElementById("job-status").value = data.appliedHint ? "APPLIED" : "SAVED";
     form.style.display = "block";
+    checkDuplicate(data);
+  }
+
+  // Warn if this posting is already in Trackr, and offer the one change that's
+  // usually wanted: flipping a Saved job to Applied.
+  async function checkDuplicate(data) {
+    const banner = document.getElementById("dup-banner");
+    const text = document.getElementById("dup-text");
+    const markBtn = document.getElementById("mark-applied-btn");
+    banner.style.display = "none";
+    markBtn.style.display = "none";
+
+    const params = new URLSearchParams({ url: data.url || "", company: data.company || "", title: data.title || "" });
+    let existing = null;
+    try {
+      const res = await fetch(`${base}/api/ext/applications/lookup?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) existing = await res.json();
+    } catch {
+      return; // offline or cold server: fall through to a normal save
+    }
+    if (!existing) return;
+
+    text.textContent = `Already in Trackr as ${STATUS_LABELS[existing.status] || existing.status}.`;
+    banner.style.display = "flex";
+    saveBtn.textContent = "Save anyway";
+
+    if (existing.status === "SAVED") {
+      markBtn.style.display = "inline-flex";
+      markBtn.onclick = async () => {
+        markBtn.disabled = true;
+        markBtn.textContent = "Updating…";
+        try {
+          const res = await fetch(`${base}/api/ext/applications/${existing.id}/status`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ status: "APPLIED" }),
+          });
+          if (!res.ok) throw new Error(`Server returned ${res.status}`);
+          form.style.display = "none";
+          successMsg.style.display = "block";
+          statusMsg.textContent = "Marked as Applied";
+        } catch (err) {
+          markBtn.disabled = false;
+          markBtn.textContent = "Mark as Applied";
+          errorText.textContent = err.message || "Couldn't update the application.";
+          errorMsg.style.display = "block";
+        }
+      };
+    }
   }
 
   // Auto-detect job data

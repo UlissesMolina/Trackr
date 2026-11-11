@@ -5,6 +5,7 @@ import { useClerk } from "@clerk/clerk-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTheme } from "../hooks/useTheme";
 import api from "../lib/api";
+import GmailSyncCard from "../components/settings/GmailSyncCard";
 
 export default function SettingsPage() {
   const { theme, toggleTheme } = useTheme();
@@ -136,6 +137,9 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Gmail sync */}
+      <GmailSyncCard cardCls={cardCls} btnCls={btnCls} />
 
       {/* Clear All Confirmation Modal */}
       <Modal open={showClearModal} onClose={() => !clearing && setShowClearModal(false)} title="Clear all applications">

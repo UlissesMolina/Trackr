@@ -4,7 +4,9 @@
     "buildCommand": "npm install --include=dev && npm run build"
   },
   "deploy": {
-    "preDeployCommand": ["npx prisma migrate deploy"],
+    "preDeployCommand": [
+      "npx prisma db push --skip-generate"
+    ],
     "startCommand": "npm start"
   }
 }

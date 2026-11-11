@@ -234,6 +234,30 @@ function scrapeManual() {
   };
 }
 
+// ── Applied hint ───────────────────────────────────────────────────────────
+// Confirmation pages ("thanks for applying") mean the user already applied, so
+// the popup can default the status to Applied instead of Saved.
+
+const APPLIED_PHRASES = [
+  "thank you for applying",
+  "thanks for applying",
+  "your application has been received",
+  "your application has been submitted",
+  "we have received your application",
+  "we've received your application",
+  "application received",
+  "application submitted",
+  "successfully applied",
+  "you have applied",
+  "you've applied",
+];
+
+function detectAppliedHint() {
+  const text = (document.body?.innerText || "").slice(0, 20000).toLowerCase();
+  const title = document.title.toLowerCase();
+  return APPLIED_PHRASES.some((p) => text.includes(p) || title.includes(p));
+}
+
 // ── Main dispatcher ────────────────────────────────────────────────────────
 
 const SITE_SCRAPERS = [
@@ -247,8 +271,12 @@ const SITE_SCRAPERS = [
 ];
 
 function scrapeJobData(manual = false) {
-  if (manual) return scrapeManual();
+  const result = manual ? scrapeManual() : detectJobData();
+  if (result) result.appliedHint = detectAppliedHint();
+  return result;
+}
 
+function detectJobData() {
   const host = window.location.hostname;
   const url = window.location.href;
 

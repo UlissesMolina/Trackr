@@ -106,3 +106,36 @@ export interface Resume {
   updatedAt: string;
   createdAt: string;
 }
+
+// ── Gmail sync ──────────────────────────────────────────────
+
+export interface GmailStatus {
+  configured: boolean;
+  connected: boolean;
+  email?: string | null;
+  lastSyncedAt?: string | null;
+  syncEnabled?: boolean;
+  lastError?: string | null;
+}
+
+export interface GmailSyncSummary {
+  scanned: number;
+  created: number;
+  updated: number;
+  oaAdded: number;
+  unmatched: number;
+  ignored: number;
+}
+
+export interface EmailSyncEvent {
+  id: string;
+  applicationId: string | null;
+  action: "CREATED" | "STATUS_UPDATED" | "OA_ADDED" | "UNMATCHED" | "IGNORED";
+  classification: string;
+  company: string | null;
+  title: string | null;
+  subject: string;
+  sender: string;
+  receivedAt: string;
+  detail: string | null;
+}

@@ -325,3 +325,20 @@ footer a:hover {
   margin-top: 4px;
   text-align: center;
 }
+
+/* Already-tracked warning */
+.dup-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.dup-banner .btn { flex-shrink: 0; }

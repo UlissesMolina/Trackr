@@ -144,3 +144,46 @@ model OnlineAssessment {
 
   application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 }
+
+// ── Gmail sync ────────────────────────────────────────────────────────
+
+enum EmailSyncAction {
+  CREATED
+  STATUS_UPDATED
+  OA_ADDED
+  UNMATCHED
+  IGNORED
+}
+
+model GmailConnection {
+  id           String    @id @default(cuid())
+  clerkUserId  String    @unique
+  email        String
+  refreshToken String    // AES-256-GCM, see lib/crypto.ts
+  syncEnabled  Boolean   @default(true)
+  lastSyncedAt DateTime?
+  lastError    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+// One row per Gmail message examined, so a message is never processed twice
+// and the user can audit what sync did.
+model EmailSyncEvent {
+  id             String          @id @default(cuid())
+  clerkUserId    String
+  gmailMessageId String
+  applicationId  String?
+  action         EmailSyncAction
+  classification String
+  company        String?
+  title          String?
+  subject        String
+  sender         String
+  receivedAt     DateTime
+  detail         String?
+  createdAt      DateTime        @default(now())
+
+  @@unique([clerkUserId, gmailMessageId])
+  @@index([clerkUserId, receivedAt])
+}

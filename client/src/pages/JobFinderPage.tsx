@@ -4,6 +4,8 @@ import { normalizeForDedup } from "../lib/utils";
 import { useCreateApplication, useApplications } from "../hooks/useApplications";
 import { useAuth } from "@clerk/clerk-react";
 import EmptyState from "../components/ui/EmptyState";
+import StatusBadge from "../components/applications/StatusBadge";
+import type { ApplicationStatus } from "../lib/constants";
 import { useTheme } from "../hooks/useTheme";
 import { getCompanyColor } from "../lib/companyColor";
 
@@ -41,6 +43,45 @@ const POSTED_OPTIONS = [
 
 const PAGE_SIZE = 25;
 
+// Filters persist across visits; first-time defaults match the user's search.
+const FILTERS_KEY = "trackr-job-filters";
+type PostedWithin = "7d" | "14d" | "30d" | "all";
+type JobFilters = { category: string; roleType: string; usOnly: boolean; postedWithin: PostedWithin };
+const DEFAULT_FILTERS: JobFilters = { category: "software", roleType: "", usOnly: true, postedWithin: "14d" };
+
+function loadFilters(): JobFilters {
+  try {
+    const raw = localStorage.getItem(FILTERS_KEY);
+    return raw ? { ...DEFAULT_FILTERS, ...JSON.parse(raw) } : DEFAULT_FILTERS;
+  } catch {
+    return DEFAULT_FILTERS;
+  }
+}
+
+/** Header for a group of listings added on the same day. */
+function addedDayLabel(timestamp: number): string {
+  if (!timestamp) return "Date unknown";
+  const d = new Date(timestamp * 1000);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const days = Math.round((today.getTime() - new Date(d).setHours(0, 0, 0, 0)) / 86_400_000);
+  if (days <= 0) return "Added today";
+  if (days === 1) return "Added yesterday";
+  return `Added ${d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}`;
+}
+
+function groupByAddedDay(jobs: JobListing[]) {
+  const groups: Array<{ day: string; label: string; jobs: JobListing[] }> = [];
+  for (const job of jobs) {
+    const ts = job.date_posted ?? 0;
+    const day = ts ? new Date(ts * 1000).toDateString() : "";
+    const last = groups[groups.length - 1];
+    if (last && last.day === day) last.jobs.push(job);
+    else groups.push({ day, label: addedDayLabel(ts), jobs: [job] });
+  }
+  return groups;
+}
+
 /* ── Initials + color (same system as dashboard) ──────────────── */
 function getInitial(company: string): string {
   return (company[0] ?? "?").toUpperCase();
@@ -73,19 +114,19 @@ function JobCard({
   postedAt,
   onAdd,
   isAdding,
-  isTracked,
+  trackedStatus,
 }: {
   job: JobListing;
   postedAt: number | null | undefined;
   onAdd: () => void;
   isAdding: boolean;
-  isTracked: boolean;
+  trackedStatus: ApplicationStatus | null;
 }) {
+  const isTracked = trackedStatus !== null;
   const locationLabel =
     job.locations?.length > 1
       ? `${job.locations.length} locations`
       : job.locations?.[0] ?? null;
-  const addedAt = job.date_posted ?? 0;
   const { theme } = useTheme();
   const color = getCompanyColor(job.company_name, theme);
   const initial = getInitial(job.company_name);
@@ -112,14 +153,7 @@ function JobCard({
               Posted {formatAgo(postedAt)}
             </span>
           )}
-          {addedAt > 0 && (
-            <span
-              title={`Added to the SimplifyJobs list on ${formatFullDate(addedAt)}`}
-              className="shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium bg-surface-elevated text-text-tertiary"
-            >
-              Added {formatAgo(addedAt)}
-            </span>
-          )}
+          {trackedStatus && <StatusBadge status={trackedStatus} />}
         </div>
         <p className="mt-0.5 truncate text-[13px]">
           <span className="text-text-secondary">{job.company_name}</span>
@@ -158,7 +192,7 @@ function JobCard({
               <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
-              Added
+              In Trackr
             </>
           ) : isAdding ? (
             "Adding…"
@@ -173,10 +207,10 @@ function JobCard({
 
 export default function JobFinderPage() {
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
-  const [roleType, setRoleType] = useState("");
-  const [usOnly, setUsOnly] = useState(false);
-  const [postedWithin, setPostedWithin] = useState<"7d" | "14d" | "30d" | "all">("14d");
+  const [filters, setFilters] = useState<JobFilters>(loadFilters);
+  const { category, roleType, usOnly, postedWithin } = filters;
+  const setFilter = <K extends keyof JobFilters>(key: K, value: JobFilters[K]) =>
+    setFilters((f) => ({ ...f, [key]: value }));
   const [page, setPage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [addingJobId, setAddingJobId] = useState<string | null>(null);
@@ -197,6 +231,10 @@ export default function JobFinderPage() {
   }, [debouncedSearch, category, roleType, usOnly, postedWithin]);
 
   useEffect(() => {
+    try { localStorage.setItem(FILTERS_KEY, JSON.stringify(filters)); } catch { /* storage unavailable */ }
+  }, [filters]);
+
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [page]);
 
@@ -212,21 +250,27 @@ export default function JobFinderPage() {
   const pageIds = useMemo(() => data?.jobs.map((j) => j.id) ?? [], [data]);
   const { data: postedDates } = usePostedDates(pageIds);
 
-  const trackedKeys = useMemo(() => {
-    const set = new Set<string>();
+  // Map every dedup key (and URL) of a tracked application to its status, so
+  // each listing can say whether it's saved, applied, rejected, etc.
+  const trackedStatuses = useMemo(() => {
+    const map = new Map<string, ApplicationStatus>();
     for (const app of applications ?? []) {
-      for (const k of normalizeForDedup(app.company ?? "", app.title ?? "")) set.add(k);
-      if (app.url) set.add(app.url);
+      for (const k of normalizeForDedup(app.company ?? "", app.title ?? "")) map.set(k, app.status);
+      if (app.url) map.set(app.url, app.status);
     }
-    return set;
+    return map;
   }, [applications]);
 
-  function isJobTracked(job: JobListing): boolean {
-    const jobKeys = normalizeForDedup(job.company_name ?? "", job.title ?? "");
-    if (jobKeys.some((k) => trackedKeys.has(k))) return true;
-    if (job.url && trackedKeys.has(job.url)) return true;
-    return false;
+  function trackedStatusOf(job: JobListing): ApplicationStatus | null {
+    if (job.url && trackedStatuses.has(job.url)) return trackedStatuses.get(job.url)!;
+    for (const k of normalizeForDedup(job.company_name ?? "", job.title ?? "")) {
+      const status = trackedStatuses.get(k);
+      if (status) return status;
+    }
+    return null;
   }
+
+  const jobGroups = useMemo(() => groupByAddedDay(data?.jobs ?? []), [data]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -278,7 +322,7 @@ export default function JobFinderPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl pt-2">
+    <div className="pt-2">
       <div className="mb-8 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-text-primary">
@@ -345,7 +389,7 @@ export default function JobFinderPage() {
         />
         <select
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={(e) => setFilter("category", e.target.value)}
           className={INPUT_CLS}
           style={{ backgroundColor: "var(--color-sidebar-bg)", borderColor: "var(--color-sidebar-border)" }}
         >
@@ -357,7 +401,7 @@ export default function JobFinderPage() {
         </select>
         <select
           value={roleType}
-          onChange={(e) => setRoleType(e.target.value)}
+          onChange={(e) => setFilter("roleType", e.target.value)}
           className={INPUT_CLS}
           style={{ backgroundColor: "var(--color-sidebar-bg)", borderColor: "var(--color-sidebar-border)" }}
         >
@@ -369,7 +413,7 @@ export default function JobFinderPage() {
         </select>
         <select
           value={postedWithin}
-          onChange={(e) => setPostedWithin(e.target.value as "7d" | "14d" | "30d" | "all")}
+          onChange={(e) => setFilter("postedWithin", e.target.value as PostedWithin)}
           className={INPUT_CLS}
           style={{ backgroundColor: "var(--color-sidebar-bg)", borderColor: "var(--color-sidebar-border)" }}
         >
@@ -386,7 +430,7 @@ export default function JobFinderPage() {
           <input
             type="checkbox"
             checked={usOnly}
-            onChange={(e) => setUsOnly(e.target.checked)}
+            onChange={(e) => setFilter("usOnly", e.target.checked)}
             className="h-4 w-4 rounded border-border-default text-accent focus:ring-accent"
           />
           US only
@@ -422,18 +466,26 @@ export default function JobFinderPage() {
           <p className="mb-4 text-sm text-text-tertiary">
             {data.total} internship{data.total !== 1 ? "s" : ""} found · most recently added first
           </p>
-          <div className="divide-y" style={{ borderColor: "var(--color-border-subtle)" }}>
-            {data.jobs.map((job) => (
-              <JobCard
-                key={job.id}
-                job={job}
-                postedAt={postedDates?.[job.id]}
-                onAdd={() => handleAdd(job)}
-                isAdding={addingJobId === job.id}
-                isTracked={isJobTracked(job)}
-              />
-            ))}
-          </div>
+          {jobGroups.map((group) => (
+            <section key={group.day || "unknown"} className="mb-6">
+              <h2 className="mb-1 flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-text-tertiary">
+                {group.label}
+                <span className="font-normal normal-case tracking-normal">· {group.jobs.length}</span>
+              </h2>
+              <div className="divide-y" style={{ borderColor: "var(--color-border-subtle)" }}>
+                {group.jobs.map((job) => (
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    postedAt={postedDates?.[job.id]}
+                    onAdd={() => handleAdd(job)}
+                    isAdding={addingJobId === job.id}
+                    trackedStatus={trackedStatusOf(job)}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
 
           {data.total > PAGE_SIZE && (
             <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-border-subtle pt-6">

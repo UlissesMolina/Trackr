@@ -3,11 +3,11 @@ import { UserButton } from "@clerk/clerk-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuthToken } from "../../hooks/useAuthToken";
 import NotificationsBell from "./NotificationsBell";
-import { LayoutDashboard, LayoutGrid, Briefcase, GitBranch, FileText, FileEdit, PanelLeftClose, PanelLeft, Settings } from "lucide-react";
+import { LayoutDashboard, SquareKanban, Briefcase, GitBranch, FileText, FileEdit, PanelLeftClose, PanelLeft, Settings } from "lucide-react";
 
 const NAV_ITEMS = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-  { label: "Board", path: "/board", icon: LayoutGrid },
+  { label: "Board", path: "/board", icon: SquareKanban },
   { label: "Jobs", path: "/jobs", icon: Briefcase },
   { label: "Flow", path: "/flow", icon: GitBranch },
   { label: "Resume", path: "/resume", icon: FileText },
@@ -63,6 +63,17 @@ export default function AppLayout() {
 
   useLayoutEffect(() => {
     updateHighlight();
+  }, [updateHighlight, sidebarCollapsed]);
+
+  // Re-measure once the collapse animation settles and on resize, so the
+  // highlight never sits a few pixels off the active item.
+  useEffect(() => {
+    const t = setTimeout(updateHighlight, 220);
+    window.addEventListener("resize", updateHighlight);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("resize", updateHighlight);
+    };
   }, [updateHighlight, sidebarCollapsed]);
 
   return (
@@ -163,18 +174,16 @@ export default function AppLayout() {
                   onClick={() => setMobileOpen(false)}
                   title={sidebarCollapsed ? item.label : undefined}
                   data-nav-path={item.path}
-                  className={`relative z-[1] flex items-center gap-3 rounded-lg text-sm transition-colors duration-200 ${
+                  className={`relative z-[1] flex items-center gap-3 rounded-lg text-sm outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-accent/40 ${
                     sidebarCollapsed ? "justify-center" : ""
                   } ${
                     isActive
                       ? "font-medium text-[var(--color-nav-active-text)]"
-                      : "text-text-secondary hover:text-text-primary"
+                      : "text-text-secondary hover:bg-[var(--color-nav-hover)] hover:text-text-primary"
                   }`}
                   style={{
                     padding: sidebarCollapsed ? "7px 8px" : "7px 12px",
                   }}
-                  onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = "var(--color-nav-hover)"; }}
-                  onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = "transparent"; }}
                 >
                   <Icon className="h-5 w-5 shrink-0" style={{ color: isActive ? "var(--color-icon-active)" : "var(--color-icon-muted)" }} />
                   {!sidebarCollapsed && <span>{item.label}</span>}

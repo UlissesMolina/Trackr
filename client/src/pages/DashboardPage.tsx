@@ -63,6 +63,17 @@ function getInitials(company: string): string {
     .join("");
 }
 
+// The activity feed is sorted by last update, so say what the date is.
+function activityDate(app: Application): string {
+  if (app.status === "REJECTED") {
+    return `Rejected ${formatRelativeShort(app.rejectionDate ?? app.updatedAt)}`;
+  }
+  if (app.status === "APPLIED" && app.dateApplied && app.dateApplied.slice(0, 10) === app.updatedAt.slice(0, 10)) {
+    return `Applied ${formatRelativeShort(app.dateApplied)}`;
+  }
+  return `Updated ${formatRelativeShort(app.updatedAt)}`;
+}
+
 function formatRelativeShort(dateStr: string): string {
   const now = new Date();
   const d = new Date(dateStr);
@@ -157,6 +168,19 @@ export default function DashboardPage() {
         )}
       </div>
 
+      {/* ─── Stat tiles (full-width row) ──────────────────────── */}
+      {statsLoading ? (
+        <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-20 animate-pulse rounded-[10px] bg-surface-tertiary" />
+          ))}
+        </div>
+      ) : stats ? (
+        <div className="mb-8">
+          <StatsCards stats={stats} />
+        </div>
+      ) : null}
+
       {/* ─── Two-column layout ────────────────────────────────── */}
       <div className="grid items-start gap-6 lg:grid-cols-[1.4fr_1fr]">
 
@@ -223,7 +247,7 @@ export default function DashboardPage() {
                           {app.title}
                         </p>
                         <p className="truncate text-[13px] text-text-tertiary">
-                          {app.company} · {formatRelativeShort(app.updatedAt)}
+                          {app.company} · {activityDate(app)}
                         </p>
                       </div>
 
@@ -245,22 +269,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ═══ RIGHT COLUMN: Stats + Charts ═══ */}
+        {/* ═══ RIGHT COLUMN: Charts ═══ */}
         <div>
-          {/* ── Compact stat tiles (2×2) ── */}
-          {statsLoading ? (
-            <div className="mb-6 grid grid-cols-2 gap-3">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-20 animate-pulse rounded-[10px] bg-surface-tertiary" />
-              ))}
-            </div>
-          ) : stats ? (
-            <div className="mb-6">
-              <StatsCards stats={stats} />
-            </div>
-          ) : null}
-
-          {/* ── Charts ── */}
           <div>
             <div className="card-surface mb-5 border-t border-border-subtle pt-4">
               <ApplicationsChart

@@ -81,7 +81,7 @@ export default function SettingsPage() {
   const btnCls = "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-text-primary transition-colors hover:bg-surface-elevated";
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="max-w-3xl">
       <h1 className="text-2xl font-semibold text-text-primary">Settings</h1>
       <p className="mt-1 text-sm text-text-secondary">
         Appearance, account, and data.

@@ -39,7 +39,7 @@ const CARDS: Array<{
 
 export default function StatsCards({ stats }: StatsCardsProps) {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {CARDS.map(({ label, getValue, getSubtitle }) => {
         const display = getValue(stats);
         const subtitle = getSubtitle(stats);

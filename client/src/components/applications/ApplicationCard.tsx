@@ -86,7 +86,8 @@ export default function ApplicationCard({ application }: ApplicationCardProps) {
         <span className="truncate" title={application.title}>{application.title}</span>
         {(application.dateApplied ?? application.createdAt) && (
           <span className="shrink-0 text-text-tertiary">
-            · {(() => {
+            · {application.dateApplied ? "Applied" : "Added"}{" "}
+            {(() => {
               const date = application.dateApplied ?? application.createdAt!;
               const applied = new Date(date);
               const now = new Date();

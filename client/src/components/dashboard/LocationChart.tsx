@@ -6,28 +6,39 @@ interface LocationChartProps {
   applications: Application[];
 }
 
-function normalizeLocation(loc: string | null | undefined): string {
+function normalizeLocation(loc: string | null | undefined): string | null {
   const trimmed = loc?.trim();
-  return trimmed && trimmed.length > 0 ? trimmed : "Unspecified";
+  return trimmed && trimmed.length > 0 ? trimmed : null;
 }
 
 export default function LocationChart({ applications }: LocationChartProps) {
-  const data = useMemo(() => {
+  // Apps without a location would dwarf every real city, so they're counted
+  // separately and shown as a footnote instead of a bar.
+  const { data, unspecified } = useMemo(() => {
     const byLocation: Record<string, number> = {};
+    let unspecified = 0;
     for (const app of applications) {
       const loc = normalizeLocation(app.location);
-      byLocation[loc] = (byLocation[loc] ?? 0) + 1;
+      if (!loc) unspecified++;
+      else byLocation[loc] = (byLocation[loc] ?? 0) + 1;
     }
-    return Object.entries(byLocation)
+    const data = Object.entries(byLocation)
       .map(([location, count]) => ({ location, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
+    return { data, unspecified };
   }, [applications]);
+
+  const footnote =
+    unspecified > 0
+      ? `${unspecified} application${unspecified === 1 ? "" : "s"} without a location`
+      : null;
 
   if (data.length === 0) {
     return (
       <div className="py-6 text-center">
         <p className="text-[13px] text-text-tertiary">No location data yet</p>
+        {footnote && <p className="mt-1 text-xs text-text-tertiary">{footnote}</p>}
       </div>
     );
   }
@@ -64,6 +75,7 @@ export default function LocationChart({ applications }: LocationChartProps) {
           <Bar dataKey="count" fill="var(--color-chart-bar)" radius={[0, 4, 4, 0]} name="Applications" />
         </BarChart>
       </ResponsiveContainer>
+      {footnote && <p className="mt-1 text-xs text-text-tertiary">{footnote}</p>}
     </div>
   );
 }

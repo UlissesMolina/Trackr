@@ -1,7 +1,7 @@
 import {
   ResponsiveContainer,
-  AreaChart,
-  Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -86,22 +86,17 @@ export default function ApplicationsChart({ data, days = 7, onDaysChange, loadin
         <div className="h-[170px] animate-pulse rounded-lg bg-surface-tertiary" />
       ) : (
       <ResponsiveContainer width="100%" height={170}>
-        <AreaChart data={formatted}>
-          <defs>
-            <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" style={{ stopColor: "var(--color-chart-fill)" }} stopOpacity={1} />
-              <stop offset="95%" style={{ stopColor: "var(--color-chart-fill)" }} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
+        <BarChart data={formatted} barCategoryGap="25%">
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" vertical={false} />
           <XAxis dataKey="label" minTickGap={16} tick={{ fontSize: 11, fill: "var(--color-chart-tick)" }} stroke="var(--color-border-subtle)" />
           <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "var(--color-chart-tick)" }} stroke="var(--color-border-subtle)" />
           <Tooltip
+            cursor={{ fill: "var(--color-nav-hover)" }}
             contentStyle={{ backgroundColor: "var(--color-tooltip-bg)", border: "1px solid var(--color-tooltip-border)", borderRadius: "8px", color: "var(--color-text-primary)", boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}
             labelStyle={{ color: "var(--color-text-tertiary)" }}
           />
-          <Area type="monotone" dataKey="count" stroke="var(--color-chart-stroke)" strokeWidth={2} fill="url(#colorCount)" name={days > 30 ? "Applications (week)" : "Applications"} />
-        </AreaChart>
+          <Bar dataKey="count" fill="var(--color-chart-bar)" radius={[3, 3, 0, 0]} maxBarSize={28} name={days > 30 ? "Applications (week)" : "Applications"} />
+        </BarChart>
       </ResponsiveContainer>
       )}
     </div>

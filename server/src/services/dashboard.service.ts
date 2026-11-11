@@ -102,7 +102,8 @@ export async function getChartData(clerkUserId: string, days = 7) {
 const FLOW_LABELS: Record<string, string> = {
   APPLIED: "Applied",
   REJECTED: "Rejected",
-  GHOSTED_WAITING: "Ghosted / Waiting",
+  WAITING: "Waiting",
+  GHOSTED: "Ghosted",
   INTERVIEW: "Interview",
   OFFER: "Offer",
 };
@@ -110,12 +111,16 @@ const FLOW_LABELS: Record<string, string> = {
 const FLOW_NODE_COLORS: Record<string, string> = {
   APPLIED: "#5b8dd9",
   REJECTED: "#ef4444",
-  GHOSTED_WAITING: "#94a3b8",
+  WAITING: "#94a3b8",
+  GHOSTED: "#6b7280",
   INTERVIEW: "#f59e0b",
   OFFER: "#5b8dd9",
 };
 
-const FLOW_ORDER = ["APPLIED", "GHOSTED_WAITING", "INTERVIEW", "OFFER", "REJECTED"];
+const FLOW_ORDER = ["APPLIED", "WAITING", "GHOSTED", "INTERVIEW", "OFFER", "REJECTED"];
+
+/** An application with no response after this many days counts as ghosted. */
+const GHOSTED_AFTER_DAYS = 30;
 
 /**
  * Builds Sankey data from current application statuses.
@@ -125,35 +130,28 @@ const FLOW_ORDER = ["APPLIED", "GHOSTED_WAITING", "INTERVIEW", "OFFER", "REJECTE
  * diagram — no dependency on StatusChange history.
  *
  * Flow logic per app (based on current status):
- *   SAVED              → excluded (not yet applied)
- *   APPLIED/UNDER_REVIEW → Applied → Ghosted / Waiting
- *   INTERVIEW          → Applied → Interview
- *   OFFER              → Applied → Interview → Offer
- *   REJECTED           → we check StatusChange to see if they got an interview:
- *                           yes → Applied → Interview → Rejected
- *                           no  → Applied → Rejected
+ *   SAVED                → excluded (not yet applied)
+ *   APPLIED/UNDER_REVIEW → Applied → Waiting (< 30 days) or Ghosted (30+ days)
+ *   INTERVIEW            → Applied → Interview
+ *   OFFER                → Applied → Interview → Offer
+ *   REJECTED             → if it ever reached an interview (status history or
+ *                          an interview on record): Applied → Interview → Rejected
+ *                          otherwise: Applied → Rejected
  */
 export async function getSankeyData(clerkUserId: string) {
   const apps = await prisma.application.findMany({
     where: { clerkUserId },
-    select: { id: true, status: true },
+    select: {
+      id: true,
+      status: true,
+      createdAt: true,
+      dateApplied: true,
+      interviews: { select: { id: true }, take: 1 },
+    },
   });
 
-  // For REJECTED apps, check if they ever reached INTERVIEW to determine the path
-  const rejectedIds = apps.filter((a) => a.status === "REJECTED").map((a) => a.id);
-  const interviewedRejectedIds = new Set<string>();
-
-  if (rejectedIds.length > 0) {
-    const changes = await prisma.statusChange.findMany({
-      where: {
-        applicationId: { in: rejectedIds },
-        toStatus: "INTERVIEW",
-      },
-      select: { applicationId: true },
-      distinct: ["applicationId"],
-    });
-    for (const c of changes) interviewedRejectedIds.add(c.applicationId);
-  }
+  const interviewedIds = await getInterviewedIds(apps);
+  const ghostCutoff = Date.now() - GHOSTED_AFTER_DAYS * 86_400_000;
 
   // Tally links
   const linkCounts = new Map<string, number>();
@@ -169,29 +167,26 @@ export async function getSankeyData(clerkUserId: string) {
         break;
 
       case "APPLIED":
-      case "UNDER_REVIEW":
-        // Still waiting — Applied → Ghosted / Waiting
-        addLink("APPLIED", "GHOSTED_WAITING");
+      case "UNDER_REVIEW": {
+        const since = new Date(app.dateApplied ?? app.createdAt).getTime();
+        addLink("APPLIED", since < ghostCutoff ? "GHOSTED" : "WAITING");
         break;
+      }
 
       case "INTERVIEW":
-        // In interview process — Applied → Interview
         addLink("APPLIED", "INTERVIEW");
         break;
 
       case "OFFER":
-        // Got an offer — Applied → Interview → Offer
         addLink("APPLIED", "INTERVIEW");
         addLink("INTERVIEW", "OFFER");
         break;
 
       case "REJECTED":
-        if (interviewedRejectedIds.has(app.id)) {
-          // Rejected after interview — Applied → Interview → Rejected
+        if (interviewedIds.has(app.id)) {
           addLink("APPLIED", "INTERVIEW");
           addLink("INTERVIEW", "REJECTED");
         } else {
-          // Rejected without interview — Applied → Rejected
           addLink("APPLIED", "REJECTED");
         }
         break;

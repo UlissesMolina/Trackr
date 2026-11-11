@@ -184,7 +184,7 @@ export default function AppLayout() {
           </nav>
         </aside>
 
-        <main className={`w-full flex-1 ${sidebarCollapsed ? "md:ml-16" : "md:ml-60"}`}>
+        <main className={`w-full min-w-0 flex-1 ${sidebarCollapsed ? "md:ml-16" : "md:ml-60"}`}>
           <div className="px-5 pb-8 pt-6 md:px-10 md:pt-8">
             <div key={pathname} className="animate-page-enter">
               <Outlet />

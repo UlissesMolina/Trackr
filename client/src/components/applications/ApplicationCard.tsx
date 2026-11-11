@@ -64,7 +64,7 @@ export default function ApplicationCard({ application }: ApplicationCardProps) {
 
       <div className="flex items-center justify-between gap-2">
         <h3 className="truncate text-sm font-medium text-text-primary">
-          {application.title}
+          {application.company}
         </h3>
         {followUp && (
           <span className={`flex shrink-0 items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-medium ${followUp.color} ${followUp.bg ?? ""}`}>
@@ -83,7 +83,7 @@ export default function ApplicationCard({ application }: ApplicationCardProps) {
             title={application.priority}
           />
         )}
-        <span className="truncate">{application.company}</span>
+        <span className="truncate" title={application.title}>{application.title}</span>
         {(application.dateApplied ?? application.createdAt) && (
           <span className="shrink-0 text-text-tertiary">
             · {(() => {

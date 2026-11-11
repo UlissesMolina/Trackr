@@ -33,6 +33,21 @@ interface DragState {
 const INPUT =
   "rounded-lg px-3 py-1.5 text-sm text-text-primary placeholder-text-tertiary transition-colors duration-150 focus:outline-none";
 
+// The Applied column can hold a hundred-plus cards, so it's split by age.
+// Groups past the first start collapsed.
+const AGE_GROUPS = [
+  { key: "week", label: "This week", maxDays: 7 },
+  { key: "month", label: "2–4 weeks", maxDays: 30 },
+  { key: "older", label: "30+ days", maxDays: Infinity },
+] as const;
+type AgeGroupKey = (typeof AGE_GROUPS)[number]["key"];
+
+function ageGroupOf(app: { dateApplied: string | null; createdAt?: string }): AgeGroupKey {
+  const since = new Date(app.dateApplied ?? app.createdAt ?? Date.now());
+  const days = Math.floor((Date.now() - since.getTime()) / 86_400_000);
+  return AGE_GROUPS.find((g) => days < g.maxDays)?.key ?? "older";
+}
+
 const INPUT_STYLE: React.CSSProperties = {
   background: "var(--color-sidebar-bg)",
   border: "1px solid var(--color-sidebar-border)",
@@ -58,6 +73,9 @@ export default function BoardPage() {
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<"all" | "7" | "30">("all");
 
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<AgeGroupKey>>(
+    () => new Set<AgeGroupKey>(["month", "older"])
+  );
   const [drag, setDrag] = useState<DragState | null>(null);
   const [hoverStatus, setHoverStatus] = useState<BoardStatus | null>(null);
   const columnRefs = useRef<Map<BoardStatus, HTMLDivElement>>(new Map());
@@ -166,6 +184,30 @@ export default function BoardPage() {
 
   const draggedApp = drag ? applications.find((a) => a.id === drag.id) : null;
 
+  function toggleGroup(key: AgeGroupKey) {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  function renderCard(app: (typeof applications)[number]) {
+    return (
+      <div
+        key={app.id}
+        data-card-id={app.id}
+        onPointerDown={(e) => handlePointerDown(e, app.id)}
+        className={`cursor-grab select-none transition-opacity duration-150 ${
+          drag?.id === app.id ? "opacity-30" : ""
+        }`}
+      >
+        <ApplicationCard application={app} />
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -193,7 +235,7 @@ export default function BoardPage() {
     <div className="pt-2">
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-text-primary">Application Board</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex gap-0.5 rounded-lg p-0.5">
             <button
               onClick={() => setView("kanban")}
@@ -312,7 +354,7 @@ export default function BoardPage() {
             <div
               key={status}
               ref={(el) => { if (el) columnRefs.current.set(status, el); }}
-              className={`flex w-64 min-w-[16rem] flex-shrink-0 flex-col rounded-xl p-3 transition-colors duration-150 sm:w-72 sm:min-w-[18rem] ${
+              className={`flex w-60 min-w-[15rem] flex-shrink-0 flex-col rounded-xl p-3 transition-colors duration-150 sm:w-64 sm:min-w-[16rem] ${
                 isDropTarget
                   ? "bg-accent/10 ring-2 ring-accent/30"
                   : ""
@@ -331,18 +373,33 @@ export default function BoardPage() {
               </div>
 
               <div className="flex flex-1 flex-col gap-1.5">
-                {cards.map((app) => (
-                  <div
-                    key={app.id}
-                    data-card-id={app.id}
-                    onPointerDown={(e) => handlePointerDown(e, app.id)}
-                    className={`cursor-grab select-none transition-opacity duration-150 ${
-                      drag?.id === app.id ? "opacity-30" : ""
-                    }`}
-                  >
-                    <ApplicationCard application={app} />
-                  </div>
-                ))}
+                {status === "APPLIED" && cards.length > 0
+                  ? AGE_GROUPS.map((group) => {
+                      const groupCards = cards.filter((a) => ageGroupOf(a) === group.key);
+                      if (groupCards.length === 0) return null;
+                      const collapsed = collapsedGroups.has(group.key);
+                      return (
+                        <div key={group.key} className="flex flex-col gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => toggleGroup(group.key)}
+                            aria-expanded={!collapsed}
+                            className="mt-1 flex items-center gap-1.5 px-1 py-1 text-[11px] font-medium uppercase tracking-wider text-text-tertiary transition-colors hover:text-text-secondary"
+                          >
+                            <svg
+                              className={`h-3 w-3 transition-transform ${collapsed ? "" : "rotate-90"}`}
+                              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                            {group.label}
+                            <span className="font-normal normal-case tracking-normal">· {groupCards.length}</span>
+                          </button>
+                          {!collapsed && groupCards.map(renderCard)}
+                        </div>
+                      );
+                    })
+                  : cards.map(renderCard)}
 
                 {cards.length === 0 && (
                   <div className={`flex flex-1 flex-col items-center justify-center rounded-lg p-6 ${

@@ -119,6 +119,8 @@ router.delete("/", async (req: Request, res: Response) => {
     }
     await prisma.gmailConnection.delete({ where: { clerkUserId: userId } });
   }
+  // The per-email log is Gmail-derived data too; disconnecting removes it.
+  await prisma.emailSyncEvent.deleteMany({ where: { clerkUserId: userId } });
   res.json({ ok: true });
 });
 

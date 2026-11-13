@@ -13,6 +13,7 @@ import ResumePage from "./pages/ResumePage";
 import SankeyPage from "./pages/SankeyPage";
 import JobFinderPage from "./pages/JobFinderPage";
 import SettingsPage from "./pages/SettingsPage";
+import PrivacyPage from "./pages/PrivacyPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -76,6 +77,7 @@ function ClerkWithRoutes() {
       <QueryClientProvider client={queryClient}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/sign-in/*" element={<SignInPage />} />
           <Route path="/sign-up/*" element={<SignUpPage />} />
           <Route element={<ProtectedRoute />}>

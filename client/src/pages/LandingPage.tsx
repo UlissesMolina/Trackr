@@ -515,6 +515,7 @@ function Footer() {
         <div className="flex items-center gap-5">
           <a href="https://github.com/UlissesMolina/Trackr" target="_blank" rel="noopener noreferrer" className="text-[12px] transition-colors hover:text-white" style={{ color: muted }}>GitHub</a>
           <a href="https://github.com/UlissesMolina/Trackr/issues" target="_blank" rel="noopener noreferrer" className="text-[12px] transition-colors hover:text-white" style={{ color: muted }}>Report a bug</a>
+          <a href="/privacy" className="text-[12px] transition-colors hover:text-white" style={{ color: muted }}>Privacy</a>
         </div>
       </div>
     </footer>

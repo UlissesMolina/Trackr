@@ -5,7 +5,7 @@
   },
   "deploy": {
     "preDeployCommand": [
-      "npx prisma db push --skip-generate"
+      "npx prisma db push"
     ],
     "startCommand": "npm start"
   }

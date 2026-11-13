@@ -1,5 +1,7 @@
-import openai from "../lib/openai";
+import { AuthenticationError } from "openai";
+import { getOpenAI, isOpenAIConfigured } from "../lib/openai";
 import type { GmailMessage } from "./gmail.service";
+import { classifyWithRules, type KnownApplication } from "./email-rules.service";
 
 export type EmailClass = "APPLIED" | "REJECTED" | "INTERVIEW" | "OA" | "OFFER" | "NOT_JOB";
 export type Confidence = "high" | "medium" | "low";
@@ -10,10 +12,14 @@ export interface Classification {
   company: string | null;
   title: string | null;
   confidence: Confidence;
+  /** Rules can't read titles reliably, so their matches are held to a stricter bar. */
+  source: "ai" | "rules";
 }
 
 const CLASSES: EmailClass[] = ["APPLIED", "REJECTED", "INTERVIEW", "OA", "OFFER", "NOT_JOB"];
 const BATCH_SIZE = 8;
+// Sorting emails into six buckets doesn't need a large model; mini is ~15x cheaper.
+const MODEL = "gpt-4o-mini";
 
 const SYSTEM_PROMPT = `You classify emails from a job seeker's inbox. For each email decide what it means for ONE specific job application they submitted.
 
@@ -45,8 +51,8 @@ function formatEmail(m: GmailMessage): string {
 }
 
 async function classifyBatch(batch: GmailMessage[]): Promise<Classification[]> {
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+  const response = await getOpenAI().chat.completions.create({
+    model: MODEL,
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: batch.map(formatEmail).join("\n\n") },
@@ -76,18 +82,34 @@ async function classifyBatch(batch: GmailMessage[]): Promise<Classification[]> {
       company: typeof r.company === "string" && r.company.trim() ? r.company.trim() : null,
       title: typeof r.title === "string" && r.title.trim() ? r.title.trim() : null,
       confidence: conf === "high" || conf === "medium" ? conf : "low",
+      source: "ai",
     });
   }
   // Anything the model dropped is treated as not a job email, so it's logged and never re-sent.
   return batch.map(
-    (m) => byId.get(m.id) ?? { id: m.id, classification: "NOT_JOB", company: null, title: null, confidence: "low" }
+    (m) =>
+      byId.get(m.id) ?? { id: m.id, classification: "NOT_JOB", company: null, title: null, confidence: "low", source: "ai" }
   );
 }
 
-export async function classifyEmails(messages: GmailMessage[]): Promise<Classification[]> {
+/**
+ * Classifies with OpenAI when a key is configured, otherwise with the
+ * rule-based classifier. A rejected key also falls back to rules, so a stale
+ * key doesn't stop sync.
+ */
+export async function classifyEmails(messages: GmailMessage[], known: KnownApplication[]): Promise<Classification[]> {
+  if (!isOpenAIConfigured()) return classifyWithRules(messages, known);
+
   const out: Classification[] = [];
   for (let i = 0; i < messages.length; i += BATCH_SIZE) {
-    out.push(...(await classifyBatch(messages.slice(i, i + BATCH_SIZE))));
+    try {
+      out.push(...(await classifyBatch(messages.slice(i, i + BATCH_SIZE))));
+    } catch (err) {
+      if (!(err instanceof AuthenticationError)) throw err;
+      console.warn("OpenAI rejected the API key; classifying the rest of this sync with rules.");
+      out.push(...classifyWithRules(messages.slice(i), known));
+      break;
+    }
   }
   return out;
 }

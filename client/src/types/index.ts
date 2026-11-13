@@ -112,6 +112,8 @@ export interface Resume {
 export interface GmailStatus {
   configured: boolean;
   connected: boolean;
+  /** A sync is running on the server right now. */
+  syncing?: boolean;
   email?: string | null;
   lastSyncedAt?: string | null;
   syncEnabled?: boolean;

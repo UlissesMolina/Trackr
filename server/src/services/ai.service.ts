@@ -1,4 +1,4 @@
-import openai from "../lib/openai";
+import { getOpenAI } from "../lib/openai";
 
 interface ExtractedApplication {
   title: string;
@@ -24,7 +24,7 @@ For each distinct application found, extract:
 
 Return a JSON array of objects. If you cannot determine a required field (title or company), make your best guess from context. Only return the JSON array, no other text.`;
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: "gpt-4o",
     messages: [
       { role: "system", content: systemPrompt },
@@ -71,7 +71,7 @@ export async function generateCoverLetter(
     .filter(Boolean)
     .join("\n");
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: "gpt-4o",
     messages: [
       { role: "system", content: systemPrompt },

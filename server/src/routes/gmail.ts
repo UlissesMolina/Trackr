@@ -11,7 +11,7 @@ import {
   isGmailConfigured,
   revokeToken,
 } from "../services/gmail.service";
-import { syncGmail, SyncInProgressError } from "../services/email-sync.service";
+import { isSyncRunning, syncGmail, SyncInProgressError } from "../services/email-sync.service";
 
 const STATE_PURPOSE = "gmail-connect";
 
@@ -70,7 +70,7 @@ router.get("/status", async (req: Request, res: Response) => {
     where: { clerkUserId: userId },
     select: { email: true, lastSyncedAt: true, syncEnabled: true, lastError: true },
   });
-  res.json({ configured: configured(), connected: !!conn, ...(conn ?? {}) });
+  res.json({ configured: configured(), connected: !!conn, syncing: isSyncRunning(userId), ...(conn ?? {}) });
 });
 
 router.get("/connect", (req: Request, res: Response) => {

@@ -105,8 +105,10 @@ export default function PrivacyPage() {
             </li>
             <li>
               <strong className="text-text-primary">OpenAI</strong>: when you use an AI feature (cover letters,
-              importing from a pasted email) or Gmail sync, the relevant text is sent to OpenAI&apos;s API to
-              generate or classify it. OpenAI&apos;s API terms state that this data is not used to train their models.
+              importing from a pasted email), the relevant text is sent to OpenAI&apos;s API to generate or extract
+              it. Gmail sync uses OpenAI to classify emails only when the server is configured with an OpenAI key;
+              otherwise emails are classified on Trackr&apos;s own server and are not sent anywhere. OpenAI&apos;s API
+              terms state that data sent to it is not used to train their models.
             </li>
             <li>
               <strong className="text-text-primary">Google</strong>: only if you connect Gmail, as described above.

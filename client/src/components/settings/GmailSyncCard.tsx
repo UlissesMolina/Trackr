@@ -124,7 +124,13 @@ export default function GmailSyncCard({ cardCls, btnCls }: Props) {
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
             <span className="font-medium text-text-primary">{status.email}</span>
             <span className="text-text-tertiary">
-              {status.lastSyncedAt ? `Last synced ${formatDateTime(status.lastSyncedAt)}` : "First sync in progress…"}
+              {status.syncing
+                ? status.lastSyncedAt
+                  ? "Syncing…"
+                  : "First sync in progress…"
+                : status.lastSyncedAt
+                  ? `Last synced ${formatDateTime(status.lastSyncedAt)}`
+                  : "Not synced yet"}
             </span>
           </div>
           {status.lastError && <p className="mt-2 text-sm text-red-400">{status.lastError}</p>}
@@ -132,11 +138,11 @@ export default function GmailSyncCard({ cardCls, btnCls }: Props) {
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <button
               onClick={() => sync.mutate()}
-              disabled={sync.isPending}
+              disabled={sync.isPending || status.syncing}
               className="inline-flex items-center gap-2 rounded-lg border border-border-default px-3 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-surface-tertiary disabled:opacity-50"
             >
-              <RefreshCw className={`h-4 w-4 text-text-tertiary ${sync.isPending ? "animate-spin" : ""}`} />
-              {sync.isPending ? "Syncing…" : "Sync now"}
+              <RefreshCw className={`h-4 w-4 text-text-tertiary ${sync.isPending || status.syncing ? "animate-spin" : ""}`} />
+              {sync.isPending || status.syncing ? "Syncing…" : "Sync now"}
             </button>
             <label className="inline-flex cursor-pointer items-center gap-2 px-2 text-sm text-text-secondary">
               <input

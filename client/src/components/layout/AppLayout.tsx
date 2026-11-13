@@ -16,6 +16,9 @@ const NAV_ITEMS = [
 ];
 
 const SIDEBAR_COLLAPSED_KEY = "trackr-sidebar-collapsed";
+const SIDEBAR_MS = 300;
+// Shared by the sidebar width, content margin, highlight and labels so they move as one.
+const SIDEBAR_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 
 function getSidebarCollapsed(): boolean {
   try {
@@ -68,7 +71,7 @@ export default function AppLayout() {
   // Re-measure once the collapse animation settles and on resize, so the
   // highlight never sits a few pixels off the active item.
   useEffect(() => {
-    const t = setTimeout(updateHighlight, 220);
+    const t = setTimeout(updateHighlight, SIDEBAR_MS + 20);
     window.addEventListener("resize", updateHighlight);
     return () => {
       clearTimeout(t);
@@ -125,19 +128,22 @@ export default function AppLayout() {
 
         {/* Sidebar */}
         <aside
-          className={`fixed left-0 bottom-0 z-40 flex flex-col bg-surface-primary transition-all duration-200 md:translate-x-0 md:z-10 ${
+          className={`fixed left-0 bottom-0 z-40 flex flex-col overflow-hidden bg-surface-primary md:translate-x-0 md:z-10 ${
             mobileOpen ? "translate-x-0" : "-translate-x-full"
-          } ${sidebarCollapsed ? "md:w-16" : "w-60"}`}
-          style={{ top: "56px", backgroundColor: "var(--color-sidebar-bg)", borderRight: "1px solid var(--color-sidebar-border)" }}
+          } ${sidebarCollapsed ? "w-60 md:w-16" : "w-60"}`}
+          style={{
+            top: "56px",
+            backgroundColor: "var(--color-sidebar-bg)",
+            borderRight: "1px solid var(--color-sidebar-border)",
+            transition: `width ${SIDEBAR_MS}ms ${SIDEBAR_EASE}, transform ${SIDEBAR_MS}ms ${SIDEBAR_EASE}`,
+          }}
         >
-          {/* Collapse toggle */}
-          <div
-            className={`flex items-center ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-4"} py-3`}
-          >
+          {/* Collapse toggle — pinned right, so it slides with the edge instead of jumping */}
+          <div className="flex items-center justify-end px-4 py-3">
             {!sidebarCollapsed && (
               <button
                 onClick={() => setMobileOpen(false)}
-                className="rounded-md p-1 text-text-tertiary md:hidden"
+                className="mr-auto rounded-md p-1 text-text-tertiary md:hidden"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -157,8 +163,14 @@ export default function AppLayout() {
             {/* Sliding highlight */}
             <div
               ref={highlightRef}
-              className="absolute left-2 right-2 rounded-lg transition-all duration-300 ease-in-out"
-              style={{ backgroundColor: "var(--color-nav-active)", height: 0, opacity: 0 }}
+              className="absolute left-2 right-2 rounded-lg"
+              style={{
+                backgroundColor: "var(--color-nav-active)",
+                height: 0,
+                opacity: 0,
+                transition: `transform ${SIDEBAR_MS}ms ${SIDEBAR_EASE}, height ${SIDEBAR_MS}ms ${SIDEBAR_EASE}, opacity 150ms ease`,
+                willChange: "transform",
+              }}
             />
             {NAV_ITEMS.map((item) => {
               const isActive =
@@ -174,26 +186,32 @@ export default function AppLayout() {
                   onClick={() => setMobileOpen(false)}
                   title={sidebarCollapsed ? item.label : undefined}
                   data-nav-path={item.path}
-                  className={`relative z-[1] flex items-center gap-3 rounded-lg text-sm outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-accent/40 ${
-                    sidebarCollapsed ? "justify-center" : ""
-                  } ${
+                  className={`relative z-[1] flex items-center overflow-hidden whitespace-nowrap rounded-lg text-sm outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-accent/40 ${
                     isActive
                       ? "font-medium text-[var(--color-nav-active-text)]"
                       : "text-text-secondary hover:bg-[var(--color-nav-hover)] hover:text-text-primary"
                   }`}
-                  style={{
-                    padding: sidebarCollapsed ? "7px 8px" : "7px 12px",
-                  }}
+                  // Fixed padding keeps the icon in the same spot (centered in the
+                  // collapsed rail) while the label fades and the rail narrows.
+                  style={{ padding: "7px 14px" }}
                 >
                   <Icon className="h-5 w-5 shrink-0" style={{ color: isActive ? "var(--color-icon-active)" : "var(--color-icon-muted)" }} />
-                  {!sidebarCollapsed && <span>{item.label}</span>}
+                  <span
+                    className={`ml-3 ${sidebarCollapsed ? "md:opacity-0" : "opacity-100"}`}
+                    style={{ transition: `opacity ${sidebarCollapsed ? 120 : 220}ms ease ${sidebarCollapsed ? "0ms" : "80ms"}` }}
+                  >
+                    {item.label}
+                  </span>
                 </Link>
               );
             })}
           </nav>
         </aside>
 
-        <main className={`w-full min-w-0 flex-1 ${sidebarCollapsed ? "md:ml-16" : "md:ml-60"}`}>
+        <main
+          className={`w-full min-w-0 flex-1 ${sidebarCollapsed ? "md:ml-16" : "md:ml-60"}`}
+          style={{ transition: `margin-left ${SIDEBAR_MS}ms ${SIDEBAR_EASE}` }}
+        >
           <div className="px-5 pb-8 pt-6 md:px-10 md:pt-8">
             <div key={pathname} className="animate-page-enter">
               <Outlet />

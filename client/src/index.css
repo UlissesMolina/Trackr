@@ -44,42 +44,42 @@
 }
 
 /* ── Dark mode overrides ─────────────────────────────────────────────────
-   Same system as light: cool navy base, cards that sit above it, one blue. */
+   Near-black neutrals with the faintest cool tint; blue is only the accent. */
 html.dark {
-  --color-surface-primary: #0b1120;
-  --color-surface-secondary: #111a2e;
-  --color-surface-tertiary: #162036;
-  --color-surface-elevated: #1c2740;
-  --color-border-default: #1f2a40;
-  --color-border-subtle: #18223a;
-  --color-text-primary: #e2e8f0;
-  --color-text-secondary: #94a3b8;
-  --color-text-tertiary: #7180a0;
+  --color-surface-primary: #0a0a0c;
+  --color-surface-secondary: #131418;
+  --color-surface-tertiary: #18191e;
+  --color-surface-elevated: #1f2026;
+  --color-border-default: #24262c;
+  --color-border-subtle: #1b1c21;
+  --color-text-primary: #e8e9ec;
+  --color-text-secondary: #9a9ca5;
+  --color-text-tertiary: #6c6f79;
   --color-accent: #3b82f6;
   --color-accent-hover: #60a5fa;
 
-  --color-header-bg: rgba(11,17,32,0.85);
-  --color-header-border: #1f2a40;
-  --color-sidebar-bg: #0e1628;
-  --color-sidebar-border: #1f2a40;
-  --color-nav-hover: rgba(148,163,184,0.08);
-  --color-nav-active: rgba(59,130,246,0.16);
-  --color-nav-active-text: #93c5fd;
-  --color-icon-muted: #7180a0;
+  --color-header-bg: rgba(10,10,12,0.85);
+  --color-header-border: #1b1c21;
+  --color-sidebar-bg: #0e0f12;
+  --color-sidebar-border: #1b1c21;
+  --color-nav-hover: rgba(255,255,255,0.05);
+  --color-nav-active: rgba(255,255,255,0.07);
+  --color-nav-active-text: #f4f5f7;
+  --color-icon-muted: #6c6f79;
   --color-icon-active: #60a5fa;
-  --color-tooltip-bg: #111a2e;
-  --color-tooltip-border: #26324d;
-  --color-chart-tick: #7180a0;
+  --color-tooltip-bg: #16171b;
+  --color-tooltip-border: #2a2c33;
+  --color-chart-tick: #6c6f79;
   --color-chart-stroke: #60a5fa;
-  --color-chart-fill: rgba(96,165,250,0.2);
+  --color-chart-fill: rgba(96,165,250,0.16);
   --color-chart-bar: #3b82f6;
   --color-greeting-name: #60a5fa;
-  --color-badge-applied-bg: rgba(59,130,246,0.16);
+  --color-badge-applied-bg: rgba(59,130,246,0.14);
   --color-badge-applied-text: #93c5fd;
 
-  --card-bg: #111a2e;
-  --card-shadow: 0 1px 2px rgb(0 0 0 / .3), 0 8px 24px rgb(0 0 0 / .25);
-  --card-shadow-hover: 0 1px 2px rgb(0 0 0 / .3), 0 10px 28px rgb(59 130 246 / .12);
+  --card-bg: #131418;
+  --card-shadow: 0 1px 2px rgb(0 0 0 / .4), 0 6px 20px rgb(0 0 0 / .3);
+  --card-shadow-hover: 0 1px 2px rgb(0 0 0 / .4), 0 10px 28px rgb(0 0 0 / .45);
   --card-accent: #3b82f6;
 }
 
@@ -165,7 +165,8 @@ html:not(.dark) {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-delete-out, .animate-menu-in, .animate-menu-out,
-  .animate-modal-backdrop, .animate-modal-panel { animation-duration: 1ms; }
+  .animate-modal-backdrop, .animate-modal-panel,
+  .animate-modal-backdrop-out, .animate-modal-panel-out { animation-duration: 1ms; }
 }
 
 html {
@@ -249,6 +250,25 @@ body {
 
 .animate-modal-panel {
   animation: modal-panel-enter 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes modal-backdrop-exit {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes modal-panel-exit {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(8px) scale(0.98); }
+}
+
+.animate-modal-backdrop-out {
+  animation: modal-backdrop-exit 0.16s ease-in both;
+}
+
+.animate-modal-panel-out {
+  animation: modal-panel-exit 0.16s ease-in both;
+  pointer-events: none;
 }
 
 @keyframes settings-pop {

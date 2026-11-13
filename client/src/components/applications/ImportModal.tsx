@@ -3,6 +3,7 @@ import Papa from "papaparse";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../lib/api";
 import Modal from "../ui/Modal";
+import Dropdown from "../ui/Dropdown";
 import {
   APPLICATION_STATUSES,
   STATUS_LABELS,
@@ -225,16 +226,14 @@ export default function ImportModal({ open, onClose }: ImportModalProps) {
                   {field.label}
                   {field.required && <span className="text-red-400"> *</span>}
                 </label>
-                <select
+                <Dropdown
                   value={mapping[field.key] ?? ""}
-                  onChange={(e) => setMapping((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                  className="flex-1 rounded-lg border border-border-default bg-surface-tertiary px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-                >
-                  <option value="">— skip —</option>
-                  {headers.map((h) => (
-                    <option key={h} value={h}>{h}</option>
-                  ))}
-                </select>
+                  options={[{ value: "", label: "— skip —" }, ...headers.map((h) => ({ value: h, label: h }))]}
+                  onChange={(v) => setMapping((prev) => ({ ...prev, [field.key]: v }))}
+                  wrapperClassName="flex-1 min-w-0"
+                  className="w-full rounded-lg border border-border-default bg-surface-tertiary px-3 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                  ariaLabel={`Column for ${field.label}`}
+                />
               </div>
             ))}
           </div>

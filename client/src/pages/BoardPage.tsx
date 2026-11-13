@@ -28,6 +28,11 @@ const DATE_FILTERS = [
   { value: "30", label: "Last 30 days" },
 ] as const;
 
+const STAGE_OPTIONS = [
+  { value: "ALL", label: "All Stages" },
+  ...BOARD_STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] })),
+] as ReadonlyArray<{ value: BoardStatus | "ALL"; label: string }>;
+
 interface DragState {
   id: string;
   x: number;
@@ -316,17 +321,14 @@ export default function BoardPage() {
             style={INPUT_STYLE}
           />
         </div>
-        <select
+        <Dropdown
           value="ALL"
-          onChange={(e) => jumpToStage(e.target.value as BoardStatus | "ALL")}
+          options={STAGE_OPTIONS}
+          onChange={jumpToStage}
           className={`${INPUT} cursor-pointer`}
           style={INPUT_STYLE}
-        >
-          <option value="ALL">All Stages</option>
-          {BOARD_STATUSES.map((s) => (
-            <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-          ))}
-        </select>
+          ariaLabel="Jump to stage"
+        />
         <Dropdown
           value={dateFilter}
           options={DATE_FILTERS}

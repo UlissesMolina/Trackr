@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useExitTransition } from "../../hooks/useExitTransition";
+import { DIALOG_EXIT_MS } from "./Modal";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -25,6 +27,7 @@ export default function ConfirmDialog({
   loading = false,
 }: ConfirmDialogProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const { mounted, closing } = useExitTransition(open, DIALOG_EXIT_MS);
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -34,7 +37,7 @@ export default function ConfirmDialog({
     return () => document.removeEventListener("keydown", handleKey);
   }, [open, onClose, loading]);
 
-  if (!open) return null;
+  if (!mounted) return null;
 
   const confirmClass =
     variant === "danger"
@@ -46,14 +49,14 @@ export default function ConfirmDialog({
     <div
       ref={overlayRef}
       onClick={(e) => !loading && e.target === overlayRef.current && onClose()}
-      className="animate-modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      className={`${closing ? "animate-modal-backdrop-out" : "animate-modal-backdrop"} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-title"
         onClick={(e) => e.stopPropagation()}
-        className="animate-modal-panel w-full max-w-sm rounded-xl border border-border-default bg-surface-secondary p-5 shadow-xl"
+        className={`${closing ? "animate-modal-panel-out" : "animate-modal-panel"} w-full max-w-sm rounded-xl border border-border-default bg-surface-secondary p-5 shadow-xl`}
       >
         <h2 id="confirm-title" className="text-base font-semibold text-text-primary">
           {title}

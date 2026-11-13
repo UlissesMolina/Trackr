@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import Dropdown from "../ui/Dropdown";
 import {
   BOARD_STATUSES,
   STATUS_LABELS,
@@ -82,20 +83,25 @@ export default function ApplicationForm({
         </div>
         <div className="col-span-2 sm:col-span-1">
           <label className="mb-1 block text-sm font-medium text-text-secondary">Status</label>
-          <select value={form.status} onChange={(e) => update("status", e.target.value)} className={`${INPUT} cursor-pointer`}>
-            {BOARD_STATUSES.map((s) => (
-              <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-            ))}
-          </select>
+          <Dropdown
+            value={form.status}
+            options={BOARD_STATUSES.map((s) => ({ value: s as string, label: STATUS_LABELS[s] }))}
+            onChange={(v) => update("status", v)}
+            className={`${INPUT} cursor-pointer`}
+            wrapperClassName="w-full"
+            ariaLabel="Status"
+          />
         </div>
         <div className="col-span-2 sm:col-span-1">
           <label className="mb-1 block text-sm font-medium text-text-secondary">Priority</label>
-          <select value={form.priority} onChange={(e) => update("priority", e.target.value)} className={`${INPUT} cursor-pointer`}>
-            <option value="">None</option>
-            {PRIORITY_LEVELS.map((p) => (
-              <option key={p} value={p}>{PRIORITY_LABELS[p]}</option>
-            ))}
-          </select>
+          <Dropdown
+            value={form.priority}
+            options={[{ value: "", label: "None" }, ...PRIORITY_LEVELS.map((p) => ({ value: p as string, label: PRIORITY_LABELS[p] }))]}
+            onChange={(v) => update("priority", v)}
+            className={`${INPUT} cursor-pointer`}
+            wrapperClassName="w-full"
+            ariaLabel="Priority"
+          />
         </div>
         <div className="col-span-1">
           <label className="mb-1 block text-sm font-medium text-text-secondary">Min Salary</label>

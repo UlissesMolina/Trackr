@@ -1,5 +1,8 @@
 import { useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useExitTransition } from "../../hooks/useExitTransition";
+
+export const DIALOG_EXIT_MS = 160; // matches .animate-modal-*-out
 
 interface ModalProps {
   open: boolean;
@@ -9,6 +12,8 @@ interface ModalProps {
 }
 
 export default function Modal({ open, onClose, title, children }: ModalProps) {
+  const { mounted, closing } = useExitTransition(open, DIALOG_EXIT_MS);
+
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -17,15 +22,15 @@ export default function Modal({ open, onClose, title, children }: ModalProps) {
     return () => document.removeEventListener("keydown", handleKey);
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!mounted) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div
-        className="animate-modal-backdrop absolute inset-0 bg-black/80"
+        className={`${closing ? "animate-modal-backdrop-out" : "animate-modal-backdrop"} absolute inset-0 bg-black/80`}
         onClick={onClose}
       />
-      <div className="animate-modal-panel relative w-full max-w-lg rounded-xl border border-border-default bg-surface-secondary shadow-2xl">
+      <div className={`${closing ? "animate-modal-panel-out" : "animate-modal-panel"} relative w-full max-w-lg rounded-xl border border-border-default bg-surface-secondary shadow-2xl`}>
         <div className="flex items-center justify-between px-6 pt-6 pb-0">
           <h2 className="text-lg font-semibold text-text-primary">{title}</h2>
           <button

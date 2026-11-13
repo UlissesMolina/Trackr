@@ -5,6 +5,7 @@ import { useCreateApplication, useApplications } from "../hooks/useApplications"
 import { useAuth } from "@clerk/clerk-react";
 import EmptyState from "../components/ui/EmptyState";
 import StatusBadge from "../components/applications/StatusBadge";
+import Dropdown from "../components/ui/Dropdown";
 import type { ApplicationStatus } from "../lib/constants";
 import { useTheme } from "../hooks/useTheme";
 import { getCompanyColor } from "../lib/companyColor";
@@ -34,7 +35,7 @@ const ROLE_TYPES = [
   { value: "data", label: "Data / Analytics" },
 ];
 
-const POSTED_OPTIONS = [
+const POSTED_OPTIONS: ReadonlyArray<{ value: PostedWithin; label: string }> = [
   { value: "7d", label: "Added in last 7 days" },
   { value: "14d", label: "Added in last 14 days" },
   { value: "30d", label: "Added in last 30 days" },
@@ -411,18 +412,14 @@ export default function JobFinderPage() {
             </option>
           ))}
         </select>
-        <select
+        <Dropdown
           value={postedWithin}
-          onChange={(e) => setFilter("postedWithin", e.target.value as PostedWithin)}
-          className={INPUT_CLS}
+          options={POSTED_OPTIONS}
+          onChange={(v) => setFilter("postedWithin", v)}
+          className={`${INPUT_CLS} w-full justify-between sm:w-auto`}
           style={{ backgroundColor: "var(--color-sidebar-bg)", borderColor: "var(--color-sidebar-border)" }}
-        >
-          {POSTED_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+          ariaLabel="Added within"
+        />
         <label
           className="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm text-text-primary"
           style={{ backgroundColor: "var(--color-sidebar-bg)", borderColor: "var(--color-sidebar-border)" }}

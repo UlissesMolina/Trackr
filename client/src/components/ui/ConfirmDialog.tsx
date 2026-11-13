@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -40,18 +41,19 @@ export default function ConfirmDialog({
       ? "bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
       : "bg-accent text-white hover:bg-accent-hover disabled:opacity-50";
 
-  return (
+  // Portaled so a transformed ancestor (page transitions) can't offset it.
+  return createPortal(
     <div
       ref={overlayRef}
       onClick={(e) => !loading && e.target === overlayRef.current && onClose()}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      className="animate-modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-title"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm rounded-xl border border-border-default bg-surface-secondary p-5 shadow-xl"
+        className="animate-modal-panel w-full max-w-sm rounded-xl border border-border-default bg-surface-secondary p-5 shadow-xl"
       >
         <h2 id="confirm-title" className="text-base font-semibold text-text-primary">
           {title}
@@ -76,6 +78,7 @@ export default function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

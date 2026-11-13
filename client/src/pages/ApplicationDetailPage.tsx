@@ -29,6 +29,7 @@ export default function ApplicationDetailPage() {
   const deleteMutation = useDeleteApplication();
   const [showEdit, setShowEdit] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [removing, setRemoving] = useState(false);
 
   function handleUpdate(form: ApplicationFormData) {
     updateMutation.mutate(
@@ -54,10 +55,15 @@ export default function ApplicationDetailPage() {
     setShowDeleteConfirm(true);
   }
 
+  // The page animates out while the request runs; navigate once both are done.
+  // If the delete fails, the page comes back.
   function confirmDelete() {
+    setShowDeleteConfirm(false);
+    setRemoving(true);
+    const animation = new Promise((r) => setTimeout(r, 380));
     deleteMutation.mutate(id!, {
-      onSuccess: () => navigate("/board"),
-      onSettled: () => setShowDeleteConfirm(false),
+      onSuccess: () => animation.then(() => navigate("/board")),
+      onError: () => setRemoving(false),
     });
   }
 
@@ -108,7 +114,12 @@ export default function ApplicationDetailPage() {
   })();
 
   return (
-    <div>
+    <div className={removing ? "animate-delete-out" : undefined}>
+      {deleteMutation.isError && !removing && (
+        <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-400">
+          Couldn't delete this application. Please try again.
+        </div>
+      )}
       <div className="mb-6">
         <Link
           to="/board"

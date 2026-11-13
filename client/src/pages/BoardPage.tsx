@@ -20,6 +20,13 @@ import Modal from "../components/ui/Modal";
 import ImportModal from "../components/applications/ImportModal";
 import EmailImportModal from "../components/applications/EmailImportModal";
 import ApplicationTable from "../components/applications/ApplicationTable";
+import Dropdown from "../components/ui/Dropdown";
+
+const DATE_FILTERS = [
+  { value: "all", label: "All Time" },
+  { value: "7", label: "Last 7 days" },
+  { value: "30", label: "Last 30 days" },
+] as const;
 
 interface DragState {
   id: string;
@@ -320,16 +327,14 @@ export default function BoardPage() {
             <option key={s} value={s}>{STATUS_LABELS[s]}</option>
           ))}
         </select>
-        <select
+        <Dropdown
           value={dateFilter}
-          onChange={(e) => setDateFilter(e.target.value as "all" | "7" | "30")}
+          options={DATE_FILTERS}
+          onChange={setDateFilter}
           className={`${INPUT} cursor-pointer`}
           style={INPUT_STYLE}
-        >
-          <option value="all">All Time</option>
-          <option value="7">Last 7 days</option>
-          <option value="30">Last 30 days</option>
-        </select>
+          ariaLabel="Date range"
+        />
         {(search || dateFilter !== "all") && (
           <button
             onClick={() => { setSearch(""); setDateFilter("all"); }}

@@ -36,41 +36,51 @@
   --color-greeting-name: #2563eb;
   --color-badge-applied-bg: #eff4ff;
   --color-badge-applied-text: #2563eb;
+
+  --card-bg: #ffffff;
+  --card-shadow: 0 1px 2px rgb(16 24 40 / .04), 0 4px 16px rgb(37 99 235 / .05);
+  --card-shadow-hover: 0 1px 2px rgb(16 24 40 / .05), 0 8px 24px rgb(37 99 235 / .1);
+  --card-accent: #2563eb;
 }
 
-/* ── Dark mode overrides ─────────────────────────────────────────────────── */
+/* ── Dark mode overrides ─────────────────────────────────────────────────
+   Same system as light: cool navy base, cards that sit above it, one blue. */
 html.dark {
-  --color-surface-primary: #09090b;
-  --color-surface-secondary: #18181b;
-  --color-surface-tertiary: #1e1e22;
-  --color-surface-elevated: #27272a;
-  --color-border-default: #27272a;
-  --color-border-subtle: #1e1e22;
-  --color-text-primary: #ededef;
-  --color-text-secondary: #8a8a96;
-  --color-text-tertiary: #5c5c69;
-  --color-accent: #93b5e1;
-  --color-accent-hover: #a3c2ea;
+  --color-surface-primary: #0b1120;
+  --color-surface-secondary: #111a2e;
+  --color-surface-tertiary: #162036;
+  --color-surface-elevated: #1c2740;
+  --color-border-default: #1f2a40;
+  --color-border-subtle: #18223a;
+  --color-text-primary: #e2e8f0;
+  --color-text-secondary: #94a3b8;
+  --color-text-tertiary: #7180a0;
+  --color-accent: #3b82f6;
+  --color-accent-hover: #60a5fa;
 
-  --color-header-bg: rgba(255,255,255,0.03);
-  --color-header-border: rgba(255,255,255,0.06);
-  --color-sidebar-bg: rgba(255,255,255,0.02);
-  --color-sidebar-border: rgba(255,255,255,0.05);
-  --color-nav-hover: rgba(255,255,255,0.05);
-  --color-nav-active: rgba(255,255,255,0.08);
-  --color-icon-muted: #666;
-  --color-icon-active: #999;
-  --color-tooltip-bg: #1a1a1f;
-  --color-tooltip-border: #2e2e35;
-  --color-chart-tick: #555;
-  --color-chart-stroke: rgba(124, 138, 255, 0.6);
-  --color-chart-fill: rgba(124, 138, 255, 0.25);
-  --color-chart-bar: rgba(96, 165, 250, 0.25);
-  --color-nav-active-text: var(--color-text-primary);
-  --color-greeting-name: var(--color-text-primary);
-  --color-badge-applied-bg: var(--color-surface-elevated);
-  --color-badge-applied-text: var(--color-text-tertiary);
-  --font-display: "Inter", system-ui, sans-serif;
+  --color-header-bg: rgba(11,17,32,0.85);
+  --color-header-border: #1f2a40;
+  --color-sidebar-bg: #0e1628;
+  --color-sidebar-border: #1f2a40;
+  --color-nav-hover: rgba(148,163,184,0.08);
+  --color-nav-active: rgba(59,130,246,0.16);
+  --color-nav-active-text: #93c5fd;
+  --color-icon-muted: #7180a0;
+  --color-icon-active: #60a5fa;
+  --color-tooltip-bg: #111a2e;
+  --color-tooltip-border: #26324d;
+  --color-chart-tick: #7180a0;
+  --color-chart-stroke: #60a5fa;
+  --color-chart-fill: rgba(96,165,250,0.2);
+  --color-chart-bar: #3b82f6;
+  --color-greeting-name: #60a5fa;
+  --color-badge-applied-bg: rgba(59,130,246,0.16);
+  --color-badge-applied-text: #93c5fd;
+
+  --card-bg: #111a2e;
+  --card-shadow: 0 1px 2px rgb(0 0 0 / .3), 0 8px 24px rgb(0 0 0 / .25);
+  --card-shadow-hover: 0 1px 2px rgb(0 0 0 / .3), 0 10px 28px rgb(59 130 246 / .12);
+  --card-accent: #3b82f6;
 }
 
 /* ── Light-mode status colors ───────────────────────────────────────────
@@ -88,45 +98,74 @@ html:not(.dark) {
   --color-purple-400: oklch(49.6% 0.265 301.924);
 }
 
-/* ── Light-mode card styling (dark mode keeps its flat look) ─────────────── */
-html:not(.dark) .card-surface {
-  background: #ffffff;
+/* ── Cards, stat tiles, labels (both themes, colors from the vars above) ── */
+.card-surface {
+  background: var(--card-bg);
   border: 1px solid var(--color-border-default);
   border-radius: 0.75rem;
   padding: 1rem;
-  box-shadow: 0 1px 2px rgb(16 24 40 / .04), 0 4px 16px rgb(37 99 235 / .05);
+  box-shadow: var(--card-shadow);
 }
 
-html:not(.dark) .stat-tile {
-  background: #ffffff;
+.stat-tile {
+  background: var(--card-bg);
   border: 1px solid var(--color-border-default);
-  border-top: 2px solid #2563eb;
-  box-shadow: 0 1px 2px rgb(16 24 40 / .04), 0 4px 16px rgb(37 99 235 / .05);
+  border-top: 2px solid var(--card-accent);
+  box-shadow: var(--card-shadow);
   transition: box-shadow 0.2s ease;
 }
-html:not(.dark) .stat-tile:hover {
-  box-shadow: 0 1px 2px rgb(16 24 40 / .05), 0 8px 24px rgb(37 99 235 / .1);
+.stat-tile:hover {
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow-hover);
 }
 
-html:not(.dark) .stat-label {
+.stat-label {
   font-size: 11px;
   letter-spacing: .12em;
   color: var(--color-text-tertiary);
 }
-html:not(.dark) .stat-label::before {
+.stat-label::before {
   content: "";
   display: inline-block;
   width: 6px;
   height: 6px;
   border-radius: 9999px;
-  background: #2563eb;
+  background: var(--card-accent);
   margin-right: 6px;
   vertical-align: middle;
 }
 
-html:not(.dark) .stat-number {
+.stat-number {
   font-weight: 500;
   letter-spacing: -0.01em;
+}
+
+/* ── Delete: the page shrinks and fades before navigating away ───────────── */
+@keyframes delete-out {
+  0%   { opacity: 1; transform: scale(1); filter: blur(0); }
+  30%  { opacity: 1; transform: scale(1.005); }
+  100% { opacity: 0; transform: scale(0.96) translateY(12px); filter: blur(2px); }
+}
+.animate-delete-out {
+  animation: delete-out 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
+/* ── Dropdown menus: pop in from the trigger, fade out ───────────────────── */
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes menu-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(-4px) scale(0.97); }
+}
+.animate-menu-in  { animation: menu-in 0.16s cubic-bezier(0.16, 1, 0.3, 1) both; transform-origin: top; }
+.animate-menu-out { animation: menu-out 0.12s ease-in both; transform-origin: top; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-delete-out, .animate-menu-in, .animate-menu-out,
+  .animate-modal-backdrop, .animate-modal-panel { animation-duration: 1ms; }
 }
 
 html {

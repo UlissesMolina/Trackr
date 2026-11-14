@@ -73,8 +73,15 @@ async function gmailGet<T>(accessToken: string, path: string): Promise<T> {
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    const err = new Error(`Gmail ${res.status} on ${path.split("?")[0]}: ${text.slice(0, 200)}`);
+    let reason = text.slice(0, 200);
+    try {
+      reason = JSON.parse(text)?.error?.message ?? reason;
+    } catch {
+      // not JSON
+    }
+    const err = new Error(`Gmail returned ${res.status}: ${reason}`);
     (err as any).status = res.status;
+    (err as any).source = "gmail";
     throw err;
   }
   return res.json() as Promise<T>;

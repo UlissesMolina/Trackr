@@ -1,4 +1,4 @@
-import { AuthenticationError } from "openai";
+import { APIError, OpenAIError } from "openai";
 import { getOpenAI, isOpenAIConfigured } from "../lib/openai";
 import type { GmailMessage } from "./gmail.service";
 import { classifyWithRules, type KnownApplication } from "./email-rules.service";
@@ -92,24 +92,37 @@ async function classifyBatch(batch: GmailMessage[]): Promise<Classification[]> {
   );
 }
 
+function describeOpenAIError(err: OpenAIError): string {
+  const status = err instanceof APIError ? err.status : undefined;
+  if (status === 401) return "OpenAI rejected the API key";
+  if (status === 403 || status === 404) return `OpenAI can't use ${MODEL} with this key (${status})`;
+  if (status === 429) return "OpenAI rate limit or quota reached";
+  return `OpenAI error${status ? ` (${status})` : ""}: ${err.message}`.slice(0, 200);
+}
+
 /**
  * Classifies with OpenAI when a key is configured, otherwise with the
- * rule-based classifier. A rejected key also falls back to rules, so a stale
- * key doesn't stop sync.
+ * rule-based classifier. Any OpenAI failure (bad key, no model access, quota,
+ * outage) falls back to rules for the rest of the run, so AI trouble never
+ * stops a sync; `aiProblem` says what went wrong.
  */
-export async function classifyEmails(messages: GmailMessage[], known: KnownApplication[]): Promise<Classification[]> {
-  if (!isOpenAIConfigured()) return classifyWithRules(messages, known);
+export async function classifyEmails(
+  messages: GmailMessage[],
+  known: KnownApplication[]
+): Promise<{ results: Classification[]; aiProblem: string | null }> {
+  if (!isOpenAIConfigured()) return { results: classifyWithRules(messages, known), aiProblem: null };
 
-  const out: Classification[] = [];
+  const results: Classification[] = [];
   for (let i = 0; i < messages.length; i += BATCH_SIZE) {
     try {
-      out.push(...(await classifyBatch(messages.slice(i, i + BATCH_SIZE))));
+      results.push(...(await classifyBatch(messages.slice(i, i + BATCH_SIZE))));
     } catch (err) {
-      if (!(err instanceof AuthenticationError)) throw err;
-      console.warn("OpenAI rejected the API key; classifying the rest of this sync with rules.");
-      out.push(...classifyWithRules(messages.slice(i), known));
-      break;
+      if (!(err instanceof OpenAIError)) throw err;
+      const aiProblem = describeOpenAIError(err);
+      console.warn(`${aiProblem}; classifying the rest of this sync with rules.`);
+      results.push(...classifyWithRules(messages.slice(i), known));
+      return { results, aiProblem };
     }
   }
-  return out;
+  return { results, aiProblem: null };
 }

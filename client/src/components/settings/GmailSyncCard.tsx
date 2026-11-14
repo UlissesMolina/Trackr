@@ -60,6 +60,7 @@ export default function GmailSyncCard({ cardCls, btnCls }: Props) {
   const disconnect = useDisconnectGmail();
   const [connecting, setConnecting] = useState(false);
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
+  const [showSkipped, setShowSkipped] = useState(false);
   // Google sends the browser back to /settings?gmail=connected|error; read it once on mount.
   const [banner, setBanner] = useState<{ kind: "ok" | "error"; text: string } | null>(() =>
     bannerFromParams(new URLSearchParams(window.location.search))
@@ -73,6 +74,10 @@ export default function GmailSyncCard({ cardCls, btnCls }: Props) {
     next.delete("reason");
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
+
+  // Skipped rows ("already tracked as Applied") are most of the log; show changes first.
+  const skippedCount = events?.filter((e) => e.action === "IGNORED").length ?? 0;
+  const visibleEvents = (events ?? []).filter((e) => showSkipped || e.action !== "IGNORED");
 
   async function handleConnect() {
     setConnecting(true);
@@ -176,18 +181,38 @@ export default function GmailSyncCard({ cardCls, btnCls }: Props) {
             </div>
           </div>
 
-          {sync.isSuccess && <p className="mt-3 text-sm text-text-secondary">{summarize(sync.data)}</p>}
-          {sync.isError && (
-            <p className="mt-3 text-sm text-red-400">
-              {(sync.error as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Sync failed."}
-            </p>
+          {sync.isSuccess && (
+            <>
+              <p className="mt-3 text-sm text-text-secondary">{summarize(sync.data)}</p>
+              {sync.data.note && <p className="mt-1 text-sm text-amber-400">{sync.data.note}</p>}
+            </>
           )}
+          {/* The server saves failures to lastError (shown above); only show a different message here */}
+          {sync.isError &&
+            (() => {
+              const msg =
+                (sync.error as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Sync failed.";
+              return msg === status.lastError ? null : <p className="mt-3 text-sm text-red-400">{msg}</p>;
+            })()}
 
           {events && events.length > 0 && (
             <div className="mt-5 border-t border-border-subtle pt-4">
-              <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-text-tertiary">Recent activity</p>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-[11px] font-medium uppercase tracking-wider text-text-tertiary">Recent activity</p>
+                {skippedCount > 0 && (
+                  <button
+                    onClick={() => setShowSkipped((v) => !v)}
+                    className="text-xs text-text-tertiary transition-colors hover:text-text-secondary"
+                  >
+                    {showSkipped ? "Hide skipped" : `Show ${skippedCount} skipped`}
+                  </button>
+                )}
+              </div>
+              {visibleEvents.length === 0 && (
+                <p className="py-2 text-sm text-text-tertiary">No changes yet; everything found was already up to date.</p>
+              )}
               <ul className="divide-y divide-border-subtle">
-                {events.map((e) => {
+                {visibleEvents.map((e) => {
                   const a = ACTION_LABEL[e.action];
                   const who = [e.company, e.title].filter(Boolean).join(" · ") || e.subject;
                   return (

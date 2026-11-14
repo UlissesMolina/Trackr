@@ -6,11 +6,10 @@
 // EmailSyncEvent row so it's never processed twice and the user can audit
 // what happened.
 
-import { AuthenticationError, RateLimitError } from "openai";
 import prisma from "../lib/prisma";
 import { decrypt } from "../lib/crypto";
 import { ApplicationStatus, EmailSyncAction } from "../../generated/prisma/enums";
-import { companiesMatch, normalizeCompany, normalizeForDedup } from "../lib/dedup";
+import { companiesMatch, normalizeCompany, normalizeForDedup, normalizeTitle } from "../lib/dedup";
 import {
   candidateQuery,
   getMessages,
@@ -27,6 +26,8 @@ const OVERLAP_MS = 24 * 60 * 60 * 1000; // re-scan a day back so late-arriving m
 const MAX_MESSAGES_PER_SYNC = 200;
 
 export interface SyncSummary {
+  /** Set when OpenAI failed and the run fell back to rules. */
+  note?: string;
   scanned: number;
   created: number;
   updated: number;
@@ -49,17 +50,31 @@ export function isSyncRunning(clerkUserId: string): boolean {
 
 /** Turn a sync failure into something the Settings card can show. */
 function describeError(err: unknown): string {
-  if (err instanceof AuthenticationError) {
-    return "The server's OpenAI API key is missing or invalid, so emails couldn't be classified. Set OPENAI_API_KEY on the server and sync again.";
+  const e = err as { status?: number; source?: string; message?: string };
+  const message = (e?.message || "Sync failed").slice(0, 300);
+  if (e?.source === "gmail" && (e.status === 401 || e.status === 403)) {
+    return `${message}. If this keeps happening, disconnect and reconnect Gmail.`;
   }
-  if (err instanceof RateLimitError) {
-    return "OpenAI rate limit or quota reached. Check the account's billing, then sync again.";
-  }
-  const status = (err as { status?: number })?.status;
-  if (status === 401 || status === 403) {
-    return "Gmail refused the request. Try disconnecting and reconnecting Gmail.";
-  }
-  return ((err as Error)?.message || "Sync failed").slice(0, 300);
+  return message;
+}
+
+/** A title reduced to its core: no "Your application -" prefix, punctuation, or season/year noise. */
+function coreTitle(t: string): string {
+  return normalizeTitle(t)
+    .replace(/^(re|fwd?):?\s*/, "")
+    .replace(/^(your |thank you for your |thanks for your )?application( for| to)?\s*-?\s*/, "")
+    .replace(/\b(summer|fall|spring|winter|20\d\d)\b/g, " ")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Loose title match: one core title contains the other. */
+function titlesMatch(a: string, b: string): boolean {
+  const x = coreTitle(a);
+  const y = coreTitle(b);
+  if (x.length < 5 || y.length < 5) return false;
+  return x === y || x.includes(y) || y.includes(x);
 }
 
 type AppRow = {
@@ -91,7 +106,7 @@ function pickMostRelevant(apps: AppRow[]): AppRow {
   })[0];
 }
 
-type Match = { app: AppRow } | { app: null; reason: string | null };
+type Match = { app: AppRow } | { app: null; reason: string | null; candidates?: AppRow[] };
 
 function findMatch(apps: AppRow[], company: string | null, title: string | null, strict: boolean): Match {
   if (!company) return { app: null, reason: "No company in email" };
@@ -104,13 +119,16 @@ function findMatch(apps: AppRow[], company: string | null, title: string | null,
     const keys = new Set(normalizeForDedup(company, title));
     const byTitle = candidates.filter((a) => normalizeForDedup(a.company, a.title).some((k) => keys.has(k)));
     if (byTitle.length > 0) return { app: pickMostRelevant(byTitle) };
+    // Emails often wrap the title ("Your application - SWE Intern (Summer)")
+    const loose = candidates.filter((a) => titlesMatch(a.title, title));
+    if (loose.length === 1) return { app: loose[0] };
     // Several roles at this company and the email names one we don't track:
     // guessing could update the wrong application.
-    return { app: null, reason: `${candidates.length} applications at ${company}, none titled "${title}"` };
+    return { app: null, reason: `${candidates.length} applications at ${company}, none titled "${title}"`, candidates };
   }
   // Without a title, the AI's pick of the most relevant role is usually right;
   // the rules have less to go on, so they don't guess between roles.
-  if (strict) return { app: null, reason: `${candidates.length} applications at ${company}; email doesn't say which role` };
+  if (strict) return { app: null, reason: `${candidates.length} applications at ${company}; email doesn't say which role`, candidates };
   return { app: pickMostRelevant(candidates) };
 }
 
@@ -174,6 +192,12 @@ async function apply(
   const app = match.app;
 
   if (!app) {
+    // A confirmation for a company where every tracked role is already past
+    // Saved changes nothing, whichever role it's about.
+    const ambiguous = "candidates" in match ? match.candidates : undefined;
+    if (cls.classification === "APPLIED" && ambiguous?.every((a) => a.status !== "SAVED")) {
+      return ignore(`Already tracked (${ambiguous.length} roles at ${cls.company})`);
+    }
     if (cls.classification === "APPLIED" && cls.confidence === "high" && cls.company && cls.title) {
       const created = await createApplication(clerkUserId, {
         title: cls.title,
@@ -292,7 +316,9 @@ async function runSync(clerkUserId: string): Promise<SyncSummary> {
       },
     });
     // The rule-based classifier finds companies by looking for the ones already tracked.
-    const classes = new Map((await classifyEmails(messages, apps)).map((c) => [c.id, c]));
+    const { results, aiProblem } = await classifyEmails(messages, apps);
+    if (aiProblem) summary.note = `${aiProblem}, so this sync used the built-in rules instead.`;
+    const classes = new Map(results.map((c) => [c.id, c]));
 
     for (const message of messages) {
       const cls = classes.get(message.id)!;

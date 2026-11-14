@@ -121,6 +121,8 @@ export interface GmailStatus {
 }
 
 export interface GmailSyncSummary {
+  /** Set when OpenAI failed and the sync fell back to the built-in rules. */
+  note?: string;
   scanned: number;
   created: number;
   updated: number;
